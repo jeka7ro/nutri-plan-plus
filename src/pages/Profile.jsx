@@ -27,37 +27,67 @@ export default function Profile() {
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [startDate, setStartDate] = useState("");
+  const [birthDate, setBirthDate] = useState("");
+  const [country, setCountry] = useState("");
+  const [city, setCity] = useState("");
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     localApi.auth.me().then(userData => {
+      console.log('📥 User data loaded:', userData);
       setUser(userData);
       setCurrentWeight(userData.current_weight || "");
       setTargetWeight(userData.target_weight || "");
       setHeight(userData.height || "");
       setAge(userData.age || "");
       setGender(userData.gender || "");
-      setStartDate(userData.start_date || format(new Date(), 'yyyy-MM-dd'));
+      
+      // Fix date format: "2025-11-06T00:00:00.000Z" -> "2025-11-06"
+      const formatDateForInput = (dateStr) => {
+        if (!dateStr) return "";
+        return dateStr.split('T')[0]; // Ia doar partea de dată
+      };
+      
+      setStartDate(formatDateForInput(userData.start_date) || format(new Date(), 'yyyy-MM-dd'));
+      setBirthDate(formatDateForInput(userData.birth_date) || "");
+      setCountry(userData.country || "");
+      setCity(userData.city || "");
     }).catch(() => {});
   }, []);
 
   const updateProfileMutation = useMutation({
-    mutationFn: (data) => base44.auth.updateMe(data),
+    mutationFn: (data) => {
+      console.log('📤 Salvez datele:', data);
+      return localApi.auth.updateProfile(data);
+    },
     onSuccess: (updatedUser) => {
+      console.log('✅ Date salvate cu succes:', updatedUser);
       setUser(updatedUser);
+      alert('✅ Date salvate cu succes!');
+    },
+    onError: (error) => {
+      console.error('❌ Eroare la salvare:', error);
+      alert('❌ Eroare la salvare: ' + error.message);
     },
   });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    updateProfileMutation.mutate({
-      current_weight: parseFloat(currentWeight),
-      target_weight: parseFloat(targetWeight),
-      height: parseFloat(height),
-      age: parseInt(age),
-      gender: gender,
-      start_date: startDate
-    });
+    
+    const dataToSave = {
+      current_weight: currentWeight ? parseFloat(currentWeight) : null,
+      target_weight: targetWeight ? parseFloat(targetWeight) : null,
+      height: height ? parseFloat(height) : null,
+      age: age ? parseInt(age) : null,
+      gender: gender || null,
+      start_date: startDate || null,
+      birth_date: birthDate || null,
+      country: country || null,
+      city: city || null,
+    };
+    
+    console.log('🚀 Trimit datele spre salvare:', dataToSave);
+    updateProfileMutation.mutate(dataToSave);
   };
 
   const handlePhotoUpload = async (e) => {
@@ -196,13 +226,13 @@ export default function Profile() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="age">Vârsta (ani)</Label>
+                  <Label htmlFor="birthDate" className="text-[rgb(var(--ios-text-primary))]">📅 Data nașterii *</Label>
                   <Input
-                    id="age"
-                    type="number"
-                    value={age}
-                    onChange={(e) => setAge(e.target.value)}
-                    placeholder="30"
+                    id="birthDate"
+                    type="date"
+                    value={birthDate}
+                    onChange={(e) => setBirthDate(e.target.value)}
+                    max={new Date().toISOString().split('T')[0]}
                     className="border-[rgb(var(--ios-border))]"
                   />
                 </div>
@@ -217,6 +247,31 @@ export default function Profile() {
                       <SelectItem value="male">Masculin</SelectItem>
                     </SelectContent>
                   </Select>
+                </div>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="text-[rgb(var(--ios-text-primary))]">🌍 Țara</Label>
+                  <Input
+                    id="country"
+                    type="text"
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    placeholder="Ex: România"
+                    className="border-[rgb(var(--ios-border))]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-[rgb(var(--ios-text-primary))]">🏙️ Orașul</Label>
+                  <Input
+                    id="city"
+                    type="text"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    placeholder="Ex: București"
+                    className="border-[rgb(var(--ios-border))]"
+                  />
                 </div>
               </div>
 

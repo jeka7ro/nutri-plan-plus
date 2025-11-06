@@ -36,11 +36,24 @@ export default function IndexPage() {
         // Verifică dacă user-ul este autentificat
         const user = await localApi.auth.me();
         
-        // Verifică dacă user-ul are datele complete
-        if (!user.start_date || !user.current_weight || !user.target_weight) {
-          navigate(createPageUrl("Onboarding"));
-        } else {
+        // ADMINS bypass onboarding complet
+        if (user.role === 'admin') {
+          console.log('✅ Admin detectat - SKIP onboarding');
           navigate(createPageUrl("Dashboard"));
+          return;
+        }
+        
+        // Verifică dacă user-ul are datele complete SAU a completat deja onboarding
+        // Dacă are profile_picture sau name completat, considerăm că a trecut deja prin onboarding
+        const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
+        const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
+        
+        if (hasCompletedProfile || hasBasicInfo) {
+          console.log('✅ Profil deja completat - SKIP onboarding');
+          navigate(createPageUrl("Dashboard"));
+        } else {
+          console.log('→ Profil incomplet - navigare la Onboarding');
+          navigate(createPageUrl("Onboarding"));
         }
       } catch (error) {
         // User NEAUTENTIFICAT - afișează pagina de login
@@ -66,10 +79,21 @@ export default function IndexPage() {
               console.log('✅ AUTO-LOGIN SUCCESS!');
               
               const user = await localApi.auth.me();
-              if (!user.start_date || !user.current_weight || !user.target_weight) {
-                navigate(createPageUrl("Onboarding"));
-              } else {
+              
+              // ADMINS bypass onboarding complet
+              if (user.role === 'admin') {
+                console.log('✅ Admin detectat - SKIP onboarding');
                 navigate(createPageUrl("Dashboard"));
+                return;
+              }
+              
+              const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
+              const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
+              
+              if (hasCompletedProfile || hasBasicInfo) {
+                navigate(createPageUrl("Dashboard"));
+              } else {
+                navigate(createPageUrl("Onboarding"));
               }
             } catch (error) {
               console.error('❌ AUTO-LOGIN FAILED:', error);
@@ -129,12 +153,22 @@ export default function IndexPage() {
         const user = await localApi.auth.me();
         console.log('✅ User data:', user);
         
-        if (!user.start_date || !user.current_weight || !user.target_weight) {
-          console.log('→ Navigăm la Onboarding');
-          navigate(createPageUrl("Onboarding"));
-        } else {
+        // ADMINS bypass onboarding complet
+        if (user.role === 'admin') {
+          console.log('✅ Admin detectat - SKIP onboarding');
+          navigate(createPageUrl("Dashboard"));
+          return;
+        }
+        
+        const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
+        const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
+        
+        if (hasCompletedProfile || hasBasicInfo) {
           console.log('→ Navigăm la Dashboard');
           navigate(createPageUrl("Dashboard"));
+        } else {
+          console.log('→ Navigăm la Onboarding');
+          navigate(createPageUrl("Onboarding"));
         }
       } else {
         // Register

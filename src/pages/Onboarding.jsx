@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { TrendingDown, Target, Calendar, Ruler, User, Leaf, Heart, AlertCircle, Activity, Camera, Upload, X } from "lucide-react";
+import { TrendingDown, Target, Calendar, Ruler, User, Leaf, Heart, AlertCircle, Activity, Camera, Upload, X, Shield } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "../components/LanguageContext";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,6 +26,7 @@ export default function Onboarding() {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [currentUser, setCurrentUser] = React.useState(null);
   const [formData, setFormData] = useState({
     full_name: "",
     current_weight: "",
@@ -47,6 +48,18 @@ export default function Onboarding() {
   const [countries, setCountries] = useState({});
   const [cities, setCities] = useState([]);
   
+  // Verifică user-ul curent
+  React.useEffect(() => {
+    localApi.auth.me()
+      .then(user => {
+        setCurrentUser(user);
+        // Pre-populează datele dacă există
+        if (user.name) setFormData(prev => ({ ...prev, full_name: user.name }));
+        if (user.profile_picture) setImagePreview(user.profile_picture);
+      })
+      .catch(err => console.error('Error loading user:', err));
+  }, []);
+
   // Încarcă lista de țări
   React.useEffect(() => {
     fetch('http://localhost:3001/api/countries')
@@ -256,6 +269,11 @@ export default function Onboarding() {
     return Math.round(bmr * multiplier);
   };
 
+  const handleSkip = () => {
+    console.log('⏭️ SKIP onboarding - navigare la Dashboard');
+    navigate(createPageUrl("Dashboard"));
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-900/20 flex items-center justify-center p-4">
       <motion.div
@@ -263,7 +281,15 @@ export default function Onboarding() {
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-2xl"
       >
-        <div className="text-center mb-8">
+        <div className="text-center mb-8 relative">
+          {/* Skip Button - Absolute positioned in top right */}
+          <button
+            onClick={handleSkip}
+            className="absolute top-0 right-0 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline transition-colors"
+          >
+            {language === 'ro' ? 'Sari peste →' : 'Skip →'}
+          </button>
+
           <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
             <TrendingDown className="w-10 h-10 text-white" />
           </div>
@@ -275,6 +301,13 @@ export default function Onboarding() {
               ? 'Hai să-ți configurăm profilul pentru Fast Metabolism Diet' 
               : "Let's set up your Fast Metabolism Diet profile"}
           </p>
+          
+          {currentUser?.role === 'admin' && (
+            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
+              <Shield className="w-3 h-3" />
+              Admin - {language === 'ro' ? 'Poți sări peste acest pas' : 'You can skip this step'}
+            </div>
+          )}
         </div>
 
         <div className="flex justify-center mb-8">

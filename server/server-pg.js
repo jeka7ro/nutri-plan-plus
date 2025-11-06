@@ -79,7 +79,8 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
     const result = await client.query(`
       SELECT id, email, name, role, subscription_tier, subscription_expires_at, 
              start_date, birth_date, current_weight, target_weight,
-             height, age, gender, activity_level, dietary_preferences, allergies, profile_picture
+             height, age, gender, activity_level, dietary_preferences, allergies, profile_picture,
+             country, city
       FROM users WHERE id = $1
     `, [req.userId]);
     
@@ -111,7 +112,8 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
     const allowedFields = [
       'name', 'start_date', 'birth_date', 'current_weight', 'target_weight',
       'height', 'age', 'gender', 'activity_level',
-      'dietary_preferences', 'allergies', 'profile_picture'
+      'dietary_preferences', 'allergies', 'profile_picture',
+      'country', 'city'
     ];
     
     const fields = Object.keys(updates).filter(key => allowedFields.includes(key));
@@ -134,7 +136,7 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
     const result = await client.query(`
       SELECT id, email, name, role, subscription_tier, start_date, birth_date,
              current_weight, target_weight, height, age, gender, activity_level,
-             dietary_preferences, allergies, profile_picture
+             dietary_preferences, allergies, profile_picture, country, city
       FROM users WHERE id = $1
     `, [req.userId]);
     
@@ -694,6 +696,115 @@ app.get('/api/admin/users', authMiddleware, async (req, res) => {
     `);
     
     res.json(result.rows);
+  } finally {
+    client.release();
+  }
+});
+
+// Admin - toate check-ins-urile pentru TOȚI utilizatorii
+app.get('/api/admin/checkins', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if admin
+    const userResult = await client.query(
+      'SELECT role FROM users WHERE id = $1',
+      [req.userId]
+    );
+    
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    // Get all check-ins with user info
+    const result = await client.query(`
+      SELECT dc.*, u.email as user_email, u.name as user_name
+      FROM daily_checkins dc
+      LEFT JOIN users u ON dc.user_id = u.id
+      ORDER BY dc.date DESC
+    `);
+    
+    res.json(result.rows);
+  } finally {
+    client.release();
+  }
+});
+
+// Admin - toate mesajele de suport
+app.get('/api/admin/support', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if admin
+    const userResult = await client.query(
+      'SELECT role FROM users WHERE id = $1',
+      [req.userId]
+    );
+    
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    // Check if support_messages table exists
+    const tableCheck = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'support_messages'
+      );
+    `);
+    
+    if (!tableCheck.rows[0].exists) {
+      // Tabelul nu există, returnează array gol
+      return res.json([]);
+    }
+    
+    // Get all support messages
+    const result = await client.query(`
+      SELECT sm.*, u.email as user_email, u.name as user_name
+      FROM support_messages sm
+      LEFT JOIN users u ON sm.user_id = u.id
+      ORDER BY sm.created_at DESC
+    `);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching support messages:', error);
+    // Returnează array gol dacă există erori (ex: tabelul nu există)
+    res.json([]);
+  } finally {
+    client.release();
+  }
+});
+
+// Admin - update support message
+app.put('/api/admin/support/:id', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if admin
+    const userResult = await client.query(
+      'SELECT role FROM users WHERE id = $1',
+      [req.userId]
+    );
+    
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    
+    const { admin_response, status } = req.body;
+    
+    const result = await client.query(`
+      UPDATE support_messages 
+      SET admin_response = $1, status = $2, responded_at = NOW(), responded_by = $3
+      WHERE id = $4
+      RETURNING *
+    `, [admin_response, status, req.userId, req.params.id]);
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating support message:', error);
+    res.status(500).json({ error: 'Failed to update support message' });
   } finally {
     client.release();
   }

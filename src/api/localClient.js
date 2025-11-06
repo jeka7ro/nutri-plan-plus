@@ -225,6 +225,115 @@ export const localApi = {
 
   // Seed data
   seed: () => request('/seed', { method: 'POST' }),
+  
+  // Entities API - pentru compatibilitate cu base44
+  entities: {
+    User: {
+      list: async (sort = '-created_date') => {
+        // Returnează lista de utilizatori (doar pentru admin)
+        try {
+          return await request('/admin/users');
+        } catch (error) {
+          console.error('Error fetching users:', error);
+          return [];
+        }
+      },
+      get: async (id) => {
+        try {
+          return await request(`/admin/users/${id}`);
+        } catch (error) {
+          console.error('Error fetching user:', error);
+          return null;
+        }
+      },
+    },
+    Recipe: {
+      list: async (sort = '-created_date') => {
+        try {
+          return await request('/recipes');
+        } catch (error) {
+          console.error('Error fetching recipes:', error);
+          return [];
+        }
+      },
+      get: async (id) => {
+        try {
+          return await request(`/recipes/${id}`);
+        } catch (error) {
+          console.error('Error fetching recipe:', error);
+          return null;
+        }
+      },
+      create: async (data) => {
+        return await request('/recipes', {
+          method: 'POST',
+          body: JSON.stringify(data),
+        });
+      },
+      update: async (id, data) => {
+        return await request(`/recipes/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(data),
+        });
+      },
+      delete: async (id) => {
+        return await request(`/recipes/${id}`, {
+          method: 'DELETE',
+        });
+      },
+    },
+    AdminChat: {
+      list: async (sort = '-created_date') => {
+        try {
+          return await request('/admin/support');
+        } catch (error) {
+          console.error('Error fetching admin chats:', error);
+          return [];
+        }
+      },
+      update: async (id, data) => {
+        return await request(`/admin/support/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify(data),
+        });
+      },
+    },
+    DailyCheckIn: {
+      list: async (sort = '-date') => {
+        try {
+          return await request('/admin/checkins');
+        } catch (error) {
+          console.error('Error fetching check-ins:', error);
+          return [];
+        }
+      },
+    },
+  },
+  
+  // Integrations - pentru compatibilitate cu base44
+  integrations: {
+    Core: {
+      UploadFile: async ({ file }) => {
+        const formData = new FormData();
+        formData.append('file', file);
+        
+        const token = storage.getToken();
+        const response = await fetch(`${API_URL}/upload`, {
+          method: 'POST',
+          headers: {
+            ...(token && { Authorization: `Bearer ${token}` }),
+          },
+          body: formData,
+        });
+        
+        if (!response.ok) {
+          throw new Error('Upload failed');
+        }
+        
+        return await response.json();
+      },
+    },
+  },
 };
 
 export default localApi;
