@@ -1,0 +1,31 @@
+🚀 URMĂTORUL PAS: VERCEL (FRONTEND)
+
+Deschide: https://vercel.com/new
+
+1️⃣ Import GitHub:
+   - Conectează GitHub (dacă e prima oară)
+   - Selectează: jeka7ro/nutri-plan-plus
+
+2️⃣ Configure:
+   - Framework: Vite ✅ (auto-detect)
+   - Root Directory: . (lasă gol)
+
+3️⃣ Environment Variables:
+   Click "Environment Variables" → Adaugă:
+   
+   VITE_API_URL = [Backend URL de pe Render]/api
+   
+   Exemplu:
+   VITE_API_URL = https://nutriplan-backend.onrender.com/api
+
+4️⃣ Deploy!
+   - Click: Deploy
+   - Așteaptă 3-5 minute
+   - COPIAZĂ URL-ul frontend!
+
+5️⃣ UPDATE BACKEND:
+   - Render Dashboard → nutriplan-backend → Environment
+   - Editează: FRONTEND_URL = [URL frontend de pe Vercel]
+   - Salvează (backend se va redeploy automat)
+
+✅ GATA! APLICAȚIA E LIVE!

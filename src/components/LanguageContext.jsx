@@ -1,0 +1,373 @@
+
+import React, { createContext, useContext, useState, useEffect } from 'react';
+
+const translations = {
+  en: {
+    // Navigation
+    home: "Home",
+    dailyPlan: "Daily Plan",
+    progress: "Progress",
+    weight: "Weight",
+    recipes: "Recipes",
+    profile: "Profile",
+    friends: "Friends",
+    messages: "Messages",
+    support: "Support",
+    logout: "Logout",
+    
+    // Dashboard
+    welcomeBack: "Welcome back",
+    dayOfProgram: "You're on day",
+    of28Days: "of your 28-day program",
+    // progress: "Progress", // This one already exists in Dashboard, keeping it.
+    kgLost: "kg lost",
+    currentPhase: "Current Phase",
+    mealsCompleted: "Meals completed today",
+    waterConsumed: "Water consumed",
+    glasses: "glasses",
+    viewDailyPlan: "View daily plan",
+    weightEvolution: "Weight evolution",
+    currentWeight: "Current weight",
+    target: "Target",
+    recordWeight: "Record weight",
+    weeklyGoals: "Goals this week",
+    completeAllMeals: "Complete all daily meals",
+    drink8Glasses: "Drink 8 glasses of water per day",
+    recordWeightDaily: "Record weight daily",
+    doExercises: "Do recommended exercises",
+    recentActivity: "Recent activity",
+    
+    // Phases
+    phase1Name: "Phase 1: Unwind",
+    phase1Desc: "Carbs and fruits - Calm the adrenal glands",
+    phase2Name: "Phase 2: Unlock",
+    phase2Desc: "Proteins and veggies - Unlock stored fat",
+    phase3Name: "Phase 3: Unleash",
+    phase3Desc: "Healthy fats - Transform into energy",
+    
+    // Meals
+    breakfast: "Breakfast",
+    snack1: "Morning Snack",
+    lunch: "Lunch",
+    snack2: "Afternoon Snack",
+    dinner: "Dinner",
+    markCompleted: "Complete",
+    completed: "Completed",
+    
+    // Weight Tracking
+    weightTracking: "Weight Tracking",
+    trackProgress: "Track your daily progress",
+    totalLost: "Total lost",
+    untilTarget: "Until target",
+    recordTodayWeight: "Record today's weight",
+    weight: "Weight",
+    howYouFeel: "How do you feel?",
+    excellent: "Excellent",
+    good: "Good",
+    normal: "Normal",
+    tired: "Tired",
+    weak: "Weak",
+    notes: "Notes",
+    optional: "optional",
+    saveRecord: "Save record",
+    last14Days: "Last 14 days evolution",
+    history: "History",
+    
+    // Profile
+    myProfile: "My Profile",
+    manageInfo: "Manage information and subscription",
+    initialWeight: "Initial weight",
+    targetWeight: "Target weight",
+    height: "Height",
+    programStartDate: "Program start date",
+    saveChanges: "Save changes",
+    aboutProgram: "About the program",
+    program28Days: "28-day program",
+    weeks4Complete: "4 complete weeks with detailed menus",
+    phases3Distinct: "3 distinct phases",
+    phaseRoleMetabolism: "Each phase with specific role in metabolism",
+    completeTracking: "Complete tracking",
+    weightProgressTracking: "Weight and daily progress monitoring",
+    deliciousRecipes: "Delicious recipes",
+    over50Recipes: "Over 50 recipes adapted by phases",
+    subscription: "Subscription",
+    currentStatus: "Current status",
+    trialPeriod: "Trial period",
+    monthlySubscription: "Monthly subscription",
+    yearlySubscription: "Yearly subscription",
+    
+    // Friends
+    myFriends: "My Friends",
+    findConnect: "Find and connect with friends",
+    searchUsers: "Search users",
+    sendRequest: "Send request",
+    friendRequests: "Friend requests",
+    accept: "Accept",
+    decline: "Decline",
+    noRequests: "No pending requests",
+    friendsList: "Friends list",
+    viewProgress: "View progress",
+    sendMessage: "Send message",
+    removeFriend: "Remove friend",
+    noFriends: "You don't have friends yet",
+    startSearching: "Start searching for users to connect",
+    
+    // Messages
+    myMessages: "My Messages",
+    chatWithFriends: "Chat with your friends",
+    selectConversation: "Select a conversation to start",
+    typeMessage: "Type a message...",
+    send: "Send",
+    
+    // Support
+    helpSupport: "Help & Support",
+    contactAdmin: "Contact the administrator",
+    selectTopicType: "Select the topic type",
+    question: "General question",
+    helpRequest: "Help request",
+    advice: "Advice",
+    menuRecommendation: "Menu recommendation",
+    recipeHelp: "Recipe help",
+    portionQuestion: "Portion/quantity question",
+    describeIssue: "Describe your question or issue",
+    submitRequest: "Submit request",
+    myRequests: "My requests",
+    pending: "Pending",
+    responded: "Responded",
+    closed: "Closed",
+    adminResponse: "Admin response",
+    
+    // AI Assistant
+    aiAssistant: "AI Assistant",
+    askAboutFood: "Ask about any food!",
+    canIEat: "Can I eat",
+    analyzing: "Analyzing...",
+    askAI: "Ask AI",
+    response: "Response",
+    aiDisclaimer: "Responses are AI-generated based on your current diet phase rules",
+    
+    // Exercise types
+    exerciseType: "Exercise type",
+    duration: "Duration",
+    minutes: "minutes",
+    caloriesBurned: "calories burned",
+    estimated: "Estimated",
+    walking: "Walking",
+    running: "Running",
+    circuitTraining: "Circuit Training",
+    bodyPump: "Body Pump",
+    basicWorkout: "Basic Workout",
+    edit: "Edit",
+    
+    // Common
+    save: "Save",
+    cancel: "Cancel",
+    delete: "Delete",
+    back: "Back",
+    next: "Next",
+    today: "Today",
+    loading: "Loading...",
+    saving: "Saving...",
+    kg: "kg",
+    cm: "cm"
+  },
+  ro: {
+    // Navigation
+    home: "Acasă",
+    dailyPlan: "Planul Zilei",
+    progress: "Progres",
+    weight: "Greutate",
+    recipes: "Rețete",
+    profile: "Profil",
+    friends: "Prieteni",
+    messages: "Mesaje",
+    support: "Suport",
+    logout: "Deconectare",
+    
+    // Dashboard
+    welcomeBack: "Bine ai revenit",
+    dayOfProgram: "Ești în ziua",
+    of28Days: "din programul tău de 28 de zile",
+    // progress: "Progres", // This one already exists in Dashboard, keeping it.
+    kgLost: "kg pierdute",
+    currentPhase: "Faza Curentă",
+    mealsCompleted: "Mese finalizate astăzi",
+    waterConsumed: "Apă consumată",
+    glasses: "pahare",
+    viewDailyPlan: "Vezi planul zilei",
+    weightEvolution: "Evoluția greutății",
+    currentWeight: "Greutate curentă",
+    target: "Țintă",
+    recordWeight: "Înregistrează greutatea",
+    weeklyGoals: "Obiective săptămâna aceasta",
+    completeAllMeals: "Completează toate mesele zilnice",
+    drink8Glasses: "Bea 8 pahare de apă pe zi",
+    recordWeightDaily: "Înregistrează greutatea zilnic",
+    doExercises: "Fă exercițiile recomandate",
+    recentActivity: "Activitate recentă",
+    
+    // Phases
+    phase1Name: "Faza 1: Destresare",
+    phase1Desc: "Carbohidrați și fructe - Calmează glandele suprarenale",
+    phase2Name: "Faza 2: Deblocare",
+    phase2Desc: "Proteine și legume - Deblochează grăsimea stocată",
+    phase3Name: "Faza 3: Ardere",
+    phase3Desc: "Grăsimi sănătoase - Transformă în energie",
+    
+    // Meals
+    breakfast: "Mic Dejun",
+    snack1: "Gustare Dimineață",
+    lunch: "Prânz",
+    snack2: "Gustare După-Amiază",
+    dinner: "Cină",
+    markCompleted: "Finalizează",
+    completed: "Finalizat",
+    
+    // Weight Tracking
+    weightTracking: "Monitorizare Greutate",
+    trackProgress: "Urmărește-ți progresul zilnic",
+    totalLost: "Total pierdut",
+    untilTarget: "Până la țintă",
+    recordTodayWeight: "Înregistrează greutatea de astăzi",
+    weight: "Greutate",
+    howYouFeel: "Cum te simți?",
+    excellent: "Excelent",
+    good: "Bine",
+    normal: "Normal",
+    tired: "Obosit",
+    weak: "Slab",
+    notes: "Notițe",
+    optional: "opțional",
+    saveRecord: "Salvează înregistrarea",
+    last14Days: "Evoluția ultimele 14 zile",
+    history: "Istoric",
+    
+    // Profile
+    myProfile: "Profilul Meu",
+    manageInfo: "Gestionează informațiile și abonamentul",
+    initialWeight: "Greutate inițială",
+    targetWeight: "Greutate țintă",
+    height: "Înălțime",
+    programStartDate: "Data începerii programului",
+    saveChanges: "Salvează modificările",
+    aboutProgram: "Despre program",
+    program28Days: "Program de 28 de zile",
+    weeks4Complete: "4 săptămâni complete cu meniuri detaliate",
+    phases3Distinct: "3 faze distincte",
+    phaseRoleMetabolism: "Fiecare fază cu rol specific în metabolism",
+    completeTracking: "Tracking complet",
+    weightProgressTracking: "Monitorizare greutate și progres zilnic",
+    deliciousRecipes: "Rețete delicioase",
+    over50Recipes: "Peste 50 de rețete adaptate pe faze",
+    subscription: "Abonament",
+    currentStatus: "Status actual",
+    trialPeriod: "Perioadă de probă",
+    monthlySubscription: "Abonament lunar",
+    yearlySubscription: "Abonament anual",
+    
+    // Friends
+    myFriends: "Prietenii Mei",
+    findConnect: "Găsește și conectează-te cu prieteni",
+    searchUsers: "Caută utilizatori",
+    sendRequest: "Trimite cerere",
+    friendRequests: "Cereri de prietenie",
+    accept: "Acceptă",
+    decline: "Refuză",
+    noRequests: "Nu ai cereri în așteptare",
+    friendsList: "Lista de prieteni",
+    viewProgress: "Vezi progresul",
+    sendMessage: "Trimite mesaj",
+    removeFriend: "Elimină prieten",
+    noFriends: "Nu ai încă prieteni",
+    startSearching: "Începe să cauți utilizatori pentru a te conecta",
+    
+    // Messages
+    myMessages: "Mesajele Mele",
+    chatWithFriends: "Discută cu prietenii tăi",
+    selectConversation: "Selectează o conversație pentru a începe",
+    typeMessage: "Scrie un mesaj...",
+    send: "Trimite",
+    
+    // Support
+    helpSupport: "Ajutor & Suport",
+    contactAdmin: "Contactează administratorul",
+    selectTopicType: "Selectează tipul subiectului",
+    question: "Întrebare generală",
+    helpRequest: "Cerere de ajutor",
+    advice: "Sfaturi",
+    menuRecommendation: "Recomandare meniu",
+    recipeHelp: "Ajutor rețete",
+    portionQuestion: "Întrebare gramaje/cantități",
+    describeIssue: "Descrie întrebarea sau problema ta",
+    submitRequest: "Trimite cererea",
+    myRequests: "Cererile mele",
+    pending: "În așteptare",
+    responded: "Răspuns",
+    closed: "Închis",
+    adminResponse: "Răspuns administrator",
+    
+    // AI Assistant
+    aiAssistant: "Asistent AI",
+    askAboutFood: "Întreabă despre orice aliment!",
+    canIEat: "Pot mânca",
+    analyzing: "Se analizează...",
+    askAI: "Întreabă AI",
+    response: "Răspuns",
+    aiDisclaimer: "Răspunsurile sunt generate de AI bazat pe regulile dietei tale actuale",
+    
+    // Exercise types
+    exerciseType: "Tip exercițiu",
+    duration: "Durată",
+    minutes: "minute",
+    caloriesBurned: "calorii arse",
+    estimated: "Estimare",
+    walking: "Mers",
+    running: "Alergat",
+    circuitTraining: "Circuit Training",
+    bodyPump: "Body Pump",
+    basicWorkout: "Workout de Bază",
+    edit: "Editează",
+    
+    // Common
+    save: "Salvează",
+    cancel: "Anulează",
+    delete: "Șterge",
+    back: "Înapoi",
+    next: "Următorul",
+    today: "Astăzi",
+    loading: "Se încarcă...",
+    saving: "Se salvează...",
+    kg: "kg",
+    cm: "cm"
+  }
+};
+
+const LanguageContext = createContext();
+
+export const useLanguage = () => {
+  const context = useContext(LanguageContext);
+  if (!context) {
+    throw new Error('useLanguage must be used within LanguageProvider');
+  }
+  return context;
+};
+
+export const LanguageProvider = ({ children }) => {
+  const [language, setLanguage] = useState(() => {
+    return localStorage.getItem('app_language') || 'ro';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('app_language', language);
+  }, [language]);
+
+  const t = (key) => {
+    return translations[language][key] || key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};
