@@ -16,6 +16,7 @@ import Support from "@/pages/Support.jsx"
 import Profile from "@/pages/Profile.jsx"
 import Admin from "@/pages/Admin.jsx"
 import Onboarding from "@/pages/Onboarding.jsx"
+import Recommendations from "@/pages/Recommendations.jsx"
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
             <Route path="/progress" element={<Progress />} />
             <Route path="/weighttracking" element={<WeightTracking />} />
             <Route path="/recipes" element={<Recipes />} />
+            <Route path="/recommendations" element={<Recommendations />} />
             <Route path="/friends" element={<Friends />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/support" element={<Support />} />

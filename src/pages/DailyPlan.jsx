@@ -15,7 +15,6 @@ import { ro, enUS } from "date-fns/locale";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "../components/LanguageContext";
 import DietaryPreferencesModal from "../components/DietaryPreferencesModal";
-import DietSummary from "../components/DietSummary";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -640,11 +639,6 @@ export default function DailyPlan() {
   return (
     <div className="p-4 md:p-8 min-h-screen max-w-full overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* DIET SUMMARY - PRIMA DATĂ (Ziua 1) */}
-        {currentDay === 1 && (
-          <DietSummary language={language} />
-        )}
-
         {/* Header with Date Navigation */}
         <div className="flex items-center justify-between">
           <div>

@@ -84,6 +84,11 @@ function LayoutContent() {
       icon: BookOpen,
     },
     {
+      title: language === 'ro' ? 'Recomandări' : 'Recommendations',
+      url: createPageUrl("Recommendations"),
+      icon: BookOpen,
+    },
+    {
       title: t('friends'),
       url: createPageUrl("Friends"),
       icon: Users,
