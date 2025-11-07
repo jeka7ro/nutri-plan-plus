@@ -655,41 +655,7 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center gap-2 text-lg text-[rgb(var(--ios-text-primary))]">
-                <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/30 rounded-[14px] flex items-center justify-center">
-                  <TrendingUp className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                </div>
-                {t('weightEvolution')}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-end">
-                  <div>
-                    <div className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('currentWeight')}</div>
-                    <div className="text-3xl font-bold text-[rgb(var(--ios-text-primary))]">
-                      {latestWeight?.weight || user?.current_weight || '-'} {t('kg')}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('target')}</div>
-                    <div className="text-xl font-semibold text-emerald-600 dark:text-emerald-400">
-                      {user?.target_weight || '-'} {t('kg')}
-                    </div>
-                  </div>
-                </div>
-                <Link to={createPageUrl("WeightTracking")}>
-                  <Button variant="outline" className="w-full rounded-[12px] border-[rgb(var(--ios-border))]">
-                    {t('recordWeight')}
-                  </Button>
-                </Link>
-              </div>
-            </CardContent>
-          </Card>
-
+        <div className="grid md:grid-cols-1 gap-6">
           <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg text-[rgb(var(--ios-text-primary))]">

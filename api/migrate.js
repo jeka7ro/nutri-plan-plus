@@ -1,52 +1,76 @@
-import pkg from 'pg';
-const { Pool } = pkg;
-
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-  ssl: { rejectUnauthorized: false }
-});
+import { neon } from '@neondatabase/serverless';
 
 export default async function handler(req, res) {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-  
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-  
+  console.log('🔧 MIGRAȚIE VERCEL START');
+
   try {
-    console.log('🔄 Starting database migration...');
+    const databaseUrl = process.env.DATABASE_URL;
+    if (!databaseUrl) {
+      throw new Error('DATABASE_URL lipsește!');
+    }
+
+    const sql = neon(databaseUrl);
+
+    // Verificăm dacă coloanele există
+    const checkColumns = await sql`
+      SELECT column_name 
+      FROM information_schema.columns 
+      WHERE table_name = 'users' 
+      AND column_name IN ('first_name', 'last_name', 'phone')
+    `;
+
+    console.log('✅ Coloane existente:', checkColumns);
+
+    const existingColumns = checkColumns.map(c => c.column_name);
+    const needsFirstName = !existingColumns.includes('first_name');
+    const needsLastName = !existingColumns.includes('last_name');
+    const needsPhone = !existingColumns.includes('phone');
+
+    if (!needsFirstName && !needsLastName && !needsPhone) {
+      console.log('✅ Toate coloanele există deja!');
+      return res.json({ 
+        success: true, 
+        message: 'Toate coloanele există deja!',
+        columns: existingColumns
+      });
+    }
+
+    // Adăugăm coloanele lipsă
+    const migrations = [];
     
-    // Add missing columns to users table
-    await pool.query(`
-      ALTER TABLE users 
-      ADD COLUMN IF NOT EXISTS first_name VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS last_name VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS phone VARCHAR(20),
-      ADD COLUMN IF NOT EXISTS country_code VARCHAR(10) DEFAULT '+40',
-      ADD COLUMN IF NOT EXISTS full_name VARCHAR(255),
-      ADD COLUMN IF NOT EXISTS last_login TIMESTAMP
-    `);
+    if (needsFirstName) {
+      console.log('➕ Adăugăm first_name...');
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255)`;
+      migrations.push('first_name');
+    }
     
-    console.log('✅ Migration completed successfully!');
+    if (needsLastName) {
+      console.log('➕ Adăugăm last_name...');
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(255)`;
+      migrations.push('last_name');
+    }
     
-    return res.status(200).json({ 
-      success: true,
-      message: 'Database migrated successfully - columns first_name, last_name, phone added!' 
+    if (needsPhone) {
+      console.log('➕ Adăugăm phone...');
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)`;
+      migrations.push('phone');
+    }
+
+    console.log('✅ MIGRAȚIE COMPLETĂ!');
+    
+    return res.json({ 
+      success: true, 
+      message: 'Migrație completă!',
+      added: migrations,
+      existing: existingColumns
     });
-    
+
   } catch (error) {
-    console.error('❌ Migration error:', error);
+    console.error('❌ EROARE MIGRAȚIE:', error);
     return res.status(500).json({ 
+      success: false, 
       error: error.message,
-      details: 'Migration failed'
+      stack: error.stack
     });
   }
 }
-
