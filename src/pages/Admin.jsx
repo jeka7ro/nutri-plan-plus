@@ -447,14 +447,93 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-6 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))]">
+          <TabsList className="grid w-full grid-cols-7 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))]">
             <TabsTrigger value="recipes">Rețete ({filteredRecipes.length})</TabsTrigger>
+            <TabsTrigger value="recommendations">📖 Recomandări</TabsTrigger>
             <TabsTrigger value="resources">📚 Resurse</TabsTrigger>
             <TabsTrigger value="support">Suport ({stats.pendingSupport})</TabsTrigger>
             <TabsTrigger value="users">Utilizatori</TabsTrigger>
             <TabsTrigger value="logs">📋 Loguri</TabsTrigger>
             <TabsTrigger value="backups">💾 Backup</TabsTrigger>
           </TabsList>
+
+          {/* TAB RECOMANDĂRI - EDITARE */}
+          <TabsContent value="recommendations" className="mt-6">
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📖 Editare Recomandări Dietă</CardTitle>
+                <p className="text-sm text-gray-500 mt-2">
+                  Acestea apar în pagina "Recomandări" pentru toți utilizatorii
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
+                      <p className="font-semibold mb-2">ℹ️ Cum să editezi:</p>
+                      <ul className="list-disc list-inside space-y-1">
+                        <li>Modifică textele direct în fișierul <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">src/pages/Recommendations.jsx</code></li>
+                        <li>Carbohidrații permisi sunt în array-ul <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">allowedCarbs.items</code></li>
+                        <li>Produsele interzise sunt în <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">forbidden.items</code></li>
+                        <li>Fiecare fază are <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">meals[]</code> și <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">note</code></li>
+                      </ul>
+                      <p className="mt-3 font-semibold text-emerald-700 dark:text-emerald-300">
+                        🚀 După editare, fă commit și push pentru a actualiza!
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="grid md:grid-cols-3 gap-4">
+                  <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base text-orange-700 dark:text-orange-300">Faza 1 (2 zile)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-xs space-y-2">
+                      <p><strong>Focus:</strong> Carbohidrați + Fructe</p>
+                      <p><strong>Interzis:</strong> Grăsimi, uleiuri</p>
+                      <p className="text-orange-600 dark:text-orange-400 font-semibold">⚠️ Gătește pe apă!</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base text-emerald-700 dark:text-emerald-300">Faza 2 (2 zile)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-xs space-y-2">
+                      <p><strong>Focus:</strong> Proteine + Legume</p>
+                      <p><strong>Interzis:</strong> Carbohidrați, fructe, uleiuri</p>
+                      <p className="text-emerald-600 dark:text-emerald-400 font-semibold">💪 Doar carne slabă!</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base text-purple-700 dark:text-purple-300">Faza 3 (3 zile)</CardTitle>
+                    </CardHeader>
+                    <CardContent className="text-xs space-y-2">
+                      <p><strong>Focus:</strong> Grăsimi sănătoase</p>
+                      <p><strong>Permis:</strong> Avocado, nuci, uleiuri</p>
+                      <p className="text-purple-600 dark:text-purple-400 font-semibold">✅ Toate grăsimile!</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                <div className="mt-6">
+                  <a 
+                    href="https://github.com/jeka7ro/nutri-plan-plus/blob/main/src/pages/Recommendations.jsx"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
+                  >
+                    <Edit className="w-5 h-5" />
+                    Deschide fișierul în GitHub pentru editare
+                  </a>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* NEW TAB - Resources */}
           <TabsContent value="resources" className="mt-6">
