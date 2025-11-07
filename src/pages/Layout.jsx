@@ -255,7 +255,7 @@ function LayoutContent() {
           <SidebarHeader className="border-b border-[rgb(var(--ios-border))] p-6">
             <div className="flex flex-col items-center mb-4">
               <img 
-                src="/eatnfitlogo.png" 
+                src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
                 alt="EatnFit Logo" 
                 className="w-48 h-48 object-contain"
               />

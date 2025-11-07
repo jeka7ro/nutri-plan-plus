@@ -215,7 +215,7 @@ export default function IndexPage() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-900/20">
         <div className="text-center">
           <img 
-            src="/eatnfitlogo.png" 
+            src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
             alt="EatnFit Logo" 
             className="w-24 h-24 object-contain mx-auto mb-4"
           />
@@ -244,7 +244,7 @@ export default function IndexPage() {
           {/* Logo */}
           <div className="text-center">
             <img 
-              src="/eatnfitlogo.png" 
+              src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
               alt="EatnFit Logo" 
               className="w-32 h-32 object-contain mx-auto mb-3"
             />
