@@ -9,12 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { useLanguage } from "@/components/LanguageContext";
+import { useTheme } from "@/components/ThemeContext";
 import LanguageSelector from "@/components/LanguageSelector";
 
 export default function IndexPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
