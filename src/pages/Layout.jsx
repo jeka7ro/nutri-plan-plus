@@ -6,7 +6,7 @@ import { createPageUrl } from "@/utils";
 import { Home, Calendar, TrendingDown, BookOpen, User, LogOut, Users, MessageCircle, HelpCircle, Shield } from "lucide-react";
 import localApi from "@/api/localClient";
 import { LanguageProvider, useLanguage } from "../components/LanguageContext";
-import { ThemeProvider } from "../components/ThemeContext";
+import { ThemeProvider, useTheme } from "../components/ThemeContext";
 import LanguageSelector from "../components/LanguageSelector";
 import ThemeSelector from "../components/ThemeSelector";
 import AIFoodAssistant from "../components/AIFoodAssistant";
@@ -27,6 +27,7 @@ import {
 
 function LayoutContent() {
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = React.useState(null);
