@@ -261,7 +261,7 @@ function LayoutContent() {
               />
               <div>
                 <h2 className="font-bold text-[rgb(var(--ios-text-primary))] text-lg">EatnFit</h2>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Fast Metabolism Diet</p>
+                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Eat Smart. Stay Fit</p>
               </div>
             </div>
             <div className="flex items-center gap-2">
