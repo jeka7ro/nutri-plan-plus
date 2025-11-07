@@ -18,6 +18,73 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
   
+  // SPECIAL ENDPOINT: Run migration if ?migrate=true (no auth required)
+  if (req.query.migrate === 'true' && req.method === 'GET') {
+    console.log('🔧 RUNNING DATABASE MIGRATION...');
+    try {
+      // Check if columns exist
+      const checkColumns = await pool.query(`
+        SELECT column_name 
+        FROM information_schema.columns 
+        WHERE table_name = 'users' 
+        AND column_name IN ('first_name', 'last_name', 'phone')
+      `);
+      
+      const existingColumns = checkColumns.rows.map(c => c.column_name);
+      console.log('✅ Existing columns:', existingColumns);
+      
+      const needsFirstName = !existingColumns.includes('first_name');
+      const needsLastName = !existingColumns.includes('last_name');
+      const needsPhone = !existingColumns.includes('phone');
+      
+      if (!needsFirstName && !needsLastName && !needsPhone) {
+        console.log('✅ All columns already exist!');
+        return res.status(200).json({ 
+          success: true, 
+          message: 'All columns already exist!',
+          columns: existingColumns
+        });
+      }
+      
+      const migrations = [];
+      
+      if (needsFirstName) {
+        console.log('➕ Adding first_name...');
+        await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS first_name VARCHAR(255)');
+        migrations.push('first_name');
+      }
+      
+      if (needsLastName) {
+        console.log('➕ Adding last_name...');
+        await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS last_name VARCHAR(255)');
+        migrations.push('last_name');
+      }
+      
+      if (needsPhone) {
+        console.log('➕ Adding phone...');
+        await pool.query('ALTER TABLE users ADD COLUMN IF NOT EXISTS phone VARCHAR(20)');
+        migrations.push('phone');
+      }
+      
+      console.log('✅ MIGRATION COMPLETE!');
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Migration completed successfully!',
+        added: migrations,
+        existing: existingColumns
+      });
+      
+    } catch (error) {
+      console.error('❌ MIGRATION ERROR:', error);
+      return res.status(500).json({ 
+        success: false, 
+        error: error.message,
+        stack: error.stack
+      });
+    }
+  }
+  
   if (req.method !== 'GET' && req.method !== 'PUT' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
