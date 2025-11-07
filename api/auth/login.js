@@ -95,6 +95,13 @@ export default async function handler(req, res) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
     
+    // ACTUALIZEAZĂ last_login
+    await pool.query(
+      'UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1',
+      [user.id]
+    );
+    console.log('✅ Last login updated for user:', user.id, user.email);
+    
     // Generate token
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
