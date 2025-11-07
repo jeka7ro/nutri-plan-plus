@@ -169,14 +169,15 @@ export default function DailyPlan() {
   });
 
   const { data: checkIns = [] } = useQuery({
-    queryKey: ['allCheckIns', user?.email, user?.start_date],
+    queryKey: ['allCheckIns'],
     queryFn: async () => {
       if (!user?.email || !user?.start_date) return [];
       // FIXAT: folosește localApi.checkins.list() pentru PostgreSQL
       return await localApi.checkins.list();
     },
     enabled: !!user?.email && !!user?.start_date,
-    staleTime: 5 * 60 * 1000, // Cache 5 minutes
+    staleTime: 0, // NU cache - sincronizare instant cu Dashboard
+    refetchOnMount: 'always', // Refetch mereu când componenta se montează
   });
 
   const { data: recipes = [] } = useQuery({
@@ -222,8 +223,10 @@ export default function DailyPlan() {
         return [newData, ...filtered];
       });
 
-      // NU mai invalidăm allCheckIns pentru fiecare selecție
-      console.log('✅ CACHE ACTUALIZAT:', newData);
+      // Invalidează explicit cache-ul pentru a forța refresh pe Dashboard
+      queryClient.invalidateQueries(['allCheckIns']);
+      
+      console.log('✅ CACHE ACTUALIZAT ȘI INVALIDAT:', newData);
     },
     onError: (error) => {
       console.error('❌ MUTATION ERROR:', error);

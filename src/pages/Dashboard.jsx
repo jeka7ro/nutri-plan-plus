@@ -203,7 +203,13 @@ export default function Dashboard() {
   const last7Days = Array.from({length: 7}, (_, i) => {
     const date = subDays(new Date(), 6 - i);
     const dateStr = format(date, 'yyyy-MM-dd');
-    const checkIn = checkIns.find(c => c.date === dateStr);
+    
+    // FIXAT: Comparație consistentă de date (convert PostgreSQL ISO la yyyy-MM-dd)
+    const checkIn = checkIns.find(c => {
+      if (!c.date) return false;
+      const checkInDateStr = format(new Date(c.date), 'yyyy-MM-dd');
+      return checkInDateStr === dateStr;
+    });
     
     return {
       date: format(date, 'MMM dd', { locale: language === 'ro' ? ro : enUS }),
