@@ -87,8 +87,11 @@ export default async function handler(req, res) {
     }
     
   } catch (error) {
-    console.error('Auth error:', error);
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    console.error('❌ Auth error in /api/auth/me:', error);
+    console.error('Method:', req.method);
+    console.error('Headers:', req.headers);
+    console.error('Body:', req.body);
+    return res.status(500).json({ error: error.message || 'Server error' });
   }
 }
 
