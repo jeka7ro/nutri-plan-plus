@@ -15,6 +15,7 @@ import { ro, enUS } from "date-fns/locale";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "../components/LanguageContext";
 import DietaryPreferencesModal from "../components/DietaryPreferencesModal";
+import DietSummary from "../components/DietSummary";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -642,6 +643,11 @@ export default function DailyPlan() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* DIET SUMMARY - Doar pentru Ziua 1 */}
+        {currentDay === 1 && (
+          <DietSummary language={language} />
         )}
 
         {/* Phase Info */}
