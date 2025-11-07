@@ -230,21 +230,23 @@ export default function IndexPage() {
 
   // Pagina de Login/Register
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-900/20 py-12 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-900/20 py-4 px-4">
       <div className="w-full max-w-md">
         {/* Language Selector */}
         <div className="flex justify-end mb-4">
           <LanguageSelector />
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 space-y-6">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 space-y-4">
           {/* Logo și titlu */}
           <div className="text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Apple className="w-10 h-10 text-white" />
-            </div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-              Nutri Plan Plus
+            <img 
+              src="/eatnfitlogo.png" 
+              alt="EatnFit Logo" 
+              className="w-24 h-24 object-contain mx-auto mb-3"
+            />
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+              EatnFit
             </h1>
             <p className="text-gray-600 dark:text-gray-300">
               {isLogin 
@@ -484,10 +486,6 @@ export default function IndexPage() {
           )}
         </div>
 
-        {/* Server info */}
-        <p className="text-center text-xs text-gray-500 dark:text-gray-400 mt-4">
-          {language === 'ro' ? 'Server local: localhost:3001' : 'Local server: localhost:3001'}
-        </p>
       </div>
     </div>
   );
