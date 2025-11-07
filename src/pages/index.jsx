@@ -256,9 +256,9 @@ export default function IndexPage() {
             <img 
               src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
               alt="EatnFit Logo" 
-              className="w-56 h-56 object-contain mx-auto mb-2"
+              className="w-56 h-56 object-contain mx-auto"
             />
-            <p className="text-base font-bold text-gray-600 dark:text-gray-300 mb-3">
+            <p className="text-base font-bold text-gray-600 dark:text-gray-300 -mt-2 mb-4">
               Eat Smart. Stay Fit
             </p>
             <p className="text-gray-600 dark:text-gray-300 text-sm">
