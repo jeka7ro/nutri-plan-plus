@@ -552,6 +552,34 @@ export default function DailyPlan() {
     return count;
   }, [checkIn]);
 
+  const calculateTDEE = useCallback(() => {
+    if (!user?.current_weight || !user?.height || !user?.age || !user?.gender) return 2000;
+
+    let bmr;
+    if (user.gender === 'male') {
+      bmr = 10 * user.current_weight + 6.25 * user.height - 5 * user.age + 5;
+    } else {
+      bmr = 10 * user.current_weight + 6.25 * user.height - 5 * user.age - 161;
+    }
+
+    const activityMultipliers = {
+      sedentary: 1.2,
+      light: 1.375,
+      moderate: 1.55,
+      active: 1.725,
+      very_active: 1.9
+    };
+
+    const multiplier = activityMultipliers[user.activity_level || 'moderate'];
+    return Math.round(bmr * multiplier);
+  }, [user]);
+
+  const caloriesConsumed = checkIn?.total_calories || 0;
+  const caloriesBurned = checkIn?.exercise_calories_burned || 0;
+  const netCalories = caloriesConsumed - caloriesBurned;
+  const tdee = calculateTDEE();
+  const caloriesRemaining = tdee - netCalories;
+
   // MEMOIZE exercise types to avoid recreating on every render
   const exerciseTypes = useMemo(() => ({
     walking: { name: { en: "Walking", ro: "Mers" }, calsPerMin: 3.5 },
@@ -708,6 +736,149 @@ export default function DailyPlan() {
             </div>
           </CardContent>
         </Card>
+
+        {/* 4 CARDURI BILANȚ CALORIC - PE 1 RÂND */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Card 1: Calorii Nete */}
+          <Card className="ios-card ios-shadow-lg rounded-[20px] overflow-hidden relative border-[rgb(var(--ios-border))]">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-orange-400/20 to-red-400/20 rounded-full -mr-16 -mt-16" />
+            <CardContent className="p-4 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-red-500 rounded-[12px] flex items-center justify-center shadow-lg">
+                  <Flame className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-xs font-bold px-2 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
+                  {caloriesRemaining > 0 ? `+${caloriesRemaining}` : Math.abs(caloriesRemaining)}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-2xl font-bold text-[rgb(var(--ios-text-primary))]">{netCalories}</div>
+                <div className="text-xs text-[rgb(var(--ios-text-secondary))] font-medium">
+                  {language === 'ro' ? 'Calorii nete' : 'Net calories'}
+                </div>
+                <div className="space-y-0.5 mt-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[rgb(var(--ios-text-secondary))]">{language === 'ro' ? 'Consumate' : 'Consumed'}</span>
+                    <span className="font-bold text-orange-600 dark:text-orange-400">{caloriesConsumed}</span>
+                  </div>
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-[rgb(var(--ios-text-secondary))]">{language === 'ro' ? 'Arse' : 'Burned'}</span>
+                    <span className="font-bold text-purple-600 dark:text-purple-400">{caloriesBurned}</span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 2: Mese Completate */}
+          <Card className="ios-card border-none ios-shadow-lg rounded-[20px] overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-400/20 to-green-400/20 rounded-full -mr-16 -mt-16" />
+            <CardContent className="p-4 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-green-500 rounded-[12px] flex items-center justify-center shadow-lg">
+                  <UtensilsCrossed className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300">
+                  {Math.round((completedMeals / 5) * 100)}%
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-2xl font-bold text-[rgb(var(--ios-text-primary))]">{completedMeals}/5</div>
+                <div className="text-xs text-[rgb(var(--ios-text-secondary))] font-medium">
+                  {language === 'ro' ? 'Mese completate' : 'Meals completed'}
+                </div>
+                <div className="flex gap-1 mt-2">
+                  {[...Array(5)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`flex-1 h-1.5 rounded-full transition-all duration-300 ${
+                        i < completedMeals
+                          ? 'bg-emerald-500 dark:bg-emerald-400'
+                          : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 3: Pahare Apă */}
+          <Card className="ios-card border-none ios-shadow-lg rounded-[20px] overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-cyan-400/20 to-blue-400/20 rounded-full -mr-16 -mt-16" />
+            <CardContent className="p-4 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-cyan-500 to-blue-500 rounded-[12px] flex items-center justify-center shadow-lg">
+                  <Droplets className="w-5 h-5 text-white" />
+                </div>
+                <div className="text-xs font-bold px-2 py-1 rounded-full bg-cyan-100 dark:bg-cyan-900/30 text-cyan-700 dark:text-cyan-300">
+                  {checkIn?.water_intake || 0}/8
+                </div>
+              </div>
+              <div className="space-y-1">
+                <div className="text-2xl font-bold text-[rgb(var(--ios-text-primary))]">
+                  {checkIn?.water_intake || 0}
+                </div>
+                <div className="text-xs text-[rgb(var(--ios-text-secondary))] font-medium">
+                  {language === 'ro' ? 'Pahare de apă' : 'Glasses of water'}
+                </div>
+                <div className="grid grid-cols-4 gap-1 mt-2">
+                  {[...Array(8)].map((_, i) => (
+                    <div
+                      key={i}
+                      className={`h-6 rounded-lg transition-all duration-300 ${
+                        i < (checkIn?.water_intake || 0)
+                          ? 'bg-gradient-to-br from-cyan-400 to-blue-500 shadow-sm'
+                          : 'bg-gray-200 dark:bg-gray-700'
+                      }`}
+                    />
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Card 4: Exerciții */}
+          <Card className="ios-card border-none ios-shadow-lg rounded-[20px] overflow-hidden relative">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-400/20 to-pink-400/20 rounded-full -mr-16 -mt-16" />
+            <CardContent className="p-4 relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-[12px] flex items-center justify-center shadow-lg">
+                  <Dumbbell className="w-5 h-5 text-white" />
+                </div>
+                <div className={`text-xs font-bold px-2 py-1 rounded-full ${
+                  checkIn?.exercise_completed 
+                    ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
+                }`}>
+                  {checkIn?.exercise_completed ? '✓' : '○'}
+                </div>
+              </div>
+              <div className="space-y-1">
+                {checkIn?.exercise_completed ? (
+                  <>
+                    <div className="text-2xl font-bold text-[rgb(var(--ios-text-primary))]">
+                      {checkIn.exercise_duration || 0}
+                    </div>
+                    <div className="text-xs text-[rgb(var(--ios-text-secondary))] font-medium">
+                      {language === 'ro' ? 'Minute active' : 'Active minutes'}
+                    </div>
+                    <div className="text-xs text-orange-600 dark:text-orange-400 font-bold mt-2">
+                      🔥 {checkIn.exercise_calories_burned || 0} cal
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="text-2xl font-bold text-gray-400 dark:text-gray-600">--</div>
+                    <div className="text-xs text-[rgb(var(--ios-text-secondary))] font-medium">
+                      {language === 'ro' ? 'Niciun exercițiu' : 'No exercise yet'}
+                    </div>
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Calorie Tracker - DETAILED */}
         <Card className="ios-card border-none ios-shadow-lg rounded-[20px]">
