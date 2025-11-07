@@ -10,14 +10,14 @@ const pool = new Pool({
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
   
-  if (req.method !== 'GET') {
+  if (req.method !== 'GET' && req.method !== 'PUT') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
@@ -54,14 +54,41 @@ export default async function handler(req, res) {
       return res.status(403).json({ error: 'Admin access required' });
     }
     
-    console.log('✅ User is admin, fetching all users...');
+    console.log('✅ User is admin');
     
-    // Get all users
+    // PUT - Change user role
+    if (req.method === 'PUT') {
+      const { userId, role } = req.body;
+      
+      if (!userId || !role) {
+        return res.status(400).json({ error: 'User ID and role required' });
+      }
+      
+      if (!['user', 'admin'].includes(role)) {
+        return res.status(400).json({ error: 'Invalid role' });
+      }
+      
+      const updateResult = await pool.query(
+        'UPDATE users SET role = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2 RETURNING id, email, role',
+        [role, userId]
+      );
+      
+      if (updateResult.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      console.log('✅ Role updated:', updateResult.rows[0]);
+      return res.status(200).json({ success: true, user: updateResult.rows[0] });
+    }
+    
+    // GET - Fetch all users
+    console.log('Fetching all users...');
+    
     const result = await pool.query(`
       SELECT id, email, name, first_name, last_name, phone, role, subscription_tier, subscription_expires_at,
              start_date, birth_date, current_weight, target_weight,
              height, age, gender, activity_level, dietary_preferences, allergies,
-             profile_picture, country, city, created_at
+             profile_picture, country, city, created_at, last_login
       FROM users
       ORDER BY created_at DESC
     `);

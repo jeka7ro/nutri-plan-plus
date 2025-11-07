@@ -1611,13 +1611,13 @@ export default function Admin() {
                               value={selectedUser.role} 
                               onValueChange={(newRole) => {
                                 if (confirm(`Sigur vrei să schimbi rolul lui ${selectedUser.first_name || selectedUser.name} la ${newRole.toUpperCase()}?`)) {
-                                  fetch(`/api/admin/users/${selectedUser.id}/role`, {
+                                  fetch(`/api/admin/users`, {
                                     method: 'PUT',
                                     headers: {
                                       'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
                                       'Content-Type': 'application/json'
                                     },
-                                    body: JSON.stringify({ role: newRole })
+                                    body: JSON.stringify({ userId: selectedUser.id, role: newRole })
                                   })
                                   .then(r => r.json())
                                   .then(() => {
