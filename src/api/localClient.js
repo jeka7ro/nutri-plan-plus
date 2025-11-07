@@ -123,7 +123,7 @@ export const localApi = {
     },
     
     changePassword: async (currentPassword, newPassword) => {
-      return await request('/auth/change-password', {
+      return await request('/auth/me', {
         method: 'POST',
         body: JSON.stringify({ currentPassword, newPassword }),
       });
