@@ -13,7 +13,7 @@ import {
   Users, MessageSquare, TrendingUp, TrendingDown, Activity, Shield, Crown, Calendar,
   CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame
 } from "lucide-react";
-import { format, subDays } from "date-fns";
+import { format, subDays, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import {
@@ -430,11 +430,12 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))]">
+          <TabsList className="grid w-full grid-cols-6 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))]">
             <TabsTrigger value="recipes">Rețete ({filteredRecipes.length})</TabsTrigger>
             <TabsTrigger value="resources">📚 Resurse</TabsTrigger>
             <TabsTrigger value="support">Suport ({stats.pendingSupport})</TabsTrigger>
             <TabsTrigger value="users">Utilizatori</TabsTrigger>
+            <TabsTrigger value="logs">📋 Loguri</TabsTrigger>
             <TabsTrigger value="backups">💾 Backup</TabsTrigger>
           </TabsList>
 
@@ -787,7 +788,12 @@ export default function Admin() {
                                 className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
                                 onClick={() => setSelectedUser(u)}
                               >
-                                <p className="font-bold text-[rgb(var(--ios-text-primary))] underline decoration-dotted">{u.name || 'N/A'}</p>
+                                <p className="font-bold text-[rgb(var(--ios-text-primary))] underline decoration-dotted">
+                                  {u.first_name && u.last_name 
+                                    ? `${u.first_name} ${u.last_name}` 
+                                    : (u.name || 'N/A')
+                                  }
+                                </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">ID: {u.id}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
                                   Înregistrat: {u.created_at ? new Date(u.created_at).toLocaleDateString('ro-RO') : 'N/A'}
@@ -933,6 +939,94 @@ export default function Admin() {
                       })}
                     </TableBody>
                   </Table>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* TAB LOGURI */}
+          <TabsContent value="logs" className="mt-6">
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📋 Loguri Sistem</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {/* Loguri Login-uri */}
+                  <div>
+                    <h3 className="font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
+                      <Shield className="w-5 h-5" />
+                      Login-uri Recente
+                    </h3>
+                    <div className="space-y-2">
+                      {allUsers.slice(0, 10).map(u => (
+                        <div key={u.id} className="p-3 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg">
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                                {u.first_name && u.last_name ? `${u.first_name} ${u.last_name}` : u.name}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">{u.email}</p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                                {u.created_at ? new Date(u.created_at).toLocaleDateString('ro-RO') : 'N/A'}
+                              </p>
+                              <p className="text-xs text-gray-500 dark:text-gray-400">Înregistrare</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Loguri Activitate Check-ins */}
+                  <div>
+                    <h3 className="font-bold text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2">
+                      <Activity className="w-5 h-5" />
+                      Activitate Check-ins (Ultimele 20)
+                    </h3>
+                    <div className="space-y-2">
+                      {allCheckIns.slice(0, 20).map((checkIn, index) => {
+                        const checkInUser = allUsers.find(u => u.id === checkIn.user_id);
+                        return (
+                          <div key={index} className="p-3 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                                  {checkInUser?.first_name && checkInUser?.last_name 
+                                    ? `${checkInUser.first_name} ${checkInUser.last_name}` 
+                                    : (checkInUser?.name || `User ID ${checkIn.user_id}`)}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  Ziua {checkIn.day_number} • Faza {checkIn.phase} • {checkIn.total_calories || 0} cal
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
+                                  {checkIn.date ? new Date(checkIn.date).toLocaleDateString('ro-RO') : 'N/A'}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">
+                                  {checkIn.updated_at ? new Date(checkIn.updated_at).toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'}) : ''}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="mt-2 flex gap-2 flex-wrap">
+                              {checkIn.breakfast_completed && <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs">🍳 Mic Dejun</Badge>}
+                              {checkIn.snack1_completed && <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs">🍎 Gustare 1</Badge>}
+                              {checkIn.lunch_completed && <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs">🍽️ Prânz</Badge>}
+                              {checkIn.snack2_completed && <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs">🍪 Gustare 2</Badge>}
+                              {checkIn.dinner_completed && <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs">🌙 Cină</Badge>}
+                              {checkIn.exercise_completed && <Badge className="bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 text-xs">💪 Exercițiu</Badge>}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      {allCheckIns.length === 0 && (
+                        <p className="text-center text-gray-500 py-8">Nicio activitate înregistrată</p>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -1318,7 +1412,7 @@ export default function Admin() {
                       <CardHeader className="pb-3">
                         <CardTitle className="text-sm">Date Generale</CardTitle>
                       </CardHeader>
-                      <CardContent className="space-y-3">
+                      <CardContent className="space-y-2 text-xs">
                         {/* POZA MARE - 3x mai mare (12x12 → 36x36) */}
                         <div className="flex justify-center">
                           {selectedUser.profile_picture ? (
@@ -1335,12 +1429,15 @@ export default function Admin() {
                         </div>
                         <div className="text-xs space-y-2 pt-2">
                           <p><strong>Email:</strong> {selectedUser.email}</p>
+                          {selectedUser.phone && <p><strong>Telefon:</strong> 📱 {selectedUser.phone}</p>}
                           <p><strong>ID:</strong> {selectedUser.id}</p>
                           <p><strong>Role:</strong> {selectedUser.role === 'admin' ? '👑 Admin' : 'User'}</p>
                           {selectedUser.country && <p><strong>Țara:</strong> 🌍 {selectedUser.country}</p>}
                           {selectedUser.city && <p><strong>Orașul:</strong> 🏙️ {selectedUser.city}</p>}
+                          {selectedUser.birth_date && (
+                            <p><strong>Data nașterii:</strong> 🎂 {new Date(selectedUser.birth_date).toLocaleDateString('ro-RO')}</p>
+                          )}
                           <p><strong>Înregistrat:</strong> {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString('ro-RO') : 'N/A'}</p>
-                          <p><strong>Ultima logare:</strong> {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString('ro-RO') : 'N/A'}</p>
                         </div>
                       </CardContent>
                     </Card>
@@ -1353,7 +1450,10 @@ export default function Admin() {
                         <p><strong>Greutate:</strong> {selectedUser.current_weight || 'N/A'} kg</p>
                         <p><strong>Țintă:</strong> {selectedUser.target_weight || 'N/A'} kg</p>
                         <p><strong>Înălțime:</strong> {selectedUser.height || 'N/A'} cm</p>
-                        <p><strong>Vârstă:</strong> {selectedUser.age || 'N/A'} ani</p>
+                        <p><strong>Vârstă:</strong> {selectedUser.birth_date 
+                          ? `${differenceInYears(new Date(), new Date(selectedUser.birth_date))} ani` 
+                          : (selectedUser.age ? `${selectedUser.age} ani` : 'N/A')
+                        }</p>
                         <p><strong>Sex:</strong> {selectedUser.gender === 'male' ? 'M' : selectedUser.gender === 'female' ? 'F' : 'N/A'}</p>
                         <p><strong>Activitate:</strong> {selectedUser.activity_level || 'N/A'}</p>
                       </CardContent>
