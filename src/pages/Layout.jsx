@@ -257,12 +257,8 @@ function LayoutContent() {
               <img 
                 src="/eatnfitlogo.png" 
                 alt="EatnFit Logo" 
-                className="w-24 h-24 object-contain mb-3"
+                className="w-48 h-48 object-contain"
               />
-              <div className="text-center">
-                <h2 className="font-bold text-[rgb(var(--ios-text-primary))] text-lg">EatnFit</h2>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Eat Smart. Stay Fit</p>
-              </div>
             </div>
             <div className="flex items-center gap-2">
               <LanguageSelector />
