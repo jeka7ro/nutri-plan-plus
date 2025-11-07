@@ -40,7 +40,12 @@ export default function WeightTracking() {
 
   const addWeightMutation = useMutation({
     mutationFn: async (data) => {
-      await localApi.weight.add(data.weight, data.date, data.notes);
+      await localApi.weight.add({
+        weight: data.weight,
+        date: data.date,
+        notes: data.notes,
+        mood: data.mood,
+      });
       if (user && !user.current_weight) {
         await localApi.auth.updateProfile({ current_weight: data.weight });
       }
@@ -82,14 +87,22 @@ export default function WeightTracking() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (weight) {
-      addWeightMutation.mutate({
-        weight: parseFloat(weight),
-        date: format(new Date(), 'yyyy-MM-dd'),
-        mood,
-        notes
+    if (!weight) {
+      toast({
+        title: "Completează greutatea",
+        description: "Te rog introdu greutatea înainte de a salva.",
+        variant: "destructive",
+        duration: 3000,
       });
+      return;
     }
+
+    addWeightMutation.mutate({
+      weight: parseFloat(weight),
+      date: format(new Date(), 'yyyy-MM-dd'),
+      mood,
+      notes
+    });
   };
 
   const chartData = weightEntries
@@ -211,13 +224,13 @@ export default function WeightTracking() {
                       <div className="flex-1 text-center">
                         <Input
                           id="weight-mobile"
+                          name="weight"
                           type="number"
                           step="0.1"
                           value={weight}
                           onChange={(e) => setWeight(e.target.value)}
                           placeholder="75.5"
                           className="text-center text-2xl font-semibold h-14 border-2 border-[rgb(var(--ios-border))] bg-[rgb(var(--ios-bg-primary))]"
-                          required
                         />
                         <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">kg</p>
                       </div>
@@ -237,12 +250,12 @@ export default function WeightTracking() {
                   {/* Desktop: Regular input */}
                   <Input
                     id="weight"
+                    name="weight-desktop"
                     type="number"
                     step="0.1"
                     value={weight}
                     onChange={(e) => setWeight(e.target.value)}
                     placeholder="Ex: 75.5"
-                    required
                     className="hidden md:block border-[rgb(var(--ios-border))]"
                   />
                 </div>

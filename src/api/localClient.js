@@ -105,10 +105,24 @@ export const localApi = {
   // Weight tracking
   weight: {
     list: () => request('/weight'),
-    add: (weight, date, notes) => request('/weight', {
-      method: 'POST',
-      body: JSON.stringify({ weight, date, notes }),
-    }),
+    add: (payload, maybeDate, maybeNotes) => {
+      // Accept both object payloads and legacy (weight, date, notes) signature
+      let body;
+      if (typeof payload === 'object' && payload !== null && !Array.isArray(payload)) {
+        body = payload;
+      } else {
+        body = {
+          weight: payload,
+          date: maybeDate,
+          notes: maybeNotes,
+        };
+      }
+
+      return request('/weight', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+    },
     delete: (id) => request(`/weight/${id}`, { method: 'DELETE' }),
   },
   
