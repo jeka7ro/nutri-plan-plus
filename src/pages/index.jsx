@@ -8,6 +8,13 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { useLanguage } from "@/components/LanguageContext";
 import { useTheme } from "@/components/ThemeContext";
 import LanguageSelector from "@/components/LanguageSelector";
@@ -31,6 +38,7 @@ export default function IndexPage() {
   });
   const [submitting, setSubmitting] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
 
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
@@ -294,7 +302,7 @@ export default function IndexPage() {
                         id="country_code"
                         name="country_code"
                         type="text"
-                        placeholder="+40"
+                        placeholder="Cod"
                         value={formData.country_code}
                         onChange={handleChange}
                         className="pl-10 py-6 rounded-xl"
@@ -435,6 +443,19 @@ export default function IndexPage() {
               </div>
             )}
 
+            {/* Link Recuperare Parolă */}
+            {isLogin && (
+              <div className="text-right">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+                >
+                  {language === 'ro' ? 'Ai uitat parola?' : 'Forgot password?'}
+                </button>
+              </div>
+            )}
+
             <Button 
               type="submit"
               disabled={submitting}
@@ -452,6 +473,42 @@ export default function IndexPage() {
               )}
             </Button>
           </form>
+
+          {/* Modal Recuperare Parolă */}
+          <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>
+                  {language === 'ro' ? 'Recuperare Parolă' : 'Password Recovery'}
+                </DialogTitle>
+                <DialogDescription className="space-y-4 pt-4">
+                  <p className="text-base">
+                    {language === 'ro' 
+                      ? 'Pentru a reseta parola, te rugăm să contactezi administratorul aplicației:'
+                      : 'To reset your password, please contact the application administrator:'}
+                  </p>
+                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                    <p className="font-semibold text-emerald-800 dark:text-emerald-200">
+                      📧 Email: jeka7ro@gmail.com
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    {language === 'ro'
+                      ? 'Administratorul îți va reseta parola și îți va trimite noua parolă pe email.'
+                      : 'The administrator will reset your password and send you the new password via email.'}
+                  </p>
+                </DialogDescription>
+              </DialogHeader>
+              <div className="flex justify-end mt-4">
+                <Button 
+                  onClick={() => setShowForgotPassword(false)}
+                  className="bg-emerald-600 hover:bg-emerald-700"
+                >
+                  {language === 'ro' ? 'Am înțeles' : 'Got it'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
 
           {/* Toggle Login/Register */}
           <div className="text-center">
