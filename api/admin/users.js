@@ -35,7 +35,7 @@ export default async function handler(req, res) {
     );
     
     // Get current user to check if admin
-    const currentUserResult = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.userId]);
+    const currentUserResult = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.id]);
     if (currentUserResult.rows.length === 0 || currentUserResult.rows[0].role !== 'admin') {
       return res.status(403).json({ error: 'Admin access required' });
     }
