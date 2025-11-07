@@ -783,12 +783,11 @@ export default function Admin() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Utilizator</TableHead>
-                        <TableHead>Contact & Role</TableHead>
+                        <TableHead>Contact & Locație</TableHead>
                         <TableHead>Abonament</TableHead>
                         <TableHead>Date Fizice</TableHead>
                         <TableHead>Dietă</TableHead>
                         <TableHead>Progres</TableHead>
-                        <TableHead>Ultima Logare</TableHead>
                         <TableHead>Acțiuni</TableHead>
                       </TableRow>
                     </TableHeader>
@@ -813,21 +812,35 @@ export default function Admin() {
                                 </p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">ID: {u.id}</p>
                                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  Înregistrat: {u.created_at ? new Date(u.created_at).toLocaleDateString('ro-RO') : 'N/A'}
+                                  📅 Înregistrat: {u.created_at ? new Date(u.created_at).toLocaleDateString('ro-RO') : 'N/A'}
+                                </p>
+                                <p className="text-xs text-blue-500 dark:text-blue-400">
+                                  🕐 Ultima logare: {u.last_login ? new Date(u.last_login).toLocaleString('ro-RO', {
+                                    day: '2-digit',
+                                    month: '2-digit',
+                                    year: 'numeric',
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  }) : 'Niciodată'}
                                 </p>
                               </div>
                             </TableCell>
                             <TableCell>
                               <div className="space-y-1">
-                                <p className="text-sm">{u.email}</p>
-                                {u.role === 'admin' ? (
-                                  <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-300">
-                                    <Crown className="w-3 h-3 mr-1" />
-                                    Admin
-                                  </Badge>
-                                ) : (
-                                  <Badge variant="outline" className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300">User</Badge>
-                                )}
+                                <p className="text-sm font-semibold">📧 {u.email}</p>
+                                {u.phone && <p className="text-xs text-gray-500 dark:text-gray-400">📱 {u.phone}</p>}
+                                {u.country && <p className="text-xs text-gray-500 dark:text-gray-400">🌍 {u.country}</p>}
+                                {u.city && <p className="text-xs text-gray-500 dark:text-gray-400">🏙️ {u.city}</p>}
+                                <div className="pt-1">
+                                  {u.role === 'admin' ? (
+                                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-300">
+                                      <Crown className="w-3 h-3 mr-1" />
+                                      Admin
+                                    </Badge>
+                                  ) : (
+                                    <Badge variant="outline" className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300">User</Badge>
+                                  )}
+                                </div>
                               </div>
                             </TableCell>
                             <TableCell>
