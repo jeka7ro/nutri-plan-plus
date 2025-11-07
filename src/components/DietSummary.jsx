@@ -33,7 +33,7 @@ export default function DietSummary({ language = 'ro' }) {
           title: "A Treia Etapă (3 zile)",
           color: "bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300",
           meals: [
-            "Toate mesele: Tot ce e permis + uleiuri sănătoase"
+            "Toate mesele: Carne + Carbohidrați + Legume + Grăsimi sănătoase și fructe"
           ],
           note: "✅ Poți adăuga: avocado, humus, nuci, uleiuri, unt de arahide, cocos"
         }
