@@ -52,6 +52,15 @@ export default function Admin() {
   const [recipeSearchQuery, setRecipeSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState(null); // Pentru dialog detalii user
   const [activeTab, setActiveTab] = useState("recipes"); // Control tab-uri
+  const [showCreateUser, setShowCreateUser] = useState(false); // Dialog creare utilizator
+  const [newUserData, setNewUserData] = useState({
+    email: '',
+    password: '',
+    first_name: '',
+    last_name: '',
+    phone: '',
+    role: 'user'
+  });
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -739,7 +748,16 @@ export default function Admin() {
           <TabsContent value="users" className="mt-6">
             <Card className="ios-card border-none ios-shadow-lg">
               <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">Utilizatori ({allUsers.length})</CardTitle>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[rgb(var(--ios-text-primary))]">Utilizatori ({allUsers.length})</CardTitle>
+                  <Button 
+                    onClick={() => setShowCreateUser(true)}
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Adaugă Utilizator
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="overflow-x-auto">
@@ -1527,6 +1545,145 @@ export default function Admin() {
               </>
             );
           })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Creare Utilizator */}
+      <Dialog open={showCreateUser} onOpenChange={setShowCreateUser}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Plus className="w-6 h-6 text-emerald-600" />
+              Adaugă Utilizator Nou
+            </DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            
+            // Validare
+            if (!newUserData.email || !newUserData.password || !newUserData.first_name || !newUserData.last_name) {
+              alert('❌ Completează toate câmpurile obligatorii!');
+              return;
+            }
+            
+            // Creează utilizator prin endpoint de register
+            localApi.auth.register({
+              ...newUserData,
+              name: `${newUserData.first_name} ${newUserData.last_name}`,
+              isRegister: true
+            })
+            .then(() => {
+              alert('✅ Utilizator creat cu succes!');
+              setShowCreateUser(false);
+              setNewUserData({
+                email: '',
+                password: '',
+                first_name: '',
+                last_name: '',
+                phone: '',
+                role: 'user'
+              });
+              queryClient.invalidateQueries(['allUsers']);
+            })
+            .catch((error) => {
+              alert('❌ Eroare: ' + error.message);
+            });
+          }} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="new-email">Email *</Label>
+              <Input
+                id="new-email"
+                type="email"
+                value={newUserData.email}
+                onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
+                placeholder="email@example.com"
+                required
+              />
+            </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="new-firstname">Prenume *</Label>
+                <Input
+                  id="new-firstname"
+                  type="text"
+                  value={newUserData.first_name}
+                  onChange={(e) => setNewUserData({...newUserData, first_name: e.target.value})}
+                  placeholder="Ion"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="new-lastname">Nume *</Label>
+                <Input
+                  id="new-lastname"
+                  type="text"
+                  value={newUserData.last_name}
+                  onChange={(e) => setNewUserData({...newUserData, last_name: e.target.value})}
+                  placeholder="Popescu"
+                  required
+                />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="new-phone">Telefon</Label>
+              <Input
+                id="new-phone"
+                type="tel"
+                value={newUserData.phone}
+                onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
+                placeholder="+40 123 456 789"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="new-password">Parolă *</Label>
+              <Input
+                id="new-password"
+                type="password"
+                value={newUserData.password}
+                onChange={(e) => setNewUserData({...newUserData, password: e.target.value})}
+                placeholder="Minim 6 caractere"
+                minLength={6}
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="new-role">Rol</Label>
+              <Select 
+                value={newUserData.role} 
+                onValueChange={(value) => setNewUserData({...newUserData, role: value})}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="user">User</SelectItem>
+                  <SelectItem value="admin">Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="flex gap-2 pt-4">
+              <Button 
+                type="button" 
+                variant="outline" 
+                onClick={() => setShowCreateUser(false)}
+                className="flex-1"
+              >
+                Anulează
+              </Button>
+              <Button 
+                type="submit"
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Plus className="w-4 h-4 mr-2" />
+                Creează
+              </Button>
+            </div>
+          </form>
         </DialogContent>
       </Dialog>
     </div>
