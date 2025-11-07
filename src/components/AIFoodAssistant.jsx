@@ -75,7 +75,7 @@ export default function AIFoodAssistant() {
 
     const phaseInfo = language === 'ro' ? {
       1: {
-        allowed: "carbohidrați sănătoși, fructe (NU banane, struguri, porumb), cereale integrale (orez brun/sălbatic, ovăz, quinoa, secară, hrișcă), proteine slabe (pui, curcan, pește), legume",
+        allowed: "carbohidrați sănătoși, fructe (NU banane, struguri, porumb), cereale integrale (orez brun/sălbatic, ovăz, quinoa, secară, hrișcă, mei), leguminoase (linte, fasole, mazărea), proteine slabe (pui, curcan, pește), legume",
         avoid: "grăsimi, uleiuri, nuci, semințe, avocado, lactate, banane, struguri, porumb, cartofi albi, soia, grâu"
       },
       2: {
@@ -151,7 +151,9 @@ export default function AIFoodAssistant() {
       // Allowed foods by phase
       const allowedFoods = {
         1: {
-          keywords: ['ovaz', 'oatmeal', 'orez brun', 'brown rice', 'quinoa', 'pui', 'chicken', 'curcan', 'turkey', 
+          keywords: ['ovaz', 'oatmeal', 'orez brun', 'brown rice', 'quinoa', 'mei', 'millet', 'hrisca', 'buckwheat',
+                     'linte', 'lentils', 'fasole', 'beans', 'mazare', 'mazarea', 'peas',
+                     'pui', 'chicken', 'curcan', 'turkey', 
                      'pește', 'peste', 'fish', 'mere', 'apple', 'portocale', 'orange', 'fructe', 'fruit',
                      'legume', 'vegetables', 'broccoli', 'spanac', 'spinach'],
           reason_ro: 'este permis în Faza 1! Continuă să mănânci carbohidrați sănătoși și fructe.',

@@ -40,7 +40,7 @@ export default function DietSummary({ language = 'ro' }) {
       ],
       allowedCarbs: {
         title: "Carbohidrați Permisi",
-        items: ["Orez sălbatic/brun", "Paste din linte/năut", "Pâine doar din secară", "Linte", "Fasole", "Hrișcă", "Quinoa", "Cartof dulce"]
+        items: ["Orez sălbatic/brun", "Paste din linte/năut", "Pâine doar din secară", "Linte", "Fasole", "Hrișcă", "Quinoa", "Cartof dulce", "Mazărea", "Mei"]
       },
       forbidden: {
         title: "Produse INTERZISE pe toată perioada",
