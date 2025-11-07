@@ -68,7 +68,7 @@ export const localApi = {
   // Auth
   auth: {
     register: async (email, password, name, phone, country_code, country, city, date_of_birth) => {
-      const result = await request('/auth/register', {
+      const result = await request('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ 
           email, 
@@ -78,7 +78,8 @@ export const localApi = {
           country_code, 
           country, 
           city, 
-          date_of_birth 
+          date_of_birth,
+          isRegister: true 
         }),
       });
       storage.setToken(result.token);

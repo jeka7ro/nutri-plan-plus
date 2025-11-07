@@ -23,12 +23,59 @@ export default async function handler(req, res) {
   }
   
   try {
-    const { email, password } = req.body;
+    const { email, password, name, phone, country_code, country, city, date_of_birth, isRegister } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
     }
     
+    // REGISTER
+    if (isRegister) {
+      // Check if user exists
+      const existingUser = await pool.query(
+        'SELECT id FROM users WHERE email = $1',
+        [email]
+      );
+      
+      if (existingUser.rows.length > 0) {
+        return res.status(400).json({ error: 'Email already exists' });
+      }
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      // Insert user
+      const result = await pool.query(`
+        INSERT INTO users (email, password, name, phone, country_code, country, city, birth_date, subscription_tier, role)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'free', 'user')
+        RETURNING id, email, name, phone, country_code, country, city, birth_date, role, subscription_tier
+      `, [
+        email,
+        hashedPassword,
+        name || email.split('@')[0],
+        phone || null,
+        country_code || '+40',
+        country || null,
+        city || null,
+        date_of_birth || null
+      ]);
+      
+      const user = result.rows[0];
+      
+      // Generate token
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+        { expiresIn: '7d' }
+      );
+      
+      return res.status(200).json({
+        token,
+        user
+      });
+    }
+    
+    // LOGIN
     // Find user
     const result = await pool.query(
       'SELECT * FROM users WHERE email = $1',
