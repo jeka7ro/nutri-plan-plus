@@ -35,14 +35,14 @@ export default async function handler(req, res) {
     );
     
     // Get current user to check if admin
-    const currentUserResult = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.id]);
+    const currentUserResult = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.userId]);
     if (currentUserResult.rows.length === 0 || currentUserResult.rows[0].role !== 'admin') {
       return res.status(403).json({ error: 'Admin access required' });
     }
     
     // Get all users
     const result = await pool.query(`
-      SELECT id, email, name, role, subscription_tier, subscription_expires_at,
+      SELECT id, email, name, first_name, last_name, phone, role, subscription_tier, subscription_expires_at,
              start_date, birth_date, current_weight, target_weight,
              height, age, gender, activity_level, dietary_preferences, allergies,
              profile_picture, country, city, created_at, last_login
