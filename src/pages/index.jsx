@@ -73,8 +73,8 @@ export default function IndexPage() {
           setFormData({ email: savedEmail, password: savedPassword, name: '' });
           setRememberMe(true);
           
-          // Trimite form automat
-          setTimeout(async () => {
+          // Trimite form automat (IMEDIAT, nu mai așteptăm)
+          (async () => {
             try {
               const loginResult = await localApi.auth.login(savedEmail, savedPassword);
               console.log('✅ AUTO-LOGIN SUCCESS!');
@@ -105,7 +105,7 @@ export default function IndexPage() {
               localStorage.removeItem('remember_me');
               setIsLoading(false);
             }
-          }, 500);
+          })();
         } else {
           // Nu avem credențiale salvate sau auto-login
           if (savedEmail) {

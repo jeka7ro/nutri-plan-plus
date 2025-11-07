@@ -22,23 +22,39 @@ export default async function handler(req, res) {
   }
 
   try {
+    console.log('🔍 [API /admin/users] Request received');
+    
     // Verify token
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.log('❌ No token provided');
       return res.status(401).json({ error: 'No token provided' });
     }
     
     const token = authHeader.split(' ')[1];
+    console.log('🔑 Token:', token.substring(0, 20) + '...');
+    
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET || 'your-secret-key-change-in-production'
     );
+    console.log('✅ Token decoded:', decoded);
     
     // Get current user to check if admin
     const currentUserResult = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.id]);
-    if (currentUserResult.rows.length === 0 || currentUserResult.rows[0].role !== 'admin') {
+    console.log('👤 Current user query result:', currentUserResult.rows);
+    
+    if (currentUserResult.rows.length === 0) {
+      console.log('❌ User not found with id:', decoded.id);
+      return res.status(403).json({ error: 'User not found' });
+    }
+    
+    if (currentUserResult.rows[0].role !== 'admin') {
+      console.log('❌ User is not admin, role:', currentUserResult.rows[0].role);
       return res.status(403).json({ error: 'Admin access required' });
     }
+    
+    console.log('✅ User is admin, fetching all users...');
     
     // Get all users
     const result = await pool.query(`
@@ -50,10 +66,12 @@ export default async function handler(req, res) {
       ORDER BY created_at DESC
     `);
     
+    console.log('📊 Found', result.rows.length, 'users');
+    
     return res.status(200).json(result.rows);
   } catch (error) {
-    console.error('Admin users error:', error);
-    return res.status(500).json({ error: 'Failed to fetch users' });
+    console.error('❌ Admin users error:', error);
+    return res.status(500).json({ error: error.message || 'Failed to fetch users' });
   }
 }
 

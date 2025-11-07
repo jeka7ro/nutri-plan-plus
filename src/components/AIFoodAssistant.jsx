@@ -132,9 +132,9 @@ export default function AIFoodAssistant() {
         },
         2: {
           // Phase 2: No carbs, fruits, fats
-          keywords: ['pâine', 'paine', 'orez', 'paste', 'cartofi', 'mere', 'banana', 'portocale', 'fructe',
+          keywords: ['pâine', 'paine', 'orez', 'paste', 'cartofi', 'mere', 'portocale', 'fructe',
                      'cappuccino', 'capucino', 'bomboane', 'bomboana', 'dulciuri', 'ciocolată', 'ciocolata',
-                     'bread', 'rice', 'pasta', 'potatoes', 'apple', 'banana', 'orange', 'fruits', 'grains'],
+                     'bread', 'rice', 'pasta', 'potatoes', 'apple', 'orange', 'fruits', 'grains'],
           reason_ro: 'conține carbohidrați sau fructe - interzise în Faza 2. Concentrează-te pe proteine slabe și legume verzi.',
           reason_en: 'contains carbs or fruits - forbidden in Phase 2. Focus on lean proteins and green vegetables.'
         },
@@ -151,7 +151,7 @@ export default function AIFoodAssistant() {
       const allowedFoods = {
         1: {
           keywords: ['ovaz', 'oatmeal', 'orez brun', 'brown rice', 'quinoa', 'pui', 'chicken', 'curcan', 'turkey', 
-                     'pește', 'peste', 'fish', 'mere', 'apple', 'banana', 'portocale', 'orange', 'fructe', 'fruit',
+                     'pește', 'peste', 'fish', 'mere', 'apple', 'portocale', 'orange', 'fructe', 'fruit',
                      'legume', 'vegetables', 'broccoli', 'spanac', 'spinach'],
           reason_ro: 'este permis în Faza 1! Continuă să mănânci carbohidrați sănătoși și fructe.',
           reason_en: 'is allowed in Phase 1! Keep eating healthy carbs and fruits.'
@@ -285,8 +285,8 @@ export default function AIFoodAssistant() {
             <div className="space-y-2">
               <Textarea
                 placeholder={language === 'ro' 
-                  ? "Ex: Pot mânca banane acum? Pot să adaug avocado?" 
-                  : "Ex: Can I eat bananas now? Can I add avocado?"}
+                  ? "Ex: Pot mânca avocado acum? Pot să adaug brânză?" 
+                  : "Ex: Can I eat avocado now? Can I add cheese?"}
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
                 rows={3}
