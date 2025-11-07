@@ -61,7 +61,7 @@ export default async function handler(req, res) {
       SELECT id, email, name, first_name, last_name, phone, role, subscription_tier, subscription_expires_at,
              start_date, birth_date, current_weight, target_weight,
              height, age, gender, activity_level, dietary_preferences, allergies,
-             profile_picture, country, city, created_at, last_login
+             profile_picture, country, city, created_at
       FROM users
       ORDER BY created_at DESC
     `);

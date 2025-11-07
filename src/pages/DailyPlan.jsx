@@ -709,19 +709,6 @@ export default function DailyPlan() {
           </CardContent>
         </Card>
 
-        {/* Progress Today */}
-        <Card className="ios-card border-none ios-shadow-lg rounded-[20px]">
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span className="text-[rgb(var(--ios-text-primary))]">{language === 'ro' ? 'Progresul de astăzi' : "Today's progress"}</span>
-              <span className="text-lg font-normal text-[rgb(var(--ios-text-secondary))]">{completedMeals}/5 {language === 'ro' ? 'mese' : 'meals'}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Progress value={(completedMeals / 5) * 100} className="h-3 mb-4 bg-emerald-100 dark:bg-emerald-900/30 [&>div]:bg-emerald-500 dark:[&>div]:bg-emerald-500" />
-          </CardContent>
-        </Card>
-
         {/* Calorie Tracker - DETAILED */}
         <Card className="ios-card border-none ios-shadow-lg rounded-[20px]">
           <CardHeader>
