@@ -82,6 +82,14 @@ export default async function handler(req, res) {
       `);
       migrations.push('backups_table');
       
+      // Adaugă coloana last_login dacă nu există
+      console.log('🕐 Checking last_login column...');
+      await pool.query(`
+        ALTER TABLE users 
+        ADD COLUMN IF NOT EXISTS last_login TIMESTAMP
+      `);
+      migrations.push('last_login_column');
+      
       console.log('✅ MIGRATION COMPLETE!');
       
       return res.status(200).json({ 
