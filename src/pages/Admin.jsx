@@ -56,11 +56,17 @@ export default function Admin() {
 
   useEffect(() => {
     localApi.auth.me().then(userData => {
+      console.log('👤 Admin user loaded:', userData);
+      console.log('🔑 Token exists:', !!localStorage.getItem('auth_token'));
       setUser(userData);
       if (userData.role !== 'admin') {
+        console.error('❌ User is not admin, redirecting...');
         window.location.href = '/';
+      } else {
+        console.log('✅ User is ADMIN, can access dashboard');
       }
-    }).catch(() => {
+    }).catch((error) => {
+      console.error('❌ Failed to load user:', error);
       window.location.href = '/';
     });
   }, []);
@@ -69,14 +75,29 @@ export default function Admin() {
     queryKey: ['allUsers'],
     queryFn: async () => {
       console.log('🔍 Fetching users from API...');
-      const users = await base44.entities.User.list('-created_date');
-      console.log('✅ Users received:', users.length, users);
-      return users;
+      console.log('🔑 Using token:', localStorage.getItem('auth_token')?.substring(0, 20) + '...');
+      try {
+        const users = await base44.entities.User.list('-created_date');
+        console.log('✅ Users received:', users);
+        console.log('📊 Total users:', users.length);
+        return users;
+      } catch (error) {
+        console.error('❌ Error fetching users:', error);
+        throw error;
+      }
     },
-    enabled: user?.role === 'admin',
-    staleTime: 0, // NU cache - refresh mereu
-    refetchOnMount: 'always', // Refetch la fiecare mount
+    enabled: !!user && user?.role === 'admin',
+    staleTime: 0,
+    refetchOnMount: 'always',
   });
+
+  // DEBUGGING: Log când se schimbă users
+  useEffect(() => {
+    console.log('👥 AllUsers updated:', allUsers);
+    console.log('📊 AllUsers length:', allUsers?.length || 0);
+    console.log('⏳ Loading:', usersLoading);
+    console.log('❌ Error:', usersError);
+  }, [allUsers, usersLoading, usersError]);
 
   const { data: adminChats = [] } = useQuery({
     queryKey: ['adminChats'],
