@@ -59,7 +59,7 @@ export default async function handler(req, res) {
     if (req.method === 'PUT') {
       const updates = req.body;
       const allowedFields = [
-        'name', 'first_name', 'last_name', 'birth_date', 'current_weight', 'target_weight',
+        'name', 'first_name', 'last_name', 'phone', 'birth_date', 'current_weight', 'target_weight',
         'height', 'age', 'gender', 'activity_level', 'start_date',
         'dietary_preferences', 'allergies', 'profile_picture',
         'country', 'city'

@@ -20,10 +20,11 @@ import {
 } from "@/components/ui/select";
 
 export default function Profile() {
-  // VERSIUNE: 1.0.1 - NUME SI PRENUME ADAUGATE
+  // VERSIUNE: 1.0.2 - ADAUGAT TELEFON
   const [user, setUser] = useState(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
+  const [phone, setPhone] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
   const [targetWeight, setTargetWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -42,6 +43,7 @@ export default function Profile() {
       setUser(userData);
       setFirstName(userData.first_name || "");
       setLastName(userData.last_name || "");
+      setPhone(userData.phone || "");
       setCurrentWeight(userData.current_weight || "");
       setTargetWeight(userData.target_weight || "");
       setHeight(userData.height || "");
@@ -83,6 +85,7 @@ export default function Profile() {
     const dataToSave = {
       first_name: firstName || null,
       last_name: lastName || null,
+      phone: phone || null,
       current_weight: currentWeight ? parseFloat(currentWeight) : null,
       target_weight: targetWeight ? parseFloat(targetWeight) : null,
       height: height ? parseFloat(height) : null,
@@ -294,6 +297,17 @@ export default function Profile() {
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-[rgb(var(--ios-text-primary))]">📱 Telefon</Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Ex: +40 123 456 789"
+                    className="border-[rgb(var(--ios-border))]"
+                  />
+                </div>
                 <div className="space-y-2">
                   <Label htmlFor="birthDate" className="text-[rgb(var(--ios-text-primary))]">📅 Data nașterii *</Label>
                   <Input

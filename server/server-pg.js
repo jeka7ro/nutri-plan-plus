@@ -77,7 +77,7 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
   
   try {
     const result = await client.query(`
-      SELECT id, email, name, first_name, last_name, role, subscription_tier, subscription_expires_at, 
+      SELECT id, email, name, first_name, last_name, phone, role, subscription_tier, subscription_expires_at, 
              start_date, birth_date, current_weight, target_weight,
              height, age, gender, activity_level, dietary_preferences, allergies, profile_picture,
              country, city
@@ -690,7 +690,8 @@ app.get('/api/admin/users', authMiddleware, async (req, res) => {
     }
     
     const result = await client.query(`
-      SELECT id, email, name, first_name, last_name, role, subscription_tier, subscription_expires_at, created_at
+      SELECT id, email, name, first_name, last_name, phone, role, subscription_tier, subscription_expires_at, created_at,
+             country, city, current_weight, target_weight, height, age, gender, start_date, last_login
       FROM users
       ORDER BY created_at DESC
     `);
