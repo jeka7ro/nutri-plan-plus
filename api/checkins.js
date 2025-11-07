@@ -1,5 +1,6 @@
 // MOCK ENDPOINT - salvează în memory (fără bază de date)
-const checkins = {};
+// Folosim global.checkins pentru a persista între request-uri
+const checkins = global.checkins || (global.checkins = {});
 
 export default function handler(req, res) {
   // CORS
