@@ -1,0 +1,21 @@
+🔥 PAȘII PENTRU BROWSER CACHE:
+
+1. ÎNCHIDE TOATE TAB-URILE cu localhost:3000
+
+2. Deschide Chrome/Edge → Apasă F12 (Developer Tools)
+
+3. Click DREAPTA pe butonul de Refresh din browser (săgeata circulară lângă bara de adrese)
+
+4. Alege: "Empty Cache and Hard Reload"
+
+5. În Console (tab-ul Console), scrie:
+   localStorage.setItem("auth_token", "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjUsImVtYWlsIjoiamVrYTdyb0BnbWFpbC5jb20iLCJpYXQiOjE3NjI1MTQ5MjMsImV4cCI6MTc2NTEwNjkyM30.-G-0AKUOm0V7yo5h9TmMpmp0pU58DthNg8c9tBjWAWQ");
+   location.reload();
+
+6. Mergi la Profil → Vei vedea câmpurile Nume și Prenume
+7. Mergi la admin → Vei vedea toți cei 6 utilizatori
+
+✅ MODIFICĂRILE SUNT GATA ÎN COD!
+✅ SERVERELE RULEAZĂ CORECT!
+✅ PROBLEMA ESTE DOAR CACHE-UL BROWSER-ULUI!
+

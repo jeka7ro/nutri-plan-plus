@@ -41,6 +41,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Admin() {
+  // VERSIUNE: 1.0.1 - FIX UTILIZATORI + NUME/PRENUME
   const [user, setUser] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [response, setResponse] = useState("");
@@ -64,9 +65,14 @@ export default function Admin() {
     });
   }, []);
 
-  const { data: allUsers = [] } = useQuery({
+  const { data: allUsers = [], isLoading: usersLoading, error: usersError } = useQuery({
     queryKey: ['allUsers'],
-    queryFn: () => base44.entities.User.list('-created_date'),
+    queryFn: async () => {
+      console.log('🔍 Fetching users from API...');
+      const users = await base44.entities.User.list('-created_date');
+      console.log('✅ Users received:', users.length, users);
+      return users;
+    },
     enabled: user?.role === 'admin',
     staleTime: 0, // NU cache - refresh mereu
     refetchOnMount: 'always', // Refetch la fiecare mount

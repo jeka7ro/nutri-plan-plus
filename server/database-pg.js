@@ -252,6 +252,8 @@ export async function addRegistrationFields() {
       ADD COLUMN IF NOT EXISTS city VARCHAR(100),
       ADD COLUMN IF NOT EXISTS date_of_birth DATE,
       ADD COLUMN IF NOT EXISTS full_name VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS first_name VARCHAR(255),
+      ADD COLUMN IF NOT EXISTS last_name VARCHAR(255),
       ADD COLUMN IF NOT EXISTS profile_picture_url TEXT,
       ADD COLUMN IF NOT EXISTS favorite_foods TEXT,
       ADD COLUMN IF NOT EXISTS is_vegetarian BOOLEAN DEFAULT FALSE,

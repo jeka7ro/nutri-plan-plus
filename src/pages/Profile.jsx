@@ -20,7 +20,10 @@ import {
 } from "@/components/ui/select";
 
 export default function Profile() {
+  // VERSIUNE: 1.0.1 - NUME SI PRENUME ADAUGATE
   const [user, setUser] = useState(null);
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
   const [targetWeight, setTargetWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -35,7 +38,10 @@ export default function Profile() {
   useEffect(() => {
     localApi.auth.me().then(userData => {
       console.log('📥 User data loaded:', userData);
+      console.log('🔍 VERIFICARE NUME:', { first_name: userData.first_name, last_name: userData.last_name });
       setUser(userData);
+      setFirstName(userData.first_name || "");
+      setLastName(userData.last_name || "");
       setCurrentWeight(userData.current_weight || "");
       setTargetWeight(userData.target_weight || "");
       setHeight(userData.height || "");
@@ -75,6 +81,8 @@ export default function Profile() {
     e.preventDefault();
     
     const dataToSave = {
+      first_name: firstName || null,
+      last_name: lastName || null,
       current_weight: currentWeight ? parseFloat(currentWeight) : null,
       target_weight: targetWeight ? parseFloat(targetWeight) : null,
       height: height ? parseFloat(height) : null,
@@ -260,6 +268,31 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="firstName" className="text-[rgb(var(--ios-text-primary))]">👤 Prenume *</Label>
+                  <Input
+                    id="firstName"
+                    type="text"
+                    value={firstName}
+                    onChange={(e) => setFirstName(e.target.value)}
+                    placeholder="Ex: Ion"
+                    className="border-[rgb(var(--ios-border))]"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName" className="text-[rgb(var(--ios-text-primary))]">👤 Nume *</Label>
+                  <Input
+                    id="lastName"
+                    type="text"
+                    value={lastName}
+                    onChange={(e) => setLastName(e.target.value)}
+                    placeholder="Ex: Popescu"
+                    className="border-[rgb(var(--ios-border))]"
+                  />
+                </div>
+              </div>
+
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="birthDate" className="text-[rgb(var(--ios-text-primary))]">📅 Data nașterii *</Label>
