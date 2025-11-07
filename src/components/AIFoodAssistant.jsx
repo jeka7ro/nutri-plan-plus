@@ -75,8 +75,8 @@ export default function AIFoodAssistant() {
 
     const phaseInfo = language === 'ro' ? {
       1: {
-        allowed: "carbohidrați, fructe, cereale integrale (orez brun, ovăz, quinoa), proteine slabe (pui, curcan, pește), legume",
-        avoid: "grăsimi, uleiuri, nuci, semințe, avocado, lactate"
+        allowed: "carbohidrați sănătoși, fructe (NU banane, struguri, porumb), cereale integrale (orez brun/sălbatic, ovăz, quinoa, secară, hrișcă), proteine slabe (pui, curcan, pește), legume",
+        avoid: "grăsimi, uleiuri, nuci, semințe, avocado, lactate, banane, struguri, porumb, cartofi albi, soia, grâu"
       },
       2: {
         allowed: "proteine slabe (pui, curcan, pește, albuș), legume verzi (broccoli, spanac, varză kale, castraveți), legume alcaline",
@@ -122,21 +122,22 @@ export default function AIFoodAssistant() {
       // Food database - forbidden items by phase
       const forbiddenFoods = {
         1: {
-          // Phase 1: No fats, dairy, refined sugar
+          // Phase 1: No fats, dairy, refined sugar, bananas
           keywords: ['cappuccino', 'capucino', 'cafea cu lapte', 'latte', 'bomboane', 'bomboana', 'ciocolata', 'ciocolată', 
                      'inghetata', 'înghețată', 'dulciuri', 'prăjituri', 'tort', 'biscuiți', 'biscuiti',
                      'nuci', 'migdale', 'alune', 'avocado', 'ulei', 'unt', 'smântână', 'smantana', 'brânză', 'branza',
-                     'lapte', 'iaurt', 'cheese', 'milk', 'butter', 'cream', 'nuts', 'oil', 'chocolate', 'candy', 'ice cream'],
-          reason_ro: 'conține grăsimi, lactate sau zahăr rafinat - interzise în Faza 1. Concentrează-te pe carbohidrați sănătoși și fructe.',
-          reason_en: 'contains fats, dairy or refined sugar - forbidden in Phase 1. Focus on healthy carbs and fruits.'
+                     'lapte', 'iaurt', 'cheese', 'milk', 'butter', 'cream', 'nuts', 'oil', 'chocolate', 'candy', 'ice cream',
+                     'banane', 'banana', 'bananas', 'struguri', 'grapes', 'porumb', 'corn', 'cartof', 'cartof alb', 'potato', 'potatoes'],
+          reason_ro: 'conține grăsimi, lactate, zahăr rafinat sau este interzis (banane, struguri, porumb, cartofi albi) - NU este permis în Faza 1. Concentrează-te pe carbohidrați sănătoși și alte fructe permise.',
+          reason_en: 'contains fats, dairy, refined sugar or is forbidden (bananas, grapes, corn, white potatoes) - NOT allowed in Phase 1. Focus on healthy carbs and other allowed fruits.'
         },
         2: {
           // Phase 2: No carbs, fruits, fats
-          keywords: ['pâine', 'paine', 'orez', 'paste', 'cartofi', 'mere', 'portocale', 'fructe',
+          keywords: ['pâine', 'paine', 'orez', 'paste', 'cartofi', 'mere', 'portocale', 'fructe', 'banane', 'banana', 'struguri', 'grapes',
                      'cappuccino', 'capucino', 'bomboane', 'bomboana', 'dulciuri', 'ciocolată', 'ciocolata',
-                     'bread', 'rice', 'pasta', 'potatoes', 'apple', 'orange', 'fruits', 'grains'],
-          reason_ro: 'conține carbohidrați sau fructe - interzise în Faza 2. Concentrează-te pe proteine slabe și legume verzi.',
-          reason_en: 'contains carbs or fruits - forbidden in Phase 2. Focus on lean proteins and green vegetables.'
+                     'bread', 'rice', 'pasta', 'potatoes', 'apple', 'orange', 'fruits', 'grains', 'bananas'],
+          reason_ro: 'conține carbohidrați sau fructe (inclusiv banane!) - interzise în Faza 2. Concentrează-te pe proteine slabe și legume verzi.',
+          reason_en: 'contains carbs or fruits (including bananas!) - forbidden in Phase 2. Focus on lean proteins and green vegetables.'
         },
         3: {
           // Phase 3: No grains, high-carb foods

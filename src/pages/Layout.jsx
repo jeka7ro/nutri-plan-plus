@@ -253,14 +253,14 @@ function LayoutContent() {
       
       <div className="min-h-screen flex w-full max-w-full overflow-x-hidden bg-[rgb(var(--ios-bg-secondary))]">
         <Sidebar className="border-r border-[rgb(var(--ios-border))] ios-glass">
-          <SidebarHeader className="border-b border-[rgb(var(--ios-border))] p-4">
-            <div className="flex flex-col items-center mb-3">
+          <SidebarHeader className="border-b border-[rgb(var(--ios-border))] p-3">
+            <div className="flex flex-col items-center mb-2">
               <img 
                 src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
                 alt="EatnFit Logo" 
-                className="w-28 h-28 object-contain mb-2"
+                className="w-40 h-40 object-contain mb-1"
               />
-              <p className="text-sm font-medium text-[rgb(var(--ios-text-secondary))] text-center">
+              <p className="text-sm font-semibold text-[rgb(var(--ios-text-secondary))] text-center">
                 Eat Smart. Stay Fit
               </p>
             </div>
