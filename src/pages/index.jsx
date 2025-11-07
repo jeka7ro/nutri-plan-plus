@@ -262,6 +262,7 @@ export default function IndexPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <>
+                {/* Nume Complet - pe toată lățimea */}
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">
                     {language === 'ro' ? 'Nume Complet' : 'Full Name'}
@@ -281,6 +282,7 @@ export default function IndexPage() {
                   </div>
                 </div>
 
+                {/* Telefon - pe toată lățimea */}
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="text-gray-700 dark:text-gray-300">
                     {language === 'ro' ? 'Număr Telefon' : 'Phone Number'}
@@ -314,44 +316,48 @@ export default function IndexPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="country" className="text-gray-700 dark:text-gray-300">
-                    {language === 'ro' ? 'Țara' : 'Country'}
-                  </Label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="country"
-                      name="country"
-                      type="text"
-                      placeholder={language === 'ro' ? 'România' : 'Romania'}
-                      value={formData.country}
-                      onChange={handleChange}
-                      className="pl-10 py-6 rounded-xl"
-                      required={!isLogin}
-                    />
+                {/* 2 COLOANE: Țara și Orașul */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="country" className="text-gray-700 dark:text-gray-300">
+                      {language === 'ro' ? 'Țara' : 'Country'}
+                    </Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Input
+                        id="country"
+                        name="country"
+                        type="text"
+                        placeholder={language === 'ro' ? 'România' : 'Romania'}
+                        value={formData.country}
+                        onChange={handleChange}
+                        className="pl-10 py-6 rounded-xl"
+                        required={!isLogin}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="city" className="text-gray-700 dark:text-gray-300">
+                      {language === 'ro' ? 'Orașul' : 'City'}
+                    </Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Input
+                        id="city"
+                        name="city"
+                        type="text"
+                        placeholder={language === 'ro' ? 'București' : 'Bucharest'}
+                        value={formData.city}
+                        onChange={handleChange}
+                        className="pl-10 py-6 rounded-xl"
+                        required={!isLogin}
+                      />
+                    </div>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="city" className="text-gray-700 dark:text-gray-300">
-                    {language === 'ro' ? 'Orașul' : 'City'}
-                  </Label>
-                  <div className="relative">
-                    <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="city"
-                      name="city"
-                      type="text"
-                      placeholder={language === 'ro' ? 'București' : 'Bucharest'}
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="pl-10 py-6 rounded-xl"
-                      required={!isLogin}
-                    />
-                  </div>
-                </div>
-
+                {/* Data Nașterii - pe toată lățimea */}
                 <div className="space-y-2">
                   <Label htmlFor="date_of_birth" className="text-gray-700 dark:text-gray-300">
                     {language === 'ro' ? 'Data Nașterii' : 'Date of Birth'}
