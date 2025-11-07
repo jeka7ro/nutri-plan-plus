@@ -1603,13 +1603,55 @@ export default function Admin() {
                           <p><strong>Email:</strong> {selectedUser.email}</p>
                           {selectedUser.phone && <p><strong>Telefon:</strong> 📱 {selectedUser.phone}</p>}
                           <p><strong>ID:</strong> {selectedUser.id}</p>
-                          <p><strong>Role:</strong> {selectedUser.role === 'admin' ? '👑 Admin' : 'User'}</p>
+                          
+                          {/* SCHIMBARE ROL - SELECT EDITABIL */}
+                          <div className="pt-2 pb-2">
+                            <Label className="text-xs font-bold mb-2 block">🔐 Rol Utilizator:</Label>
+                            <Select 
+                              value={selectedUser.role} 
+                              onValueChange={(newRole) => {
+                                if (confirm(`Sigur vrei să schimbi rolul lui ${selectedUser.first_name || selectedUser.name} la ${newRole.toUpperCase()}?`)) {
+                                  fetch(`/api/admin/users/${selectedUser.id}/role`, {
+                                    method: 'PUT',
+                                    headers: {
+                                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+                                      'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify({ role: newRole })
+                                  })
+                                  .then(r => r.json())
+                                  .then(() => {
+                                    alert(`✅ Rol schimbat cu succes la ${newRole.toUpperCase()}!`);
+                                    queryClient.invalidateQueries(['allUsers']);
+                                    setSelectedUser(null);
+                                  })
+                                  .catch(e => alert('❌ Eroare: ' + e.message));
+                                }
+                              }}
+                            >
+                              <SelectTrigger className="h-8 text-xs">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="user">👤 User</SelectItem>
+                                <SelectItem value="admin">👑 Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          
                           {selectedUser.country && <p><strong>Țara:</strong> 🌍 {selectedUser.country}</p>}
                           {selectedUser.city && <p><strong>Orașul:</strong> 🏙️ {selectedUser.city}</p>}
                           {selectedUser.birth_date && (
                             <p><strong>Data nașterii:</strong> 🎂 {new Date(selectedUser.birth_date).toLocaleDateString('ro-RO')}</p>
                           )}
-                          <p><strong>Înregistrat:</strong> {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString('ro-RO') : 'N/A'}</p>
+                          <p><strong>📅 Înregistrat:</strong> {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString('ro-RO') : 'N/A'}</p>
+                          <p><strong>🕐 Ultima logare:</strong> {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString('ro-RO', {
+                            day: '2-digit',
+                            month: '2-digit', 
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : 'Niciodată'}</p>
                         </div>
                       </CardContent>
                     </Card>
