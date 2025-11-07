@@ -241,17 +241,14 @@ export default function IndexPage() {
         </div>
         
         <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 space-y-4">
-          {/* Logo și titlu */}
+          {/* Logo */}
           <div className="text-center">
             <img 
               src="/eatnfitlogo.png" 
               alt="EatnFit Logo" 
-              className="w-24 h-24 object-contain mx-auto mb-3"
+              className="w-32 h-32 object-contain mx-auto mb-3"
             />
-            <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
-              EatnFit
-            </h1>
-            <p className="text-gray-600 dark:text-gray-300">
+            <p className="text-gray-600 dark:text-gray-300 text-sm">
               {isLogin 
                 ? (language === 'ro' ? 'Autentifică-te pentru a continua' : 'Sign in to continue')
                 : (language === 'ro' ? 'Creează un cont nou' : 'Create a new account')
