@@ -262,7 +262,7 @@ export default function Dashboard() {
                 )}
                 <div>
                   <h1 className="text-2xl md:text-3xl font-bold">
-                    {t('welcomeBack')}, {user?.full_name?.split(' ')[0] || user?.name || 'User'}
+                    {t('welcomeBack')}, {user?.first_name || user?.full_name?.split(' ')[0] || user?.name || 'User'}
                   </h1>
                   <p className="text-emerald-100 text-sm md:text-base">
                     {t('dayOfProgram')} {currentDay} {t('of28Days')}
