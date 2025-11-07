@@ -349,7 +349,14 @@ export default function Profile() {
                     id="birthDate"
                     type="date"
                     value={birthDate}
-                    onChange={(e) => setBirthDate(e.target.value)}
+                    onChange={(e) => {
+                      setBirthDate(e.target.value);
+                      // Calculează automat vârsta când se schimbă data nașterii
+                      if (e.target.value) {
+                        const ageCalculated = differenceInYears(new Date(), new Date(e.target.value));
+                        setAge(ageCalculated.toString());
+                      }
+                    }}
                     max={new Date().toISOString().split('T')[0]}
                     className="border-[rgb(var(--ios-border))]"
                   />
@@ -373,22 +380,32 @@ export default function Profile() {
                   <Label htmlFor="country" className="text-[rgb(var(--ios-text-primary))]">🌍 Țara</Label>
                   <Input
                     id="country"
+                    name="country"
                     type="text"
                     value={country}
-                    onChange={(e) => setCountry(e.target.value)}
+                    onChange={(e) => {
+                      console.log('🌍 Country changed:', e.target.value);
+                      setCountry(e.target.value);
+                    }}
                     placeholder="Ex: România"
                     className="border-[rgb(var(--ios-border))]"
+                    autoComplete="country-name"
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="city" className="text-[rgb(var(--ios-text-primary))]">🏙️ Orașul</Label>
                   <Input
                     id="city"
+                    name="city"
                     type="text"
                     value={city}
-                    onChange={(e) => setCity(e.target.value)}
+                    onChange={(e) => {
+                      console.log('🏙️ City changed:', e.target.value);
+                      setCity(e.target.value);
+                    }}
                     placeholder="Ex: București"
                     className="border-[rgb(var(--ios-border))]"
+                    autoComplete="address-level2"
                   />
                 </div>
               </div>
