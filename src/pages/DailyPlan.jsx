@@ -209,13 +209,12 @@ export default function DailyPlan() {
       }
     },
     onSuccess: (newData) => {
-      // Update the specific checkIn cache
+      // Update the specific checkIn cache IMEDIAT
       queryClient.setQueryData(['checkIn', format(selectedDate, 'yyyy-MM-dd')], newData);
       
-      // ALWAYS invalidate allCheckIns when calories/water/exercise changes
-      // Dashboard depends on this to show current data!
-      queryClient.invalidateQueries(['allCheckIns']);
-      
+      // NU mai invalidăm allCheckIns pentru FIECARE selecție de masă
+      // Doar când se schimbă date importante (water, exercise) 
+      // Asta previne flicker-ul și dispariția selecției!
       console.log('✅ CACHE ACTUALIZAT:', newData);
     },
     onError: (error) => {

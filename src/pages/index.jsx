@@ -48,13 +48,14 @@ export default function IndexPage() {
         const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
         const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
         
-        if (hasCompletedProfile || hasBasicInfo) {
-          console.log('✅ Profil deja completat - SKIP onboarding');
-          navigate(createPageUrl("Dashboard"));
-        } else {
-          console.log('→ Profil incomplet - navigare la Onboarding');
-          navigate(createPageUrl("Onboarding"));
-        }
+              if (hasCompletedProfile || hasBasicInfo) {
+                console.log('✅ Profil deja completat - SKIP onboarding');
+                // Navighează la DailyPlan (ziua curentă) în loc de Dashboard
+                navigate(createPageUrl("DailyPlan"));
+              } else {
+                console.log('→ Profil incomplet - navigare la Onboarding');
+                navigate(createPageUrl("Onboarding"));
+              }
       } catch (error) {
         // User NEAUTENTIFICAT - afișează pagina de login
         console.log("User not authenticated - showing login page");
@@ -91,7 +92,8 @@ export default function IndexPage() {
               const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
               
               if (hasCompletedProfile || hasBasicInfo) {
-                navigate(createPageUrl("Dashboard"));
+                // Navighează la DailyPlan (ziua curentă) în loc de Dashboard
+                navigate(createPageUrl("DailyPlan"));
               } else {
                 navigate(createPageUrl("Onboarding"));
               }
@@ -164,8 +166,8 @@ export default function IndexPage() {
         const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
         
         if (hasCompletedProfile || hasBasicInfo) {
-          console.log('→ Navigăm la Dashboard');
-          navigate(createPageUrl("Dashboard"));
+          console.log('→ Navigăm la DailyPlan (ziua Today)');
+          navigate(createPageUrl("DailyPlan"));
         } else {
           console.log('→ Navigăm la Onboarding');
           navigate(createPageUrl("Onboarding"));
