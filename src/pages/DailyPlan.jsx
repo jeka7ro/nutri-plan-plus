@@ -139,6 +139,7 @@ export default function DailyPlan() {
   const [exerciseDuration, setExerciseDuration] = useState(30);
   const [editingMeal, setEditingMeal] = useState(null); // Track which meal is being edited
   const [expandedMeals, setExpandedMeals] = useState({}); // Track which meals show all options
+  const [exercises, setExercises] = useState([]); // Array de exerciții: [{type, duration, calories}, ...]
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -189,11 +190,26 @@ export default function DailyPlan() {
 
   useEffect(() => {
     if (checkIn) {
+      // Încarcă exercițiile din checkIn
+      if (checkIn.exercises && Array.isArray(checkIn.exercises)) {
+        setExercises(checkIn.exercises);
+      } else if (checkIn.exercise_type) {
+        // Backward compatibility - convertește exercițiul vechi în array
+        setExercises([{
+          type: checkIn.exercise_type,
+          duration: checkIn.exercise_duration || 30,
+          calories: checkIn.exercise_calories_burned || 0
+        }]);
+      } else {
+        setExercises([]);
+      }
+      
       if (checkIn.exercise_type) setExerciseType(checkIn.exercise_type);
       if (checkIn.exercise_duration) setExerciseDuration(checkIn.exercise_duration);
       setNotes(checkIn.notes || ""); // Prevent null value
     } else {
       setNotes("");
+      setExercises([]);
     }
   }, [checkIn]);
 
@@ -513,20 +529,36 @@ export default function DailyPlan() {
   const handleExerciseUpdate = useCallback(() => {
     const caloriesBurned = calculateCaloriesBurned(exerciseType, exerciseDuration);
     
+    // Adaugă noul exercițiu la array
+    const newExercise = {
+      type: exerciseType,
+      duration: exerciseDuration,
+      calories: caloriesBurned
+    };
+    
+    const updatedExercises = [...exercises, newExercise];
+    const totalCaloriesBurned = updatedExercises.reduce((sum, ex) => sum + ex.calories, 0);
+    const totalDuration = updatedExercises.reduce((sum, ex) => sum + ex.duration, 0);
+    
     const dataToSend = {
       ...(checkIn || {}),
       date: format(selectedDate, 'yyyy-MM-dd'),
       day_number: getCurrentDay(),
       phase: currentPhase,
       exercise_completed: true,
-      exercise_type: exerciseType,
-      exercise_duration: exerciseDuration,
-      exercise_calories_burned: caloriesBurned
+      exercises: updatedExercises, // Array de exerciții
+      exercise_type: newExercise.type, // Păstrăm pentru backward compatibility
+      exercise_duration: totalDuration, // Total minute
+      exercise_calories_burned: totalCaloriesBurned // Total calorii
     };
     
-    console.log('💪 CLICK EXERCIȚIU!', { exerciseType, exerciseDuration, caloriesBurned, dataToSend });
+    console.log('💪 ADAUG EXERCIȚIU!', { newExercise, updatedExercises, totalCaloriesBurned, dataToSend });
     updateCheckInMutation.mutate(dataToSend);
-  }, [checkIn, exerciseType, exerciseDuration, calculateCaloriesBurned, updateCheckInMutation, selectedDate, currentPhase]);
+    
+    // Reset form pentru următorul exercițiu
+    setExerciseType("walking");
+    setExerciseDuration(30);
+  }, [checkIn, exerciseType, exerciseDuration, exercises, calculateCaloriesBurned, updateCheckInMutation, selectedDate, currentPhase, getCurrentDay]);
 
   const completedMeals = useMemo(() => {
     if (!checkIn) return 0;
@@ -1428,33 +1460,63 @@ export default function DailyPlan() {
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {checkIn?.exercise_completed ? (
+            {checkIn?.exercise_completed && exercises.length > 0 ? (
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
-                      <Dumbbell className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                    </div>
-                    <div>
-                      <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                        {exerciseTypes[checkIn.exercise_type]?.name[language] || exerciseTypes.walking.name[language]}
+                {/* LISTĂ EXERCIȚII ADĂUGATE */}
+                {exercises.map((exercise, index) => (
+                  <div key={index} className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
+                        <Dumbbell className="w-6 h-6 text-purple-600 dark:text-purple-400" />
                       </div>
-                      <div className="text-sm text-[rgb(var(--ios-text-secondary))]">
-                        {checkIn.exercise_duration || 30} {language === 'ro' ? 'minute' : 'minutes'} • {checkIn.exercise_calories_burned || 0} {language === 'ro' ? 'calorii arse' : 'calories burned'}
+                      <div>
+                        <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                          {exerciseTypes[exercise.type]?.name[language] || exerciseTypes.walking.name[language]}
+                        </div>
+                        <div className="text-sm text-[rgb(var(--ios-text-secondary))]">
+                          {exercise.duration} {language === 'ro' ? 'minute' : 'minutes'} • {exercise.calories} {language === 'ro' ? 'calorii arse' : 'calories burned'}
+                        </div>
                       </div>
                     </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const updatedExercises = exercises.filter((_, i) => i !== index);
+                        const totalCaloriesBurned = updatedExercises.reduce((sum, ex) => sum + ex.calories, 0);
+                        const totalDuration = updatedExercises.reduce((sum, ex) => sum + ex.duration, 0);
+                        updateCheckInMutation.mutate({ 
+                          ...checkIn, 
+                          exercises: updatedExercises,
+                          exercise_completed: updatedExercises.length > 0, 
+                          exercise_calories_burned: totalCaloriesBurned,
+                          exercise_duration: totalDuration,
+                          exercise_type: updatedExercises[0]?.type || null
+                        });
+                      }}
+                      className="text-red-600 dark:text-red-400"
+                    >
+                      <X className="w-4 h-4" />
+                    </Button>
                   </div>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => updateCheckInMutation.mutate({ ...checkIn, exercise_completed: false, exercise_calories_burned: 0, exercise_duration: 0, exercise_type: null })}
-                    className="text-purple-600 dark:text-purple-400"
-                  >
-                    {language === 'ro' ? 'Editează' : 'Edit'}
-                  </Button>
+                ))}
+                
+                {/* TOTAL */}
+                <div className="p-3 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-xl border border-purple-300 dark:border-purple-700">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-[rgb(var(--ios-text-primary))]">
+                      {language === 'ro' ? 'TOTAL' : 'TOTAL'}:
+                    </span>
+                    <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
+                      {checkIn.exercise_duration || 0} {language === 'ro' ? 'min' : 'min'} • 🔥 {checkIn.exercise_calories_burned || 0} cal
+                    </span>
+                  </div>
                 </div>
               </div>
-            ) : (
+            ) : null}
+            
+            {/* FORMULAR ADĂUGARE EXERCIȚIU (mereu vizibil) */}
+            {(
               <div className="space-y-4">
                 <div>
                   <Label className="text-[rgb(var(--ios-text-primary))] mb-2 block">
@@ -1524,7 +1586,10 @@ export default function DailyPlan() {
                   onClick={handleExerciseUpdate}
                 >
                   <Flame className="w-4 h-4 mr-2" />
-                  {language === 'ro' ? 'Marchează ca efectuat' : 'Mark as completed'}
+                  {exercises.length > 0 
+                    ? (language === 'ro' ? 'Adaugă alt exercițiu' : 'Add another exercise')
+                    : (language === 'ro' ? 'Adaugă exercițiu' : 'Add exercise')
+                  }
                 </Button>
               </div>
             )}
