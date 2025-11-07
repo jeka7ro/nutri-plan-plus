@@ -33,20 +33,11 @@ export default async function handler(req, res) {
       const existingColumns = checkColumns.rows.map(c => c.column_name);
       console.log('✅ Existing columns:', existingColumns);
       
+      const migrations = [];
+      
       const needsFirstName = !existingColumns.includes('first_name');
       const needsLastName = !existingColumns.includes('last_name');
       const needsPhone = !existingColumns.includes('phone');
-      
-      if (!needsFirstName && !needsLastName && !needsPhone) {
-        console.log('✅ All columns already exist!');
-        return res.status(200).json({ 
-          success: true, 
-          message: 'All columns already exist!',
-          columns: existingColumns
-        });
-      }
-      
-      const migrations = [];
       
       if (needsFirstName) {
         console.log('➕ Adding first_name...');
