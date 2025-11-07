@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { User, Target, Calendar, Crown, Check, Upload, Camera, Lock, Key } from "lucide-react";
-import { format } from "date-fns";
+import { format, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import {
