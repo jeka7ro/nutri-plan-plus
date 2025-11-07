@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, MessageSquare, TrendingUp, TrendingDown, Activity, Shield, Crown, Calendar,
-  CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings
+  CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings, Info
 } from "lucide-react";
 import { format, subDays, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
