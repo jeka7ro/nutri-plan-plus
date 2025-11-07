@@ -16,7 +16,7 @@ export default function IndexPage() {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, language } = useLanguage();
-  const { theme } = useTheme();
+  const { theme } = useTheme() || { theme: 'light' };
   const [isLoading, setIsLoading] = useState(true);
   const [isLogin, setIsLogin] = useState(true);
   const [formData, setFormData] = useState({
