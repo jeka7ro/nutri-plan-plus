@@ -50,7 +50,6 @@ export default function Profile() {
       setCurrentWeight(userData.current_weight || "");
       setTargetWeight(userData.target_weight || "");
       setHeight(userData.height || "");
-      setAge(userData.age || "");
       setGender(userData.gender || "");
       
       // Fix date format: "2025-11-06T00:00:00.000Z" -> "2025-11-06"
@@ -60,9 +59,27 @@ export default function Profile() {
       };
       
       setStartDate(formatDateForInput(userData.start_date) || format(new Date(), 'yyyy-MM-dd'));
-      setBirthDate(formatDateForInput(userData.birth_date) || "");
+      const formattedBirthDate = formatDateForInput(userData.birth_date);
+      setBirthDate(formattedBirthDate || "");
+      
+      // Calculează vârsta din data nașterii
+      if (formattedBirthDate) {
+        const ageCalculated = differenceInYears(new Date(), new Date(formattedBirthDate));
+        setAge(ageCalculated.toString());
+        console.log('🎂 Vârsta calculată din data nașterii:', ageCalculated, 'ani');
+      } else {
+        setAge(userData.age || "");
+      }
+      
       setCountry(userData.country || "");
       setCity(userData.city || "");
+      
+      console.log('📋 Profile loaded:', {
+        country: userData.country,
+        city: userData.city,
+        birth_date: formattedBirthDate,
+        calculated_age: formattedBirthDate ? differenceInYears(new Date(), new Date(formattedBirthDate)) : null
+      });
     }).catch(() => {});
   }, []);
 
