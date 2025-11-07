@@ -214,9 +214,12 @@ export default function IndexPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-900/20">
         <div className="text-center">
-          <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
-            <Loader2 className="w-10 h-10 text-white animate-spin" />
-          </div>
+          <img 
+            src="/eatnfitlogo.png" 
+            alt="EatnFit Logo" 
+            className="w-24 h-24 object-contain mx-auto mb-4"
+          />
+          <Loader2 className="w-10 h-10 text-emerald-600 animate-spin mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
             EatnFit
           </h1>
