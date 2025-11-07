@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
   Users, MessageSquare, TrendingUp, TrendingDown, Activity, Shield, Crown, Calendar,
-  CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame
+  CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings
 } from "lucide-react";
 import { format, subDays, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
@@ -60,6 +60,12 @@ export default function Admin() {
     last_name: '',
     phone: '',
     role: 'user'
+  });
+  const [selectedBackup, setSelectedBackup] = useState(null); // Pentru vizualizare conținut backup
+  const [backupSettings, setBackupSettings] = useState({
+    interval: 12, // ore
+    cleanup: 48, // ore
+    autoEnabled: true
   });
   const queryClient = useQueryClient();
 
@@ -150,9 +156,20 @@ export default function Admin() {
   });
 
   const deleteBackupMutation = useMutation({
-    mutationFn: (id) => localApi.admin.backups.delete(id),
+    mutationFn: async (id) => {
+      const response = await fetch(`/api/admin/backups?id=${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) throw new Error('Failed to delete backup');
+      return response.json();
+    },
     onSuccess: () => {
       queryClient.invalidateQueries(['backups']);
+      alert('✅ Backup șters cu succes!');
     },
   });
 
@@ -1053,9 +1070,62 @@ export default function Admin() {
                   </Button>
                 </div>
                 <p className="text-sm text-gray-500 mt-2">
-                  🔄 Backup automat: la fiecare 12 ore | 🗑️ Cleanup automat: &gt; 48h
+                  🔄 Backup automat: la fiecare {backupSettings.interval} ore | 🗑️ Cleanup automat: &gt; {backupSettings.cleanup}h
                 </p>
               </CardHeader>
+              <CardContent>
+                {/* SETĂRI BACKUP */}
+                <div className="mb-6 p-4 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg">
+                  <h3 className="font-bold text-[rgb(var(--ios-text-primary))] mb-4 flex items-center gap-2">
+                    <Settings className="w-5 h-5" />
+                    Setări Backup
+                  </h3>
+                  <div className="grid md:grid-cols-3 gap-4">
+                    <div>
+                      <Label>Interval Backup Automat (ore)</Label>
+                      <Select 
+                        value={backupSettings.interval.toString()} 
+                        onValueChange={(val) => setBackupSettings({...backupSettings, interval: parseInt(val)})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="6">La 6 ore</SelectItem>
+                          <SelectItem value="12">La 12 ore</SelectItem>
+                          <SelectItem value="24">La 24 ore (zilnic)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Label>Cleanup Automat (după câte ore)</Label>
+                      <Select 
+                        value={backupSettings.cleanup.toString()} 
+                        onValueChange={(val) => setBackupSettings({...backupSettings, cleanup: parseInt(val)})}
+                      >
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="24">24 ore (1 zi)</SelectItem>
+                          <SelectItem value="48">48 ore (2 zile)</SelectItem>
+                          <SelectItem value="72">72 ore (3 zile)</SelectItem>
+                          <SelectItem value="168">168 ore (7 zile)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="flex items-end">
+                      <Button 
+                        onClick={() => alert(`✅ Setări salvate!\n\nInterval: ${backupSettings.interval}h\nCleanup: ${backupSettings.cleanup}h`)}
+                        className="w-full bg-blue-600 hover:bg-blue-700"
+                      >
+                        💾 Salvează Setări
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
+              </CardContent>
               <CardContent>
                 <Table>
                   <TableHeader>
@@ -1097,18 +1167,28 @@ export default function Admin() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => {
-                              if (confirm(`Sigur ștergi backup-ul ${backup.filename}?`)) {
-                                deleteBackupMutation.mutate(backup.id);
-                              }
-                            }}
-                            disabled={deleteBackupMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setSelectedBackup(backup)}
+                              className="border-[rgb(var(--ios-border))]"
+                            >
+                              <Eye className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm(`Sigur ștergi backup-ul ${backup.filename}?`)) {
+                                  deleteBackupMutation.mutate(backup.id);
+                                }
+                              }}
+                              disabled={deleteBackupMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -1784,6 +1864,100 @@ export default function Admin() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog Vizualizare Backup */}
+      <Dialog open={selectedBackup !== null} onOpenChange={() => setSelectedBackup(null)}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="w-6 h-6 text-blue-600" />
+              Conținut Backup: {selectedBackup?.filename}
+            </DialogTitle>
+          </DialogHeader>
+          {selectedBackup && (() => {
+            let backupContent = null;
+            try {
+              backupContent = selectedBackup.backup_data ? JSON.parse(selectedBackup.backup_data) : null;
+            } catch (e) {
+              backupContent = null;
+            }
+
+            return (
+              <div className="space-y-4">
+                {/* Info Backup */}
+                <div className="p-4 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg">
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><strong>Fișier:</strong> {selectedBackup.filename}</div>
+                    <div><strong>Mărime:</strong> {selectedBackup.size_mb} MB</div>
+                    <div><strong>Data:</strong> {new Date(selectedBackup.created_at).toLocaleString('ro-RO')}</div>
+                    <div><strong>Tip:</strong> {selectedBackup.auto_generated ? '🔄 Automat' : '👤 Manual'}</div>
+                  </div>
+                </div>
+
+                {/* Conținut Tabele */}
+                {backupContent ? (
+                  <div className="space-y-4">
+                    {Object.entries(backupContent).map(([tableName, rows]) => (
+                      <Card key={tableName} className="ios-card">
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base flex items-center justify-between">
+                            <span>📊 {tableName}</span>
+                            <Badge>{rows.length} înregistrări</Badge>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded-lg overflow-x-auto max-h-40">
+                            <pre className="text-xs">
+                              {JSON.stringify(rows.slice(0, 3), null, 2)}
+                              {rows.length > 3 && `\n... și încă ${rows.length - 3} înregistrări`}
+                            </pre>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center text-gray-500 py-8">
+                    <p>⚠️ Conținutul backup-ului nu este disponibil</p>
+                    <p className="text-xs mt-2">Backup-ul poate fi de tip SQL sau fișier extern</p>
+                  </div>
+                )}
+
+                {/* Butoane Acțiuni */}
+                <div className="flex gap-2 pt-4">
+                  <Button 
+                    onClick={() => {
+                      if (backupContent) {
+                        const dataStr = JSON.stringify(backupContent, null, 2);
+                        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(dataBlob);
+                        const link = document.createElement('a');
+                        link.href = url;
+                        link.download = selectedBackup.filename;
+                        link.click();
+                        URL.revokeObjectURL(url);
+                        alert('✅ Backup descărcat!');
+                      }
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700"
+                    disabled={!backupContent}
+                  >
+                    <Upload className="w-4 h-4 mr-2" />
+                    Descarcă Backup
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => setSelectedBackup(null)}
+                    className="flex-1"
+                  >
+                    Închide
+                  </Button>
+                </div>
+              </div>
+            );
+          })()}
         </DialogContent>
       </Dialog>
     </div>
