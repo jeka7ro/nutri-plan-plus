@@ -137,6 +137,7 @@ export default function DailyPlan() {
   const [exerciseType, setExerciseType] = useState("walking");
   const [exerciseDuration, setExerciseDuration] = useState(30);
   const [editingMeal, setEditingMeal] = useState(null); // Track which meal is being edited
+  const [expandedMeals, setExpandedMeals] = useState({}); // Track which meals show all options
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -1070,8 +1071,9 @@ export default function DailyPlan() {
                   </div>
 
                   {/* Meal Options Grid - FROM DATABASE */}
-                  <div className="grid md:grid-cols-3 gap-3">
-                    {options.map((option, index) => {
+                  <div className="space-y-3">
+                    <div className="grid md:grid-cols-3 gap-3">
+                      {(expandedMeals[meal.mealType] ? options : options.slice(0, 3)).map((option, index) => {
                       const favoriteScore = scoreMealOption(option);
                       // FIXAT: Compară AMBELE nume pentru a evita false positive
                       const currentName = language === 'ro' ? option.name_ro : option.name_en;
@@ -1170,6 +1172,23 @@ export default function DailyPlan() {
                         </div>
                       );
                     })}
+                    </div>
+                    
+                    {/* Buton "Vezi mai multe" dacă sunt mai mult de 3 opțiuni */}
+                    {options.length > 3 && (
+                      <Button
+                        variant="outline"
+                        className="w-full"
+                        onClick={() => setExpandedMeals(prev => ({
+                          ...prev,
+                          [meal.mealType]: !prev[meal.mealType]
+                        }))}
+                      >
+                        {expandedMeals[meal.mealType] 
+                          ? (language === 'ro' ? 'Mai puține opțiuni' : 'Show less')
+                          : (language === 'ro' ? `Vezi mai multe (${options.length - 3} rămase)` : `Show more (${options.length - 3} more)`)}
+                      </Button>
+                    )}
                   </div>
 
                   {options.length === 0 && (
@@ -1420,11 +1439,11 @@ export default function DailyPlan() {
                   const isFuture = differenceInDays(dayDate, new Date()) > 0; // Check relative to today
                   
                   const mealKeys = ['breakfast_completed', 'snack1_completed', 'lunch_completed', 'snack2_completed', 'dinner_completed'];
-                  const isComplete = dayCheckIn && 
-                                    mealKeys.every(key => dayCheckIn[key]) && 
-                                    dayCheckIn.exercise_completed;
+                  // COMPLETE = TOATE cele 5 mese finalizate (exercițiul e opțional)
+                  const mealsCompleted = dayCheckIn && mealKeys.every(key => dayCheckIn[key]);
+                  const isComplete = mealsCompleted;
                   
-                  const isIncomplete = isPast && !isComplete;
+                  const isIncomplete = isPast && dayCheckIn && !isComplete;
 
                   return (
                     <button
