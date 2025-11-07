@@ -23,11 +23,13 @@ import {
   SidebarFooter,
   SidebarProvider,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 
 function LayoutContent() {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
+  const { setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = React.useState(null);
@@ -289,7 +291,16 @@ function LayoutContent() {
                             : 'text-gray-900 dark:text-gray-100'
                         }`}
                       >
-                        <Link to={item.url} className="flex items-center gap-3 px-4 py-3">
+                        <Link 
+                          to={item.url} 
+                          className="flex items-center gap-3 px-4 py-3"
+                          onClick={() => {
+                            // Închide sidebar pe mobil după click
+                            if (setOpenMobile) {
+                              setOpenMobile(false);
+                            }
+                          }}
+                        >
                           <item.icon className="w-5 h-5" />
                           <span className="font-medium">{item.title}</span>
                         </Link>
