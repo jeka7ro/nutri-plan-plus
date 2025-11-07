@@ -404,9 +404,14 @@ export default function Profile() {
                       console.log('🌍 Country changed:', e.target.value);
                       setCountry(e.target.value);
                     }}
+                    onInput={(e) => {
+                      console.log('🌍 Country onInput:', e.target.value);
+                      setCountry(e.target.value);
+                    }}
                     placeholder="Ex: România"
                     className="border-[rgb(var(--ios-border))]"
-                    autoComplete="country-name"
+                    autoComplete="off"
+                    inputMode="text"
                   />
                 </div>
                 <div className="space-y-2">
@@ -420,9 +425,14 @@ export default function Profile() {
                       console.log('🏙️ City changed:', e.target.value);
                       setCity(e.target.value);
                     }}
+                    onInput={(e) => {
+                      console.log('🏙️ City onInput:', e.target.value);
+                      setCity(e.target.value);
+                    }}
                     placeholder="Ex: București"
                     className="border-[rgb(var(--ios-border))]"
-                    autoComplete="address-level2"
+                    autoComplete="off"
+                    inputMode="text"
                   />
                 </div>
               </div>
