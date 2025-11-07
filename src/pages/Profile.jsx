@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Target, Calendar, Crown, Check, Upload, Camera } from "lucide-react";
+import { User, Target, Calendar, Crown, Check, Upload, Camera, Lock, Key } from "lucide-react";
 import { format } from "date-fns";
 import { ro } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -20,11 +20,14 @@ import {
 } from "@/components/ui/select";
 
 export default function Profile() {
-  // VERSIUNE: 1.0.2 - ADAUGAT TELEFON
+  // VERSIUNE: 1.0.3 - ADAUGAT SCHIMBARE PAROLA
   const [user, setUser] = useState(null);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [currentWeight, setCurrentWeight] = useState("");
   const [targetWeight, setTargetWeight] = useState("");
   const [height, setHeight] = useState("");
@@ -79,6 +82,22 @@ export default function Profile() {
     },
   });
 
+  const changePasswordMutation = useMutation({
+    mutationFn: ({ currentPassword, newPassword }) => {
+      return localApi.auth.changePassword(currentPassword, newPassword);
+    },
+    onSuccess: () => {
+      alert('✅ Parolă schimbată cu succes!');
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    },
+    onError: (error) => {
+      console.error('❌ Eroare la schimbarea parolei:', error);
+      alert('❌ Eroare: ' + error.message);
+    },
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -99,6 +118,22 @@ export default function Profile() {
     
     console.log('🚀 Trimit datele spre salvare:', dataToSave);
     updateProfileMutation.mutate(dataToSave);
+  };
+
+  const handlePasswordChange = (e) => {
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      alert('❌ Parolele nu se potrivesc!');
+      return;
+    }
+    
+    if (newPassword.length < 6) {
+      alert('❌ Parola nouă trebuie să aibă minim 6 caractere!');
+      return;
+    }
+    
+    changePasswordMutation.mutate({ currentPassword, newPassword });
   };
 
   const handlePhotoUpload = async (e) => {
@@ -420,6 +455,76 @@ export default function Profile() {
                   <>
                     <Check className="w-4 h-4 mr-2" />
                     Salvează modificările
+                  </>
+                )}
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Change Password */}
+        <Card className="ios-card border-none shadow-xl">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
+              <Lock className="w-5 h-5 text-red-600 dark:text-red-400" />
+              Schimbă Parola
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handlePasswordChange} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword" className="text-[rgb(var(--ios-text-primary))]">🔒 Parola actuală *</Label>
+                <Input
+                  id="currentPassword"
+                  type="password"
+                  value={currentPassword}
+                  onChange={(e) => setCurrentPassword(e.target.value)}
+                  placeholder="Introdu parola actuală"
+                  className="border-[rgb(var(--ios-border))]"
+                  required
+                />
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="newPassword" className="text-[rgb(var(--ios-text-primary))]">🔑 Parola nouă *</Label>
+                  <Input
+                    id="newPassword"
+                    type="password"
+                    value={newPassword}
+                    onChange={(e) => setNewPassword(e.target.value)}
+                    placeholder="Minim 6 caractere"
+                    className="border-[rgb(var(--ios-border))]"
+                    required
+                    minLength={6}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword" className="text-[rgb(var(--ios-text-primary))]">🔑 Confirmă parola *</Label>
+                  <Input
+                    id="confirmPassword"
+                    type="password"
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    placeholder="Reintroduces parola nouă"
+                    className="border-[rgb(var(--ios-border))]"
+                    required
+                    minLength={6}
+                  />
+                </div>
+              </div>
+
+              <Button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-[12px]"
+                disabled={changePasswordMutation.isPending}
+              >
+                {changePasswordMutation.isPending ? (
+                  'Se schimbă...'
+                ) : (
+                  <>
+                    <Key className="w-4 h-4 mr-2" />
+                    Schimbă Parola
                   </>
                 )}
               </Button>
