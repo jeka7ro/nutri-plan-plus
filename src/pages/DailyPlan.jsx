@@ -355,12 +355,28 @@ export default function DailyPlan() {
   ], [t]);
 
   // FIXAT: Nu mai face TOGGLE - doar marchează ca COMPLETAT
-  // Pentru a demarca, user folosește butonul X (roșu)
+  // Verifică că există opțiune selectată ÎNAINTE de a marca ca completat
   const handleMealCheck = useCallback((mealKey, mealType) => {
     const currentValue = checkIn?.[mealKey];
     
-    // Dacă e deja completat → nu face nimic (sau demarchează explicit)
-    // Pentru SIMPLITATE: TOGGLE păstrat, dar user trebuie să înțeleagă
+    // Verifică dacă există opțiune selectată pentru această masă
+    const mealTypeMap = {
+      'breakfast': 'breakfast_option',
+      'snack1': 'snack1_option',
+      'lunch': 'lunch_option',
+      'snack2': 'snack2_option',
+      'dinner': 'dinner_option'
+    };
+    
+    const optionKey = mealTypeMap[mealType];
+    const hasSelection = checkIn?.[optionKey];
+    
+    // Dacă NU are selecție și vrea să bifeze ca "completed" → OPREȘTE
+    if (!hasSelection && !currentValue) {
+      alert(language === 'ro' ? '⚠️ Selectează mai întâi o mâncare!' : '⚠️ Select a meal option first!');
+      return;
+    }
+    
     const updateData = {
       ...checkIn,
       [mealKey]: !currentValue,  // TOGGLE: false → true → false
@@ -372,9 +388,9 @@ export default function DailyPlan() {
     // Reset editing mode when marking as completed
     setEditingMeal(null);
     
-    console.log('🔍 handleMealCheck:', { mealKey, currentValue, newValue: !currentValue, updateData });
+    console.log('🔍 handleMealCheck:', { mealKey, currentValue, newValue: !currentValue, hasSelection, updateData });
     updateCheckInMutation.mutate(updateData);
-  }, [checkIn, updateCheckInMutation, selectedDate, currentPhase]);
+  }, [checkIn, updateCheckInMutation, selectedDate, currentPhase, language]);
 
   // OPTIMIZED: Batch all updates together
   const handleMealSelection = useCallback((mealType, option) => {
@@ -624,6 +640,11 @@ export default function DailyPlan() {
   return (
     <div className="p-4 md:p-8 min-h-screen max-w-full overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-6">
+        {/* DIET SUMMARY - PRIMA DATĂ (Ziua 1) */}
+        {currentDay === 1 && (
+          <DietSummary language={language} />
+        )}
+
         {/* Header with Date Navigation */}
         <div className="flex items-center justify-between">
           <div>
@@ -703,11 +724,6 @@ export default function DailyPlan() {
               </div>
             </CardContent>
           </Card>
-        )}
-
-        {/* DIET SUMMARY - Doar pentru Ziua 1 */}
-        {currentDay === 1 && (
-          <DietSummary language={language} />
         )}
 
         {/* Phase Info */}
@@ -972,10 +988,10 @@ export default function DailyPlan() {
               
               return (
                 <div className="space-y-4">
-                  {/* Calorie Bars */}
-                  <div className="grid grid-cols-2 gap-4">
+                  {/* Calorie Bars - TOATE 4 PE 1 RÂND */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {/* Recommended */}
-                    <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-[14px] border border-blue-200 dark:border-blue-800">
+                    <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-[14px] border border-blue-200 dark:border-blue-800">
                       <div className="flex items-center gap-2 mb-1">
                         <Target className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                         <span className="text-xs font-medium text-blue-700 dark:text-blue-300">
