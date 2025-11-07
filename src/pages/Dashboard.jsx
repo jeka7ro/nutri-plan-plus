@@ -730,8 +730,7 @@ export default function Dashboard() {
           </DialogContent>
         </Dialog>
 
-        <div className="grid md:grid-cols-1 gap-6">
-          <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
+        <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center gap-2 text-lg text-[rgb(var(--ios-text-primary))]">
                 <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-[14px] flex items-center justify-center">
