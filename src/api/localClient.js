@@ -16,6 +16,30 @@ const storage = {
   removeUser: () => localStorage.removeItem('current_user'),
 };
 
+const isBrowser = typeof window !== 'undefined';
+const CHECKINS_STORAGE_KEY = 'local_checkins_v1';
+const WEIGHT_STORAGE_KEY = 'local_weights_v1';
+
+const readStored = (key, fallback = []) => {
+  if (!isBrowser) return fallback;
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : fallback;
+  } catch (error) {
+    console.warn('⚠️ storage read failed for', key, error);
+    return fallback;
+  }
+};
+
+const writeStored = (key, value) => {
+  if (!isBrowser) return;
+  try {
+    localStorage.setItem(key, JSON.stringify(value));
+  } catch (error) {
+    console.warn('⚠️ storage write failed for', key, error);
+  }
+};
+
 // Helper pentru request-uri
 async function request(endpoint, options = {}) {
   const token = storage.getToken();
@@ -104,9 +128,19 @@ export const localApi = {
   
   // Weight tracking
   weight: {
-    list: () => request('/weight'),
+    list: async () => {
+      const stored = readStored(WEIGHT_STORAGE_KEY);
+      if (stored.length) return stored;
+      try {
+        const result = await request('/weight');
+        writeStored(WEIGHT_STORAGE_KEY, result);
+        return result;
+      } catch (error) {
+        console.warn('weight.list fell back to localStorage:', error.message);
+        return stored;
+      }
+    },
     add: (payload, maybeDate, maybeNotes) => {
-      // Accept both object payloads and legacy (weight, date, notes) signature
       let body;
       if (typeof payload === 'object' && payload !== null && !Array.isArray(payload)) {
         body = payload;
@@ -118,12 +152,37 @@ export const localApi = {
         };
       }
 
+      const stored = readStored(WEIGHT_STORAGE_KEY);
+      const entry = {
+        id: Date.now(),
+        weight: body.weight,
+        date: body.date,
+        notes: body.notes || '',
+        mood: body.mood || 'normal',
+      };
+
       return request('/weight', {
         method: 'POST',
         body: JSON.stringify(body),
+      }).then((result) => {
+        const updated = [result, ...stored];
+        writeStored(WEIGHT_STORAGE_KEY, updated);
+        return result;
+      }).catch((error) => {
+        console.warn('weight.add fell back to localStorage:', error.message);
+        const updated = [entry, ...stored];
+        writeStored(WEIGHT_STORAGE_KEY, updated);
+        return entry;
       });
     },
-    delete: (id) => request(`/weight/${id}`, { method: 'DELETE' }),
+    delete: (id) => {
+      const stored = readStored(WEIGHT_STORAGE_KEY);
+      const filtered = stored.filter((entry) => String(entry.id) !== String(id));
+      writeStored(WEIGHT_STORAGE_KEY, filtered);
+      return request(`/weight/${id}`, { method: 'DELETE' }).catch((error) => {
+        console.warn('weight.delete fell back to localStorage:', error.message);
+      });
+    },
   },
   
   // Meals
@@ -205,35 +264,54 @@ export const localApi = {
   
   // Daily Check-ins
   checkins: {
-    get: async (date) => {
-      try {
-        return await request(`/checkins/${date}`);
-      } catch (error) {
-        console.error('❌ GET checkin error:', error);
-        return null;
-      }
-    },
     list: async () => {
-      try {
-        return await request('/checkins');
-      } catch (error) {
-        console.error('❌ LIST checkins error:', error);
-        return [];
+      const stored = readStored(CHECKINS_STORAGE_KEY);
+      if (stored.length) {
+        return stored;
       }
-    },
-    upsert: async (data) => {
-      console.log('📡 localApi.checkins.upsert CALLED with:', data);
       try {
-        const result = await request('/checkins', {
-          method: 'POST',
-          body: JSON.stringify(data),
-        });
-        console.log('✅ localApi.checkins.upsert SUCCESS:', result);
+        const result = await request('/checkins');
+        writeStored(CHECKINS_STORAGE_KEY, result);
         return result;
       } catch (error) {
-        console.error('❌ localApi.checkins.upsert ERROR:', error);
-        throw error;
+        console.warn('checkins.list fell back to localStorage:', error.message);
+        return stored;
       }
+    },
+    get: async (date) => {
+      const stored = readStored(CHECKINS_STORAGE_KEY);
+      const match = stored.find((entry) => entry?.date?.startsWith?.(date));
+      if (match) return match;
+      try {
+        const result = await request(`/checkins/${date}`);
+        if (result) {
+          const updated = [result, ...stored.filter((entry) => entry?.date?.startsWith?.(date) === false)];
+          writeStored(CHECKINS_STORAGE_KEY, updated);
+        }
+        return result || null;
+      } catch (error) {
+        console.warn('checkins.get fell back to localStorage:', error.message);
+        return match || null;
+      }
+    },
+    listByUser: async () => readStored(CHECKINS_STORAGE_KEY),
+    upsert: async (payload) => {
+      const stored = readStored(CHECKINS_STORAGE_KEY);
+      const dateKey = payload.date;
+      let result = payload;
+      try {
+        result = await request('/checkins', {
+          method: 'POST',
+          body: JSON.stringify(payload),
+        });
+      } catch (error) {
+        console.warn('checkins.upsert fell back to localStorage:', error.message);
+      }
+
+      const filtered = stored.filter((entry) => entry?.date?.startsWith?.(dateKey) === false);
+      const merged = [result, ...filtered];
+      writeStored(CHECKINS_STORAGE_KEY, merged);
+      return result;
     },
   },
 
