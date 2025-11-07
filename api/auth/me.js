@@ -66,6 +66,22 @@ export default async function handler(req, res) {
         migrations.push('phone');
       }
       
+      // Creează tabela backups dacă nu există
+      console.log('📦 Checking backups table...');
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS backups (
+          id SERIAL PRIMARY KEY,
+          filename VARCHAR(255) NOT NULL,
+          backup_data TEXT,
+          size_mb DECIMAL(10,2),
+          created_by INTEGER REFERENCES users(id),
+          auto_generated BOOLEAN DEFAULT false,
+          tables_included TEXT[],
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      migrations.push('backups_table');
+      
       console.log('✅ MIGRATION COMPLETE!');
       
       return res.status(200).json({ 
