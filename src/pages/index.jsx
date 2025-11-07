@@ -218,7 +218,7 @@ export default function IndexPage() {
             <Loader2 className="w-10 h-10 text-white animate-spin" />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            Nutri Plan Plus
+            EatnFit
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             {language === 'ro' ? 'Se încarcă aplicația...' : 'Loading application...'}

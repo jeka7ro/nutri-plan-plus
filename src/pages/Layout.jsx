@@ -254,11 +254,13 @@ function LayoutContent() {
         <Sidebar className="border-r border-[rgb(var(--ios-border))] ios-glass">
           <SidebarHeader className="border-b border-[rgb(var(--ios-border))] p-6">
             <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 rounded-[20px] flex items-center justify-center shadow-lg">
-                <TrendingDown className="w-6 h-6 text-white" />
-              </div>
+              <img 
+                src="/eatnfitlogo.png" 
+                alt="EatnFit Logo" 
+                className="w-12 h-12 object-contain"
+              />
               <div>
-                <h2 className="font-bold text-[rgb(var(--ios-text-primary))] text-lg">Metabolism Rapid</h2>
+                <h2 className="font-bold text-[rgb(var(--ios-text-primary))] text-lg">EatnFit</h2>
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Fast Metabolism Diet</p>
               </div>
             </div>
