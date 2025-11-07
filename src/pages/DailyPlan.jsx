@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from "react";
 import localApi from "@/api/localClient";
 const base44 = localApi; // Pentru compatibilitate cu cod vechi
@@ -211,10 +210,18 @@ export default function DailyPlan() {
     onSuccess: (newData) => {
       // Update the specific checkIn cache IMEDIAT
       queryClient.setQueryData(['checkIn', format(selectedDate, 'yyyy-MM-dd')], newData);
-      
-      // NU mai invalidăm allCheckIns pentru FIECARE selecție de masă
-      // Doar când se schimbă date importante (water, exercise) 
-      // Asta previne flicker-ul și dispariția selecției!
+
+      // Actualizează și lista globală de check-ins (dashboard/Admin)
+      queryClient.setQueryData(['allCheckIns'], (old = []) => {
+        const dateKey = newData?.date ? format(new Date(newData.date), 'yyyy-MM-dd') : format(selectedDate, 'yyyy-MM-dd');
+        const filtered = old.filter((item) => {
+          const itemDate = item?.date ? format(new Date(item.date), 'yyyy-MM-dd') : null;
+          return itemDate !== dateKey;
+        });
+        return [newData, ...filtered];
+      });
+
+      // NU mai invalidăm allCheckIns pentru fiecare selecție
       console.log('✅ CACHE ACTUALIZAT:', newData);
     },
     onError: (error) => {

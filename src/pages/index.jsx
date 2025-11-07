@@ -39,7 +39,7 @@ export default function IndexPage() {
         // ADMINS bypass onboarding complet
         if (user.role === 'admin') {
           console.log('✅ Admin detectat - SKIP onboarding');
-          navigate(createPageUrl("Dashboard"));
+          navigate(createPageUrl("DailyPlan"));
           return;
         }
         
@@ -84,7 +84,7 @@ export default function IndexPage() {
               // ADMINS bypass onboarding complet
               if (user.role === 'admin') {
                 console.log('✅ Admin detectat - SKIP onboarding');
-                navigate(createPageUrl("Dashboard"));
+                navigate(createPageUrl("DailyPlan"));
                 return;
               }
               
@@ -158,7 +158,7 @@ export default function IndexPage() {
         // ADMINS bypass onboarding complet
         if (user.role === 'admin') {
           console.log('✅ Admin detectat - SKIP onboarding');
-          navigate(createPageUrl("Dashboard"));
+          navigate(createPageUrl("DailyPlan"));
           return;
         }
         
