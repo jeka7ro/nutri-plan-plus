@@ -197,101 +197,125 @@ export default function WeightTracking() {
           </Card>
         </div>
 
-        {/* Add Weight Form */}
-        <Card className="ios-card ios-shadow-lg rounded-[24px] border-[rgb(var(--ios-border))]">
-          <CardHeader>
-            <CardTitle className="text-[rgb(var(--ios-text-primary))]">Înregistrează greutatea de astăzi</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="weight" className="text-[rgb(var(--ios-text-primary))]">Greutate (kg)</Label>
-                  
-                  {/* Mobile: iOS-style increment/decrement */}
-                  <div className="md:hidden">
-                    <div className="flex items-center gap-3">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-12 w-12 rounded-full border-2 border-[rgb(var(--ios-border))] bg-[rgb(var(--ios-bg-tertiary))] active:scale-95 transition-transform"
-                        onClick={() => setWeight(Math.max(0, (parseFloat(weight) || 0) - 0.5).toFixed(1))}
-                      >
-                        <span className="text-2xl font-light text-[rgb(var(--ios-text-primary))]">−</span>
-                      </Button>
-                      
-                      <div className="flex-1 text-center">
-                        <Input
-                          id="weight-mobile"
-                          name="weight"
-                          type="number"
-                          step="0.1"
-                          value={weight}
-                          onChange={(e) => setWeight(e.target.value)}
-                          placeholder="75.5"
-                          className="text-center text-2xl font-semibold h-14 border-2 border-[rgb(var(--ios-border))] bg-[rgb(var(--ios-bg-primary))]"
-                        />
-                        <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">kg</p>
-                      </div>
-                      
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="h-12 w-12 rounded-full border-2 border-[rgb(var(--ios-border))] bg-[rgb(var(--ios-bg-tertiary))] active:scale-95 transition-transform"
-                        onClick={() => setWeight(((parseFloat(weight) || 0) + 0.5).toFixed(1))}
-                      >
-                        <span className="text-2xl font-light text-[rgb(var(--ios-text-primary))]">+</span>
-                      </Button>
-                    </div>
+        {/* Smart Weight Widget - iOS Style */}
+        <Card className="ios-card ios-shadow-lg rounded-[24px] border-[rgb(var(--ios-border))] overflow-hidden bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20">
+          <CardContent className="p-6">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Header: Date + Prediction */}
+              <div className="flex items-start justify-between">
+                <div>
+                  <div className="flex items-center gap-2 text-[rgb(var(--ios-text-tertiary))] text-sm mb-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>{format(new Date(), 'EEEE, d MMMM yyyy', { locale: ro })}</span>
                   </div>
-                  
-                  {/* Desktop: Regular input */}
-                  <Input
-                    id="weight"
-                    name="weight-desktop"
-                    type="number"
-                    step="0.1"
-                    value={weight}
-                    onChange={(e) => setWeight(e.target.value)}
-                    placeholder="Ex: 75.5"
-                    className="hidden md:block border-[rgb(var(--ios-border))]"
-                  />
+                  <h3 className="text-2xl font-bold text-[rgb(var(--ios-text-primary))]">
+                    Înregistrare greutate
+                  </h3>
                 </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="mood" className="text-[rgb(var(--ios-text-primary))]">Cum te simți?</Label>
-                  <Select value={mood} onValueChange={setMood}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="excelent">🤩 Excelent</SelectItem>
-                      <SelectItem value="bine">😊 Bine</SelectItem>
-                      <SelectItem value="normal">😐 Normal</SelectItem>
-                      <SelectItem value="obosit">😴 Obosit</SelectItem>
-                      <SelectItem value="slab">😞 Slab</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                  <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                  <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
+                    {latestWeight ? latestWeight.weight.toFixed(1) : user?.current_weight || '-'} kg
+                  </span>
                 </div>
               </div>
+
+              {/* Smart Forecast */}
+              {(() => {
+                const avgWeeklyLoss = weightEntries.length >= 2 
+                  ? weightEntries.slice(0, Math.min(7, weightEntries.length)).reduce((sum, entry, idx, arr) => {
+                      if (idx === arr.length - 1) return sum;
+                      return sum + (arr[idx + 1].weight - entry.weight);
+                    }, 0) / Math.min(6, weightEntries.length - 1)
+                  : 0;
+                
+                const daysToTarget = remainingWeight > 0 && avgWeeklyLoss < 0
+                  ? Math.ceil((remainingWeight / Math.abs(avgWeeklyLoss)) * 7)
+                  : null;
+
+                return (
+                  <div className="p-4 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-[16px]">
+                    <div className="flex items-center gap-2 mb-2">
+                      <TrendingDown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                      <span className="font-semibold text-purple-900 dark:text-purple-100">Prognoză inteligentă</span>
+                    </div>
+                    <p className="text-sm text-purple-700 dark:text-purple-300">
+                      {daysToTarget && daysToTarget > 0 && daysToTarget < 365
+                        ? `În ritmul actual, vei ajunge la ținta de ${user?.target_weight} kg în aproximativ ${daysToTarget} zile (${Math.round(daysToTarget / 7)} săptămâni). ${avgWeeklyLoss < -0.5 ? '🔥 Ritm excelent!' : avgWeeklyLoss < 0 ? '✨ Progres constant!' : ''}`
+                        : avgWeeklyLoss < -0.5
+                        ? `🔥 Progres excelent! Pierzi în medie ${Math.abs(avgWeeklyLoss * 7).toFixed(1)} kg/săptămână.`
+                        : avgWeeklyLoss < 0
+                        ? `✨ Continui pe drumul cel bun! Ritmul actual: ${Math.abs(avgWeeklyLoss * 7).toFixed(1)} kg/săptămână.`
+                        : weightEntries.length < 2
+                        ? '📊 Adaugă mai multe înregistrări pentru o prognoză precisă.'
+                        : '💪 Menține-ți greutatea stabilă! Continuă cu rutina ta.'}
+                    </p>
+                  </div>
+                );
+              })()}
+
+              {/* Weight Input - Centered & Prominent */}
+              <div className="space-y-3">
+                <Label htmlFor="weight" className="text-center block text-[rgb(var(--ios-text-primary))] font-semibold">
+                  Greutatea de astăzi
+                </Label>
+                
+                {/* Mobile & Desktop: iOS-style increment/decrement */}
+                <div className="flex items-center justify-center gap-4">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-14 w-14 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
+                    onClick={() => setWeight(Math.max(0, (parseFloat(weight) || 0) - 0.5).toFixed(1))}
+                  >
+                    <span className="text-3xl font-light text-blue-600 dark:text-blue-400">−</span>
+                  </Button>
+                  
+                  <div className="text-center">
+                    <Input
+                      id="weight"
+                      name="weight"
+                      type="number"
+                      step="0.1"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      placeholder="75.5"
+                      className="text-center text-4xl font-bold h-20 w-32 border-2 border-blue-300 dark:border-blue-700 bg-white dark:bg-gray-900 rounded-[16px] shadow-lg"
+                    />
+                    <p className="text-sm text-[rgb(var(--ios-text-tertiary))] mt-2 font-medium">kilogramе</p>
+                  </div>
+                  
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-14 w-14 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
+                    onClick={() => setWeight(((parseFloat(weight) || 0) + 0.5).toFixed(1))}
+                  >
+                    <span className="text-3xl font-light text-blue-600 dark:text-blue-400">+</span>
+                  </Button>
+                </div>
+              </div>
+
+              {/* Notes - Compact */}
               <div className="space-y-2">
-                <Label htmlFor="notes" className="text-[rgb(var(--ios-text-primary))]">Notițe (opțional)</Label>
+                <Label htmlFor="notes" className="text-[rgb(var(--ios-text-primary))] text-sm">Notițe (opțional)</Label>
                 <Textarea
                   id="notes"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Observații despre zi, mâncare, exerciții..."
-                  rows={3}
-                  className="border-[rgb(var(--ios-border))]"
+                  rows={2}
+                  className="border-[rgb(var(--ios-border))] rounded-[12px] text-sm"
                 />
               </div>
               <Button 
                 type="submit" 
-                className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-[12px]"
+                className="w-full h-14 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 rounded-[16px] text-white font-semibold shadow-lg active:scale-95 transition-all"
                 disabled={addWeightMutation.isPending}
               >
+                <Scale className="w-5 h-5 mr-2" />
                 {addWeightMutation.isPending ? 'Se salvează...' : 'Salvează înregistrarea'}
               </Button>
             </form>
