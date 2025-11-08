@@ -49,6 +49,10 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
             {language === 'ro' ? 'Eat Smart. Stay Fit' : 'Eat Smart. Stay Fit'}
           </p>
         </div>
+        <div className="flex items-center justify-center gap-2 mt-2">
+          <LanguageSelector />
+          <ThemeSelector />
+        </div>
       </SidebarHeader>
       
       <SidebarContent className="px-2 py-2">
@@ -146,11 +150,6 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
       </SidebarContent>
       
       <SidebarFooter className="border-t border-[rgb(var(--ios-border))] p-3">
-        <div className="flex gap-2 mb-2">
-          <LanguageSelector />
-          <ThemeSelector />
-        </div>
-        
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
