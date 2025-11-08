@@ -411,6 +411,41 @@ export const localApi = {
     },
   },
   
+  // Friends
+  friends: {
+    list: () => request('/friends'),
+    search: (email) => request(`/friends?search=${encodeURIComponent(email)}`),
+    sendRequest: (friendEmail) => request('/friends', {
+      method: 'POST',
+      body: JSON.stringify({ friendEmail }),
+    }),
+    getRequests: () => request('/friends?requests=true'),
+    acceptRequest: (requestId) => request('/friends', {
+      method: 'PUT',
+      body: JSON.stringify({ requestId, action: 'accept' }),
+    }),
+    rejectRequest: (requestId) => request('/friends', {
+      method: 'PUT',
+      body: JSON.stringify({ requestId, action: 'reject' }),
+    }),
+    remove: (friendshipId) => request(`/friends?id=${friendshipId}`, { method: 'DELETE' }),
+  },
+
+  // User Recipes
+  userRecipes: {
+    list: () => request('/user-recipes'),
+    friendsRecipes: () => request('/user-recipes?friends=true'),
+    create: (recipe) => request('/user-recipes', {
+      method: 'POST',
+      body: JSON.stringify(recipe),
+    }),
+    update: (id, data) => request('/user-recipes', {
+      method: 'PUT',
+      body: JSON.stringify({ id, ...data }),
+    }),
+    delete: (id) => request(`/user-recipes?id=${id}`, { method: 'DELETE' }),
+  },
+  
   // Integrations - pentru compatibilitate cu base44
   integrations: {
     Core: {

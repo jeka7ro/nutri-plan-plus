@@ -12,6 +12,7 @@ import Settings from "@/pages/Settings.jsx"
 import Progress from "@/pages/Progress.jsx"
 import WeightTracking from "@/pages/WeightTracking.jsx"
 import Recipes from "@/pages/Recipes.jsx"
+import MyRecipes from "@/pages/MyRecipes.jsx"
 import Friends from "@/pages/Friends.jsx"
 import Messages from "@/pages/Messages.jsx"
 import Support from "@/pages/Support.jsx"
@@ -34,6 +35,7 @@ function App() {
             <Route path="/progress" element={<Progress />} />
             <Route path="/weighttracking" element={<WeightTracking />} />
             <Route path="/recipes" element={<Recipes />} />
+            <Route path="/myrecipes" element={<MyRecipes />} />
             <Route path="/recommendations" element={<Recommendations />} />
             <Route path="/friends" element={<Friends />} />
             <Route path="/messages" element={<Messages />} />

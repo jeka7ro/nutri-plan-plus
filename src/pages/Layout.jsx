@@ -3,7 +3,7 @@
 import React from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Calendar, TrendingDown, BookOpen, User, LogOut, Users, MessageCircle, HelpCircle, Shield, Settings } from "lucide-react";
+import { Home, Calendar, TrendingDown, BookOpen, User, LogOut, Users, MessageCircle, HelpCircle, Shield, Settings, ChefHat } from "lucide-react";
 import localApi from "@/api/localClient";
 import { LanguageProvider, useLanguage } from "../components/LanguageContext";
 import { ThemeProvider, useTheme } from "../components/ThemeContext";
@@ -118,7 +118,31 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("MyRecipes")}
+                >
+                  <Link to={createPageUrl("MyRecipes")} onClick={handleNavClick}>
+                    <ChefHat className="w-5 h-5" />
+                    <span>{language === 'ro' ? 'Rețetele Mele' : 'My Recipes'}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("Friends")}
+                >
+                  <Link to={createPageUrl("Friends")} onClick={handleNavClick}>
+                    <Users className="w-5 h-5" />
+                    <span>{language === 'ro' ? 'Prieteni' : 'Friends'}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
               <SidebarMenuItem>
                 <SidebarMenuButton
                   asChild
