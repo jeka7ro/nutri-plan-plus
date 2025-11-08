@@ -8,6 +8,7 @@ import Layout from "@/pages/Layout.jsx"
 import Dashboard from "@/pages/Dashboard.jsx"
 import DailyPlan from "@/pages/DailyPlan.jsx"
 import Calendar from "@/pages/Calendar.jsx"
+import Settings from "@/pages/Settings.jsx"
 import Progress from "@/pages/Progress.jsx"
 import WeightTracking from "@/pages/WeightTracking.jsx"
 import Recipes from "@/pages/Recipes.jsx"
@@ -29,6 +30,7 @@ function App() {
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dailyplan" element={<DailyPlan />} />
             <Route path="/calendar" element={<Calendar />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/weighttracking" element={<WeightTracking />} />
             <Route path="/recipes" element={<Recipes />} />

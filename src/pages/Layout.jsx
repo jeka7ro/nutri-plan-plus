@@ -3,7 +3,7 @@
 import React from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Calendar, TrendingDown, BookOpen, User, LogOut, Users, MessageCircle, HelpCircle, Shield } from "lucide-react";
+import { Home, Calendar, TrendingDown, BookOpen, User, LogOut, Users, MessageCircle, HelpCircle, Shield, Settings } from "lucide-react";
 import localApi from "@/api/localClient";
 import { LanguageProvider, useLanguage } from "../components/LanguageContext";
 import { ThemeProvider, useTheme } from "../components/ThemeContext";
@@ -127,6 +127,18 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
                   <Link to={createPageUrl("Profile")} onClick={handleNavClick}>
                     <User className="w-5 h-5" />
                     <span>{t('profile')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("Settings")}
+                >
+                  <Link to={createPageUrl("Settings")} onClick={handleNavClick}>
+                    <Settings className="w-5 h-5" />
+                    <span>{language === 'ro' ? 'Setări Alimentare' : 'Dietary Settings'}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
