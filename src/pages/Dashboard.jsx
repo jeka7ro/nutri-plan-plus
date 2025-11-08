@@ -661,38 +661,6 @@ export default function Dashboard() {
           </Card>
         </div>
 
-        {/* OBIECTIVE SĂPTĂMÂNA ACEASTA - DEDESUBT */}
-        <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center gap-2 text-lg text-[rgb(var(--ios-text-primary))]">
-              <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-[14px] flex items-center justify-center">
-                <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              {t('weeklyGoals')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-4 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-[rgb(var(--ios-bg-tertiary))] rounded-[14px] border border-[rgb(var(--ios-border))]">
-                <Award className="w-6 h-6 text-emerald-500 flex-shrink-0" />
-                <span className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('completeAllMeals')}</span>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-[rgb(var(--ios-bg-tertiary))] rounded-[14px] border border-[rgb(var(--ios-border))]">
-                <Award className="w-6 h-6 text-emerald-500 flex-shrink-0" />
-                <span className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('drink8Glasses')}</span>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-[rgb(var(--ios-bg-tertiary))] rounded-[14px] border border-[rgb(var(--ios-border))]">
-                <Award className="w-6 h-6 text-emerald-500 flex-shrink-0" />
-                <span className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('recordWeightDaily')}</span>
-              </div>
-              <div className="flex items-center gap-3 p-4 bg-[rgb(var(--ios-bg-tertiary))] rounded-[14px] border border-[rgb(var(--ios-border))]">
-                <Calendar className="w-6 h-6 text-[rgb(var(--ios-text-tertiary))] flex-shrink-0" />
-                <span className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('doExercises')}</span>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* MODAL PENTRU GRAFIC EXPANDAT */}
         <Dialog open={expandedChart !== null} onOpenChange={() => setExpandedChart(null)}>
           <DialogContent className="max-w-4xl">
@@ -763,6 +731,38 @@ export default function Dashboard() {
         </Dialog>
 
         <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-lg text-[rgb(var(--ios-text-primary))]">
+                <div className="w-10 h-10 bg-purple-100 dark:bg-purple-900/30 rounded-[14px] flex items-center justify-center">
+                  <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                {t('weeklyGoals')}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <Award className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('completeAllMeals')}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Award className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('drink8Glasses')}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Award className="w-5 h-5 text-emerald-500" />
+                  <span className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('recordWeightDaily')}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-5 h-5 text-[rgb(var(--ios-text-tertiary))]" />
+                  <span className="text-sm text-[rgb(var(--ios-text-secondary))]">{t('doExercises')}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
           <CardHeader>
             <CardTitle className="text-[rgb(var(--ios-text-primary))]">{t('recentActivity')}</CardTitle>
           </CardHeader>
@@ -797,15 +797,6 @@ export default function Dashboard() {
             </div>
           </CardContent>
         </Card>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
-      </div>
       </div>
     </div>
   );
