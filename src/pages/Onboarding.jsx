@@ -53,12 +53,33 @@ export default function Onboarding() {
     localApi.auth.me()
       .then(user => {
         setCurrentUser(user);
-        // Pre-populează datele dacă există
-        if (user.name) setFormData(prev => ({ ...prev, full_name: user.name }));
+        // Pre-populează TOATE datele dacă există
+        setFormData(prev => ({
+          ...prev,
+          full_name: user.name || user.first_name || "",
+          birth_date: user.birth_date || "",
+          country: user.country || "",
+          city: user.city || "",
+          current_weight: user.current_weight || "",
+          target_weight: user.target_weight || "",
+          height: user.height || "",
+          gender: user.gender || "",
+          activity_level: user.activity_level || "moderate",
+          is_vegetarian: user.is_vegetarian || false,
+          is_vegan: user.is_vegan || false,
+          allergies: user.allergies || [],
+          favorite_foods: user.favorite_foods || ""
+        }));
         if (user.profile_picture) setImagePreview(user.profile_picture);
+        
+        // Dacă user-ul ARE deja datele complete, SKIP onboarding
+        if (user.current_weight && user.target_weight && user.height && user.birth_date) {
+          console.log('✅ User are date complete - SKIP onboarding');
+          navigate('/dashboard');
+        }
       })
       .catch(err => console.error('Error loading user:', err));
-  }, []);
+  }, [navigate]);
 
   // Încarcă lista de țări
   React.useEffect(() => {
