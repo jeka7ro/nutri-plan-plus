@@ -29,7 +29,8 @@ export default function IndexPage() {
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    name: '',
+    first_name: '',
+    last_name: '',
     phone: '',
     country_code: '+40',
     country: '',
@@ -80,7 +81,7 @@ export default function IndexPage() {
         if (savedEmail && savedPassword && savedRemember) {
           // AUTO-LOGIN dacă avem email + parolă + remember me
           console.log('🔐 AUTO-LOGIN cu credențiale salvate...');
-          setFormData({ email: savedEmail, password: savedPassword, name: '' });
+          setFormData({ email: savedEmail, password: savedPassword, first_name: '', last_name: '' });
           setRememberMe(true);
           
           // Trimite form automat (IMEDIAT, nu mai așteptăm)
@@ -187,7 +188,8 @@ export default function IndexPage() {
         await localApi.auth.register(
           formData.email, 
           formData.password, 
-          formData.name,
+          formData.first_name,
+          formData.last_name,
           formData.phone,
           formData.country_code,
           formData.country,
@@ -273,23 +275,44 @@ export default function IndexPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             {!isLogin && (
               <>
-                {/* Nume Complet - pe toată lățimea */}
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-gray-700 dark:text-gray-300">
-                    {language === 'ro' ? 'Nume Complet' : 'Full Name'}
-                  </Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                    <Input
-                      id="name"
-                      name="name"
-                      type="text"
-                      placeholder={language === 'ro' ? 'Ion Popescu' : 'John Doe'}
-                      value={formData.name}
-                      onChange={handleChange}
-                      className="pl-10 py-6 rounded-xl"
-                      required={!isLogin}
-                    />
+                {/* 2 COLOANE: Prenume și Nume */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="first_name" className="text-gray-700 dark:text-gray-300">
+                      {language === 'ro' ? 'Prenume' : 'First Name'}
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Input
+                        id="first_name"
+                        name="first_name"
+                        type="text"
+                        placeholder={language === 'ro' ? 'Ion' : 'John'}
+                        value={formData.first_name}
+                        onChange={handleChange}
+                        className="pl-10 py-6 rounded-xl"
+                        required={!isLogin}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="last_name" className="text-gray-700 dark:text-gray-300">
+                      {language === 'ro' ? 'Nume' : 'Last Name'}
+                    </Label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Input
+                        id="last_name"
+                        name="last_name"
+                        type="text"
+                        placeholder={language === 'ro' ? 'Popescu' : 'Doe'}
+                        value={formData.last_name}
+                        onChange={handleChange}
+                        className="pl-10 py-6 rounded-xl"
+                        required={!isLogin}
+                      />
+                    </div>
                   </div>
                 </div>
 
@@ -519,7 +542,7 @@ export default function IndexPage() {
               type="button"
               onClick={() => {
                 setIsLogin(!isLogin);
-                setFormData({ email: '', password: '', name: '' });
+                setFormData({ email: '', password: '', first_name: '', last_name: '' });
               }}
               className="text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
             >

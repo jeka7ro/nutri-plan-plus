@@ -23,7 +23,7 @@ export default async function handler(req, res) {
   }
   
   try {
-    const { email, password, name, phone, country_code, country, city, date_of_birth, isRegister } = req.body;
+    const { email, password, first_name, last_name, phone, country_code, country, city, date_of_birth, isRegister } = req.body;
     
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password required' });
@@ -46,13 +46,14 @@ export default async function handler(req, res) {
       
       // Insert user
       const result = await pool.query(`
-        INSERT INTO users (email, password, name, phone, country_code, country, city, birth_date, subscription_tier, role)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, 'free', 'user')
-        RETURNING id, email, name, phone, country_code, country, city, birth_date, role, subscription_tier
+        INSERT INTO users (email, password, first_name, last_name, phone, country_code, country, city, birth_date, subscription_tier, role)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, 'free', 'user')
+        RETURNING id, email, first_name, last_name, phone, country_code, country, city, birth_date, role, subscription_tier
       `, [
         email,
         hashedPassword,
-        name || email.split('@')[0],
+        first_name || null,
+        last_name || null,
         phone || null,
         country_code || '+40',
         country || null,

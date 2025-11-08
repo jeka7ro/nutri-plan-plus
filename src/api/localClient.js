@@ -67,13 +67,14 @@ async function request(endpoint, options = {}) {
 export const localApi = {
   // Auth
   auth: {
-    register: async (email, password, name, phone, country_code, country, city, date_of_birth) => {
+    register: async (email, password, first_name, last_name, phone, country_code, country, city, date_of_birth) => {
       const result = await request('/auth/login', {
         method: 'POST',
         body: JSON.stringify({ 
           email, 
           password, 
-          name, 
+          first_name,
+          last_name,
           phone, 
           country_code, 
           country, 
