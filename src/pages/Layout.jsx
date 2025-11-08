@@ -150,6 +150,29 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
       </SidebarContent>
       
       <SidebarFooter className="border-t border-[rgb(var(--ios-border))] p-3">
+        {user && (
+          <div className="flex items-center gap-3 px-2 mb-3">
+            {user.profile_picture ? (
+              <img 
+                src={user.profile_picture} 
+                alt={user.first_name || 'User'}
+                className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500 shadow-md"
+              />
+            ) : (
+              <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center shadow-md">
+                <span className="text-white font-bold text-sm">
+                  {user.first_name?.[0]?.toUpperCase() || user.last_name?.[0]?.toUpperCase() || 'U'}
+                </span>
+              </div>
+            )}
+            <div className="flex-1 min-w-0">
+              <p className="font-medium text-[rgb(var(--ios-text-primary))] text-sm truncate">
+                {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.name || 'User')}
+              </p>
+              <p className="text-xs text-[rgb(var(--ios-text-tertiary))] truncate">{user.email}</p>
+            </div>
+          </div>
+        )}
         <button
           onClick={handleLogout}
           className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
