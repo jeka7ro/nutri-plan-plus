@@ -70,6 +70,18 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("Calendar")}
+                >
+                  <Link to={createPageUrl("Calendar")} onClick={handleNavClick}>
+                    <Calendar className="w-5 h-5" />
+                    <span>{language === 'ro' ? 'Calendar 28 zile' : 'Calendar 28 days'}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
               
               <SidebarMenuItem>
                 <SidebarMenuButton
