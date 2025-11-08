@@ -26,10 +26,146 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
+// Component intern care folosește useSidebar - TREBUIE să fie sub SidebarProvider
+function SidebarNav({ user, t, language, theme, handleLogout }) {
+  const { setOpenMobile } = useSidebar();
+  const location = useLocation();
+
+  const handleNavClick = () => {
+    // Închide sidebar-ul pe mobile după click
+    setOpenMobile(false);
+  };
+
+  return (
+    <Sidebar className="border-r border-[rgb(var(--ios-border))] ios-glass">
+      <SidebarHeader className="border-b border-[rgb(var(--ios-border))] p-2">
+        <div className="flex flex-col items-center mb-1">
+          <img
+            src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
+            alt="EatnFit"
+            className="w-32 h-32 object-contain p-2 mb-1"
+          />
+          <p className="text-sm font-semibold text-[rgb(var(--ios-text-primary))] text-center -mt-1">
+            {language === 'ro' ? 'Eat Smart. Stay Fit' : 'Eat Smart. Stay Fit'}
+          </p>
+        </div>
+      </SidebarHeader>
+      
+      <SidebarContent className="px-2 py-2">
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("DailyPlan")}
+                >
+                  <Link to={createPageUrl("DailyPlan")} onClick={handleNavClick}>
+                    <Calendar className="w-5 h-5" />
+                    <span>{t('dailyPlan')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("Dashboard")}
+                >
+                  <Link to={createPageUrl("Dashboard")} onClick={handleNavClick}>
+                    <Home className="w-5 h-5" />
+                    <span>{t('dashboard')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("WeightTracking")}
+                >
+                  <Link to={createPageUrl("WeightTracking")} onClick={handleNavClick}>
+                    <TrendingDown className="w-5 h-5" />
+                    <span>{t('weightTracking')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("Recipes")}
+                >
+                  <Link to={createPageUrl("Recipes")} onClick={handleNavClick}>
+                    <BookOpen className="w-5 h-5" />
+                    <span>{t('recipes')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("Profile")}
+                >
+                  <Link to={createPageUrl("Profile")} onClick={handleNavClick}>
+                    <User className="w-5 h-5" />
+                    <span>{t('profile')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+
+              {user?.role === 'admin' && (
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === createPageUrl("Admin")}
+                  >
+                    <Link to={createPageUrl("Admin")} onClick={handleNavClick}>
+                      <Shield className="w-5 h-5" />
+                      <span>{t('admin')}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              )}
+              
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={location.pathname === createPageUrl("Support")}
+                >
+                  <Link to={createPageUrl("Support")} onClick={handleNavClick}>
+                    <HelpCircle className="w-5 h-5" />
+                    <span>{t('support')}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+      </SidebarContent>
+      
+      <SidebarFooter className="border-t border-[rgb(var(--ios-border))] p-3">
+        <div className="flex gap-2 mb-2">
+          <LanguageSelector />
+          <ThemeSelector />
+        </div>
+        
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center gap-2 px-4 py-2.5 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/30 rounded-lg transition-colors"
+        >
+          <LogOut className="w-4 h-4" />
+          <span>{t('logout')}</span>
+        </button>
+      </SidebarFooter>
+    </Sidebar>
+  );
+}
+
 function LayoutContent() {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
-  const { setOpenMobile } = useSidebar();
   const location = useLocation();
   const navigate = useNavigate();
   const [user, setUser] = React.useState(null);
@@ -259,92 +395,13 @@ function LayoutContent() {
       `}</style>
       
       <div className="min-h-screen flex w-full max-w-full overflow-x-hidden bg-[rgb(var(--ios-bg-secondary))]">
-        <Sidebar className="border-r border-[rgb(var(--ios-border))] ios-glass">
-          <SidebarHeader className="border-b border-[rgb(var(--ios-border))] p-2">
-            <div className="flex flex-col items-center mb-1">
-              <img 
-                src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
-                alt="EatnFit Logo" 
-                className="w-32 h-32 object-contain mb-1"
-              />
-              <p className="text-sm font-semibold text-[rgb(var(--ios-text-secondary))] text-center">
-                Eat Smart. Stay Fit
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <LanguageSelector />
-              <ThemeSelector />
-            </div>
-          </SidebarHeader>
-          
-          <SidebarContent className="p-3">
-            <SidebarGroup>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {navigationItems.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton 
-                        asChild 
-                        className={`hover:bg-gray-100 dark:hover:bg-white/5 transition-all duration-200 rounded-[14px] mb-1 ${
-                          location.pathname === item.url 
-                            ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 shadow-sm dark:shadow-emerald-500/20' 
-                            : 'text-gray-900 dark:text-gray-100'
-                        }`}
-                      >
-                        <Link 
-                          to={item.url} 
-                          className="flex items-center gap-3 px-4 py-3"
-                          onClick={() => {
-                            // Închide sidebar pe mobil după click
-                            if (setOpenMobile) {
-                              setOpenMobile(false);
-                            }
-                          }}
-                        >
-                          <item.icon className="w-5 h-5" />
-                          <span className="font-medium">{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          </SidebarContent>
-
-          <SidebarFooter className="border-t border-[rgb(var(--ios-border))] p-4">
-            <div className="space-y-3">
-              {user && (
-                <div className="flex items-center gap-3 px-2">
-                  {user.profile_picture ? (
-                    <img 
-                      src={user.profile_picture} 
-                      alt={user.full_name || 'User profile picture'}
-                      className="w-10 h-10 rounded-full object-cover border-2 border-emerald-500 shadow-md"
-                    />
-                  ) : (
-                    <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-amber-600 dark:from-amber-600 dark:to-amber-700 rounded-full flex items-center justify-center shadow-md">
-                      <span className="text-white font-bold text-sm">
-                        {user.full_name?.[0]?.toUpperCase() || 'U'}
-                      </span>
-                    </div>
-                  )}
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-[rgb(var(--ios-text-primary))] text-sm truncate">{user.full_name || 'User'}</p>
-                    <p className="text-xs text-[rgb(var(--ios-text-tertiary))] truncate">{user.email}</p>
-                  </div>
-                </div>
-              )}
-              <button
-                onClick={handleLogout}
-                className="w-full flex items-center gap-2 px-4 py-2 text-sm text-[rgb(var(--ios-text-secondary))] hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-[12px] transition-colors duration-200"
-              >
-                <LogOut className="w-4 h-4" />
-                {t('logout')}
-              </button>
-            </div>
-          </SidebarFooter>
-        </Sidebar>
+        <SidebarNav 
+          user={user} 
+          t={t} 
+          language={language} 
+          theme={theme} 
+          handleLogout={handleLogout} 
+        />
 
         <main className="flex-1 flex flex-col relative max-w-full overflow-x-hidden">
           <header className="bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-gray-200 dark:border-[rgb(var(--ios-border))] px-6 py-3 md:hidden sticky top-0 z-10 ios-shadow-sm">
