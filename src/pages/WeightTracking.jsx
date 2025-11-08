@@ -38,6 +38,18 @@ export default function WeightTracking() {
     queryFn: () => localApi.weight.list(),
   });
 
+  // PRE-POPULEAZĂ greutatea cu ultima valoare salvată
+  useEffect(() => {
+    if (weightEntries.length > 0 && !weight) {
+      const lastWeight = weightEntries[0].weight;
+      setWeight(lastWeight.toFixed(1));
+      console.log('✅ Pre-populat greutate:', lastWeight);
+    } else if (user?.current_weight && !weight && weightEntries.length === 0) {
+      setWeight(user.current_weight.toFixed(1));
+      console.log('✅ Pre-populat greutate din profil:', user.current_weight);
+    }
+  }, [weightEntries, user, weight]);
+
   const addWeightMutation = useMutation({
     mutationFn: async (data) => {
       await localApi.weight.add({

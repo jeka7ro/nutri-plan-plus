@@ -396,11 +396,11 @@ export default function DailyPlan() {
     console.log('🍽️ CLICK SELECȚIE MASĂ!', { mealType, optionName: option.name_ro });
     
     const mealTypeMap = {
-      'breakfast': { key: 'breakfast_option', imageKey: 'breakfast_image', caloriesKey: 'breakfast_calories', quantityKey: 'breakfast_quantity' },
-      'snack1': { key: 'snack1_option', imageKey: 'snack1_image', caloriesKey: 'snack1_calories', quantityKey: 'snack1_quantity' },
-      'lunch': { key: 'lunch_option', imageKey: 'lunch_image', caloriesKey: 'lunch_calories', quantityKey: 'lunch_quantity' },
-      'snack2': { key: 'snack2_option', imageKey: 'snack2_image', caloriesKey: 'snack2_calories', quantityKey: 'snack2_quantity' },
-      'dinner': { key: 'dinner_option', imageKey: 'dinner_image', caloriesKey: 'dinner_calories', quantityKey: 'dinner_quantity' }
+      'breakfast': { key: 'breakfast_option', imageKey: 'breakfast_image', caloriesKey: 'breakfast_calories', quantityKey: 'breakfast_quantity', completedKey: 'breakfast_completed' },
+      'snack1': { key: 'snack1_option', imageKey: 'snack1_image', caloriesKey: 'snack1_calories', quantityKey: 'snack1_quantity', completedKey: 'snack1_completed' },
+      'lunch': { key: 'lunch_option', imageKey: 'lunch_image', caloriesKey: 'lunch_calories', quantityKey: 'lunch_quantity', completedKey: 'lunch_completed' },
+      'snack2': { key: 'snack2_option', imageKey: 'snack2_image', caloriesKey: 'snack2_calories', quantityKey: 'snack2_quantity', completedKey: 'snack2_completed' },
+      'dinner': { key: 'dinner_option', imageKey: 'dinner_image', caloriesKey: 'dinner_calories', quantityKey: 'dinner_quantity', completedKey: 'dinner_completed' }
     };
 
     const mapping = mealTypeMap[mealType];
@@ -417,6 +417,7 @@ export default function DailyPlan() {
       [mapping.imageKey]: option.image_url,
       [mapping.caloriesKey]: option.calories * quantity,
       [mapping.quantityKey]: quantity,
+      [mapping.completedKey]: true, // ✅ AUTO-FINALIZEAZĂ când selectezi rețetă!
     };
 
     const tempCheckIn = { ...(checkIn || {}), ...updatedFields };
