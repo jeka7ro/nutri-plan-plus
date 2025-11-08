@@ -245,6 +245,23 @@ export default async function handler(req, res) {
           ON CONFLICT (user_id_1, user_id_2) DO NOTHING
         `, [userId1, userId2]);
         
+        // Creează notificare pentru sender că cererea a fost acceptată
+        const receiverData = await pool.query('SELECT first_name, last_name FROM users WHERE id = $1', [userId]);
+        const receiverName = receiverData.rows[0]?.first_name && receiverData.rows[0]?.last_name 
+          ? `${receiverData.rows[0].first_name} ${receiverData.rows[0].last_name}` 
+          : 'Cineva';
+        
+        await pool.query(`
+          INSERT INTO notifications (user_id, type, related_user_id, message, action_url)
+          VALUES ($1, $2, $3, $4, $5)
+        `, [
+          request.sender_id,
+          'friend_accepted',
+          userId,
+          `${receiverName} a acceptat cererea ta de prietenie`,
+          '/friends'
+        ]);
+        
         console.log('✅ Friend request accepted:', requestId);
         return res.status(200).json({ success: true, action: 'accepted' });
         
@@ -306,6 +323,23 @@ export default async function handler(req, res) {
         VALUES ($1, $2, 'pending')
         RETURNING *
       `, [userId, friendId]);
+      
+      // Creează notificare pentru receiver
+      const senderData = await pool.query('SELECT first_name, last_name FROM users WHERE id = $1', [userId]);
+      const senderName = senderData.rows[0]?.first_name && senderData.rows[0]?.last_name 
+        ? `${senderData.rows[0].first_name} ${senderData.rows[0].last_name}` 
+        : 'Cineva';
+      
+      await pool.query(`
+        INSERT INTO notifications (user_id, type, related_user_id, message, action_url)
+        VALUES ($1, $2, $3, $4, $5)
+      `, [
+        friendId,
+        'friend_request',
+        userId,
+        `${senderName} ți-a trimis o cerere de prietenie`,
+        '/friends'
+      ]);
       
       console.log('✅ Friend request created:', result.rows[0]);
       return res.status(200).json(result.rows[0]);

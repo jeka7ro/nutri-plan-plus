@@ -445,6 +445,14 @@ export const localApi = {
     }),
     delete: (id) => request(`/user-recipes?id=${id}`, { method: 'DELETE' }),
   },
+
+  // Notifications
+  notifications: {
+    list: () => request('/notifications'),
+    getUnreadCount: () => request('/notifications?unread=true'),
+    markAsRead: (id) => request(`/notifications?id=${id}`, { method: 'PUT' }),
+    markAllAsRead: () => request('/notifications?readAll=true', { method: 'PUT' }),
+  },
   
   // Integrations - pentru compatibilitate cu base44
   integrations: {

@@ -10,6 +10,7 @@ import { ThemeProvider, useTheme } from "../components/ThemeContext";
 import LanguageSelector from "../components/LanguageSelector";
 import ThemeSelector from "../components/ThemeSelector";
 import AIFoodAssistant from "../components/AIFoodAssistant";
+import NotificationBell from "../components/NotificationBell";
 import { differenceInDays } from "date-fns";
 import {
   Sidebar,
@@ -514,7 +515,10 @@ function LayoutContent() {
                 </div>
               )}
 
-              <ThemeSelector />
+              <div className="flex items-center gap-2">
+                <NotificationBell />
+                <ThemeSelector />
+              </div>
             </div>
           </header>
 

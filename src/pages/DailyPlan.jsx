@@ -139,6 +139,7 @@ export default function DailyPlan() {
   const [editingMeal, setEditingMeal] = useState(null); // Track which meal is being edited
   const [expandedMeals, setExpandedMeals] = useState({}); // Track which meals show all options
   const [exercises, setExercises] = useState([]); // Array de exerciții: [{type, duration, calories}, ...]
+  const [activeRecipeTab, setActiveRecipeTab] = useState({}); // Track active tab for each meal: { breakfast: 'standard', lunch: 'mine', ... }
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -185,6 +186,18 @@ export default function DailyPlan() {
     queryKey: ['recipes'],
     queryFn: () => localApi.recipes.list(),
     staleTime: 30 * 60 * 1000, // Cache 30 minutes - recipes don't change often
+  });
+
+  const { data: myRecipes = [] } = useQuery({
+    queryKey: ['myRecipes'],
+    queryFn: () => localApi.userRecipes.list(),
+    enabled: !!user,
+  });
+
+  const { data: friendsRecipes = [] } = useQuery({
+    queryKey: ['friendsRecipes'],
+    queryFn: () => localApi.userRecipes.friendsRecipes(),
+    enabled: !!user,
   });
 
   useEffect(() => {
@@ -1113,10 +1126,21 @@ export default function DailyPlan() {
             const MealIcon = meal.icon;
             const isCompleted = checkIn?.[meal.key];
             
-            // Filtrează rețete pe fază ȘI tip de masă
-            const phaseRecipes = recipes.filter(r => r.phase === currentPhase && r.meal_type === meal.mealType);
-            const filteredOptions = filterMealOptions(phaseRecipes);
-            const options = sortMealOptionsByFavorites(filteredOptions);
+            // Filtrează rețete pe fază ȘI tip de masă - pentru TOATE cele 3 tab-uri
+            const standardRecipes = recipes.filter(r => r.phase === currentPhase && r.meal_type === meal.mealType);
+            const myFilteredRecipes = myRecipes.filter(r => (!r.phase || r.phase === currentPhase) && r.meal_type === meal.mealType);
+            const friendsFilteredRecipes = friendsRecipes.filter(r => (!r.phase || r.phase === currentPhase) && r.meal_type === meal.mealType);
+            
+            const filteredStandard = filterMealOptions(standardRecipes);
+            const standardOptions = sortMealOptionsByFavorites(filteredStandard);
+            
+            // Determină ce tab e activ pentru această masă
+            const currentTab = activeRecipeTab[meal.mealType] || 'standard';
+            
+            // Selectează opțiunile bazate pe tab-ul activ
+            const options = currentTab === 'standard' ? standardOptions : 
+                           currentTab === 'mine' ? myFilteredRecipes : 
+                           friendsFilteredRecipes;
 
             const mealTypeMap = {
               'breakfast': { optionKey: 'breakfast_option', imageKey: 'breakfast_image', quantityKey: 'breakfast_quantity', caloriesKey: 'breakfast_calories' },
@@ -1282,6 +1306,33 @@ export default function DailyPlan() {
 
                   {/* Meal Options Grid - FROM DATABASE */}
                   <div className="space-y-3">
+                    {/* 3 TAB-URI: Standard / Ale Mele / De la Prieteni */}
+                    <div className="flex gap-2 mb-3">
+                      <Button
+                        size="sm"
+                        variant={currentTab === 'standard' ? 'default' : 'outline'}
+                        onClick={() => setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'standard' })}
+                        className={currentTab === 'standard' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
+                      >
+                        📖 {language === 'ro' ? 'Standard' : 'Standard'} ({standardOptions.length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={currentTab === 'mine' ? 'default' : 'outline'}
+                        onClick={() => setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'mine' })}
+                        className={currentTab === 'mine' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+                      >
+                        🍽️ {language === 'ro' ? 'Ale Mele' : 'Mine'} ({myFilteredRecipes.length})
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={currentTab === 'friends' ? 'default' : 'outline'}
+                        onClick={() => setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'friends' })}
+                        className={currentTab === 'friends' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                      >
+                        👥 {language === 'ro' ? 'Prieteni' : 'Friends'} ({friendsFilteredRecipes.length})
+                      </Button>
+                    </div>
                     <div className="grid md:grid-cols-3 gap-3">
                       {(expandedMeals[meal.mealType] ? options : options.slice(0, 3)).map((option, index) => {
                       const favoriteScore = scoreMealOption(option);
