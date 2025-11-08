@@ -1,8 +1,15 @@
-// Shared storage între /api/checkins și /api/checkins/[date]
-// În producție ar fi baza de date, acum e în memorie
-const checkins = global.checkins || (global.checkins = {});
+// REAL ENDPOINT - GET check-in by date din PostgreSQL
+import { Pool } from 'pg';
+import jwt from 'jsonwebtoken';
 
-export default function handler(req, res) {
+const pool = new Pool({
+  connectionString: process.env.POSTGRES_URL,
+  ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
+});
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-super-secret-jwt-key-change-in-production';
+
+export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
@@ -16,17 +23,35 @@ export default function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
+  // Verifică autentificarea
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ error: 'No token provided' });
+  }
+  
+  let userId;
+  try {
+    const decoded = jwt.verify(token, JWT_SECRET);
+    userId = decoded.id;
+  } catch (error) {
+    return res.status(401).json({ error: 'Invalid token' });
+  }
+
   const { date } = req.query;
   
-  // Mock user ID (în producție ar veni din token)
-  const userId = 'user-1';
-  const key = `${userId}-${date}`;
-  
-  // Returnează check-in pentru această dată sau null
-  const checkin = checkins[key] || null;
-  
-  console.log(`✅ GET /api/checkins/${date}:`, checkin ? 'FOUND' : 'NULL');
-  
-  return res.status(200).json(checkin);
+  try {
+    const result = await pool.query(
+      'SELECT * FROM daily_checkins WHERE user_id = $1 AND date = $2',
+      [userId, date]
+    );
+    
+    const checkin = result.rows[0] || null;
+    console.log(`✅ GET /api/checkins/${date}:`, checkin ? 'FOUND' : 'NULL');
+    
+    return res.status(200).json(checkin);
+  } catch (error) {
+    console.error(`❌ GET /api/checkins/${date} error:`, error);
+    return res.status(500).json({ error: error.message });
+  }
 }
 
