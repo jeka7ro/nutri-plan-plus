@@ -545,7 +545,7 @@ export default function Dashboard() {
           )}
 
         {/* 3 GRAFICE PE 1 RÂND - CLICKABILE */}
-        <div className="grid md:grid-cols-2 gap-4">
+        <div className="grid md:grid-cols-3 gap-4">
           {/* Grafic 1: Calorii */}
           <Card 
             className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))] cursor-pointer hover:shadow-2xl transition-shadow"
