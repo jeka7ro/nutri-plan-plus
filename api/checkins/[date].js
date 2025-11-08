@@ -25,7 +25,10 @@ export default async function handler(req, res) {
 
   // Verifică autentificarea
   const token = req.headers.authorization?.replace('Bearer ', '');
+  console.log('🔍 CHECKINS[DATE] - Token received:', !!token, token?.substring(0, 20) + '...');
+  
   if (!token) {
+    console.log('❌ CHECKINS[DATE] - No token provided');
     return res.status(401).json({ error: 'No token provided' });
   }
   
@@ -33,8 +36,10 @@ export default async function handler(req, res) {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
     userId = decoded.id;
+    console.log('✅ CHECKINS[DATE] - Token valid, userId:', userId);
   } catch (error) {
-    return res.status(401).json({ error: 'Invalid token' });
+    console.log('❌ CHECKINS[DATE] - Invalid token:', error.message);
+    return res.status(401).json({ error: 'Invalid token', details: error.message });
   }
 
   const { date } = req.query;
