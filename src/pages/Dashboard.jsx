@@ -502,7 +502,8 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        {/* GRAFICE VERTICAL - UN GRAFIC PE RÂND */}
+        <div className="space-y-6">
           {weightChartData.length > 0 && (
             <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
               <CardHeader>
@@ -544,9 +545,7 @@ export default function Dashboard() {
             </Card>
           )}
 
-        {/* 3 GRAFICE PE 1 RÂND - CLICKABILE */}
-        <div className="grid md:grid-cols-3 gap-4">
-          {/* Grafic 1: Calorii */}
+          {/* Grafic: Calorii (7 zile) */}
           <Card 
             className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))] cursor-pointer hover:shadow-2xl transition-shadow"
             onClick={() => setExpandedChart('calories')}
@@ -659,7 +658,6 @@ export default function Dashboard() {
               </ResponsiveContainer>
             </CardContent>
           </Card>
-        </div>
 
         {/* MODAL PENTRU GRAFIC EXPANDAT */}
         <Dialog open={expandedChart !== null} onOpenChange={() => setExpandedChart(null)}>

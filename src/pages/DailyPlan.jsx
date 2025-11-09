@@ -1128,8 +1128,24 @@ export default function DailyPlan() {
             
             // Filtrează rețete pe fază ȘI tip de masă - pentru TOATE cele 3 tab-uri
             const standardRecipes = recipes.filter(r => r.phase === currentPhase && r.meal_type === meal.mealType);
-            const myFilteredRecipes = myRecipes.filter(r => (!r.phase || r.phase === currentPhase) && r.meal_type === meal.mealType);
-            const friendsFilteredRecipes = friendsRecipes.filter(r => (!r.phase || r.phase === currentPhase) && r.meal_type === meal.mealType);
+            
+            // Filtrare cu suport pentru phases array (nou) și phase integer (vechi)
+            const myFilteredRecipes = myRecipes.filter(r => {
+              if (r.meal_type !== meal.mealType) return false;
+              // Suport phases array (nou format)
+              if (r.phases && r.phases.length > 0) return r.phases.includes(currentPhase);
+              // Suport phase integer (vechi format - backwards compatibility)
+              if (r.phase) return r.phase === currentPhase;
+              // Dacă nu are fază specificată, e pentru toate fazele
+              return true;
+            });
+            
+            const friendsFilteredRecipes = friendsRecipes.filter(r => {
+              if (r.meal_type !== meal.mealType) return false;
+              if (r.phases && r.phases.length > 0) return r.phases.includes(currentPhase);
+              if (r.phase) return r.phase === currentPhase;
+              return true;
+            });
             
             const filteredStandard = filterMealOptions(standardRecipes);
             const standardOptions = sortMealOptionsByFavorites(filteredStandard);

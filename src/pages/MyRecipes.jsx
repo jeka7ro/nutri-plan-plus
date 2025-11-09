@@ -96,7 +96,7 @@ export default function MyRecipes() {
       description: '',
       image_url: '',
       meal_type: 'breakfast',
-      phase: null,
+      phases: [], // Array pentru multiple faze
       is_public_to_friends: false,
     });
   };
@@ -108,10 +108,19 @@ export default function MyRecipes() {
       description: recipe.description || '',
       image_url: recipe.image_url || '',
       meal_type: recipe.meal_type,
-      phase: recipe.phase,
+      phases: recipe.phases || (recipe.phase ? [recipe.phase] : []), // Convertește phase vechi la array
       is_public_to_friends: recipe.is_public_to_friends,
     });
     setShowAddDialog(true);
+  };
+
+  const togglePhase = (phaseNumber) => {
+    setFormData(prev => ({
+      ...prev,
+      phases: prev.phases.includes(phaseNumber)
+        ? prev.phases.filter(p => p !== phaseNumber)
+        : [...prev.phases, phaseNumber]
+    }));
   };
 
   const handleSave = () => {
@@ -220,9 +229,21 @@ export default function MyRecipes() {
                       <Badge variant="outline" className="text-xs">
                         {mealTypeLabels[recipe.meal_type]?.[language] || recipe.meal_type}
                       </Badge>
-                      <Badge variant="outline" className="text-xs">
-                        {phaseLabels[recipe.phase]?.[language] || phaseLabels[null][language]}
-                      </Badge>
+                      {(recipe.phases && recipe.phases.length > 0) ? (
+                        recipe.phases.map(p => (
+                          <Badge key={p} variant="outline" className="text-xs">
+                            {phaseLabels[p]?.[language]}
+                          </Badge>
+                        ))
+                      ) : recipe.phase ? (
+                        <Badge variant="outline" className="text-xs">
+                          {phaseLabels[recipe.phase]?.[language]}
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="text-xs">
+                          {phaseLabels[null][language]}
+                        </Badge>
+                      )}
                       {recipe.is_public_to_friends ? (
                         <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 text-xs">
                           <Users className="w-3 h-3 mr-1" />
@@ -326,36 +347,55 @@ export default function MyRecipes() {
                 </div>
               </div>
 
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>{language === 'ro' ? 'Tip Masă' : 'Meal Type'} *</Label>
-                  <Select value={formData.meal_type} onValueChange={(value) => setFormData({ ...formData, meal_type: value })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="breakfast">{language === 'ro' ? 'Mic dejun' : 'Breakfast'}</SelectItem>
-                      <SelectItem value="snack1">{language === 'ro' ? 'Gustare 1' : 'Snack 1'}</SelectItem>
-                      <SelectItem value="lunch">{language === 'ro' ? 'Prânz' : 'Lunch'}</SelectItem>
-                      <SelectItem value="snack2">{language === 'ro' ? 'Gustare 2' : 'Snack 2'}</SelectItem>
-                      <SelectItem value="dinner">{language === 'ro' ? 'Cină' : 'Dinner'}</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
+              <div className="space-y-2">
+                <Label>{language === 'ro' ? 'Tip Masă' : 'Meal Type'} *</Label>
+                <Select value={formData.meal_type} onValueChange={(value) => setFormData({ ...formData, meal_type: value })}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="breakfast">{language === 'ro' ? 'Mic dejun' : 'Breakfast'}</SelectItem>
+                    <SelectItem value="snack1">{language === 'ro' ? 'Gustare 1' : 'Snack 1'}</SelectItem>
+                    <SelectItem value="lunch">{language === 'ro' ? 'Prânz' : 'Lunch'}</SelectItem>
+                    <SelectItem value="snack2">{language === 'ro' ? 'Gustare 2' : 'Snack 2'}</SelectItem>
+                    <SelectItem value="dinner">{language === 'ro' ? 'Cină' : 'Dinner'}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-                <div className="space-y-2">
-                  <Label>{language === 'ro' ? 'Fază (opțional)' : 'Phase (optional)'}</Label>
-                  <Select value={formData.phase?.toString() || 'all'} onValueChange={(value) => setFormData({ ...formData, phase: value === 'all' ? null : parseInt(value) })}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">{language === 'ro' ? 'Toate fazele' : 'All phases'}</SelectItem>
-                      <SelectItem value="1">{language === 'ro' ? 'Faza 1' : 'Phase 1'}</SelectItem>
-                      <SelectItem value="2">{language === 'ro' ? 'Faza 2' : 'Phase 2'}</SelectItem>
-                      <SelectItem value="3">{language === 'ro' ? 'Faza 3' : 'Phase 3'}</SelectItem>
-                    </SelectContent>
-                  </Select>
+              <div className="space-y-2">
+                <Label>{language === 'ro' ? 'Faze compatibile (opțional)' : 'Compatible Phases (optional)'}</Label>
+                <div className="space-y-2 p-3 bg-[rgb(var(--ios-bg-tertiary))] rounded-[12px] border border-[rgb(var(--ios-border))]">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="phase1"
+                      checked={formData.phases?.includes(1)}
+                      onCheckedChange={() => togglePhase(1)}
+                    />
+                    <Label htmlFor="phase1" className="cursor-pointer font-normal">
+                      {language === 'ro' ? 'Faza 1 (Destresare - Carbohidrați + Proteine)' : 'Phase 1 (Unwind)'}
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="phase2"
+                      checked={formData.phases?.includes(2)}
+                      onCheckedChange={() => togglePhase(2)}
+                    />
+                    <Label htmlFor="phase2" className="cursor-pointer font-normal">
+                      {language === 'ro' ? 'Faza 2 (Deblocare - Proteine + Legume)' : 'Phase 2 (Unlock)'}
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="phase3"
+                      checked={formData.phases?.includes(3)}
+                      onCheckedChange={() => togglePhase(3)}
+                    />
+                    <Label htmlFor="phase3" className="cursor-pointer font-normal">
+                      {language === 'ro' ? 'Faza 3 (Ardere - Echilibrat)' : 'Phase 3 (Unleash)'}
+                    </Label>
+                  </div>
                 </div>
               </div>
 

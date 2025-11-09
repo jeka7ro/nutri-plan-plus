@@ -348,6 +348,20 @@ async function handleUserRecipes(req, res, pool, userId) {
       )
     `);
     
+    // Adaugă coloana phases (array) dacă nu există
+    try {
+      await pool.query(`ALTER TABLE user_recipes ADD COLUMN IF NOT EXISTS phases INTEGER[]`);
+      
+      // Migrează valorile existente din phase la phases
+      await pool.query(`
+        UPDATE user_recipes 
+        SET phases = ARRAY[phase] 
+        WHERE phase IS NOT NULL AND (phases IS NULL OR phases = '{}')
+      `);
+    } catch (error) {
+      console.log('⚠️ Phases column might already exist or migration already done');
+    }
+    
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_recipes_user ON user_recipes(user_id)`);
   } catch (error) {
     console.error('❌ Error creating user_recipes table:', error);
@@ -393,7 +407,7 @@ async function handleUserRecipes(req, res, pool, userId) {
   
   // POST - Create recipe
   if (req.method === 'POST') {
-    const { name, name_ro, description, image_url, meal_type, phase, calories, protein, carbs, fat, is_public_to_friends } = req.body;
+    const { name, name_ro, description, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends } = req.body;
     
     if (!name || !meal_type) {
       return res.status(400).json({ error: 'Name and meal_type required' });
@@ -402,12 +416,13 @@ async function handleUserRecipes(req, res, pool, userId) {
     try {
       const result = await pool.query(`
         INSERT INTO user_recipes (
-          user_id, name, name_ro, description, image_url, meal_type, phase,
+          user_id, name, name_ro, description, image_url, meal_type, phase, phases,
           calories, protein, carbs, fat, is_public_to_friends
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
         RETURNING *
       `, [
-        userId, name, name_ro || name, description || '', image_url || null, meal_type, phase || null,
+        userId, name, name_ro || name, description || '', image_url || null, meal_type, 
+        phase || null, phases || null,
         calories || 0, protein || 0, carbs || 0, fat || 0, is_public_to_friends || false
       ]);
       
@@ -420,7 +435,7 @@ async function handleUserRecipes(req, res, pool, userId) {
   
   // PUT - Update recipe
   if (req.method === 'PUT') {
-    const { id, name, name_ro, description, image_url, meal_type, phase, calories, protein, carbs, fat, is_public_to_friends } = req.body;
+    const { id, name, name_ro, description, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends } = req.body;
     
     if (!id) {
       return res.status(400).json({ error: 'Recipe ID required' });
@@ -435,15 +450,16 @@ async function handleUserRecipes(req, res, pool, userId) {
           image_url = COALESCE($4, image_url),
           meal_type = COALESCE($5, meal_type),
           phase = COALESCE($6, phase),
-          calories = COALESCE($7, calories),
-          protein = COALESCE($8, protein),
-          carbs = COALESCE($9, carbs),
-          fat = COALESCE($10, fat),
-          is_public_to_friends = COALESCE($11, is_public_to_friends),
+          phases = COALESCE($7, phases),
+          calories = COALESCE($8, calories),
+          protein = COALESCE($9, protein),
+          carbs = COALESCE($10, carbs),
+          fat = COALESCE($11, fat),
+          is_public_to_friends = COALESCE($12, is_public_to_friends),
           updated_at = CURRENT_TIMESTAMP
-        WHERE id = $12 AND user_id = $13
+        WHERE id = $13 AND user_id = $14
         RETURNING *
-      `, [name, name_ro, description, image_url, meal_type, phase, calories, protein, carbs, fat, is_public_to_friends, id, userId]);
+      `, [name, name_ro, description, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends, id, userId]);
       
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Recipe not found or not owned by you' });

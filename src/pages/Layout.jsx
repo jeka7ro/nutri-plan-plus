@@ -44,9 +44,9 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
           <img
             src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
             alt="EatnFit"
-            className="w-32 h-32 object-contain p-2 mb-1"
+            className="w-32 h-32 object-contain p-2 mb-0"
           />
-          <p className="text-sm font-semibold text-[rgb(var(--ios-text-primary))] text-center -mt-1">
+          <p className="text-sm font-semibold text-[rgb(var(--ios-text-primary))] text-center -mt-4">
             {language === 'ro' ? 'Eat Smart. Stay Fit' : 'Eat Smart. Stay Fit'}
           </p>
         </div>
