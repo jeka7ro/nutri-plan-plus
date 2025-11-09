@@ -334,6 +334,78 @@ export default async function handler(req, res) {
     }
   }
   
+  // ========== GDPR - EXPORT DATA ==========
+  // GET /api/auth/me?gdpr=export - Exportă toate datele utilizatorului
+  if (req.method === 'GET' && req.query.gdpr === 'export') {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    
+    try {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
+      
+      // Colectează TOATE datele utilizatorului
+      const userData = await pool.query('SELECT * FROM users WHERE id = $1', [decoded.id]);
+      const checkIns = await pool.query('SELECT * FROM daily_checkins WHERE user_id = $1 ORDER BY date DESC', [decoded.id]);
+      const weights = await pool.query('SELECT * FROM weight_entries WHERE user_id = $1 ORDER BY created_at DESC', [decoded.id]);
+      const recipes = await pool.query('SELECT * FROM user_recipes WHERE user_id = $1', [decoded.id]);
+      const friends = await pool.query('SELECT * FROM friends WHERE user_id_1 = $1 OR user_id_2 = $1', [decoded.id]);
+      
+      const exportData = {
+        exported_at: new Date().toISOString(),
+        user: userData.rows[0],
+        daily_checkins: checkIns.rows,
+        weight_entries: weights.rows,
+        custom_recipes: recipes.rows,
+        friends: friends.rows
+      };
+      
+      // Remove password din export
+      delete exportData.user.password;
+      
+      return res.status(200).json(exportData);
+    } catch (error) {
+      console.error('❌ GDPR export error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
+  // ========== GDPR - DELETE ACCOUNT ==========
+  // POST /api/auth/me?gdpr=delete - Șterge contul complet (PERMANENT!)
+  if (req.method === 'POST' && req.query.gdpr === 'delete') {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'No token provided' });
+    }
+    
+    try {
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'your-secret-key-change-in-production');
+      const { confirmEmail } = req.body;
+      
+      // Verifică confirmarea
+      const userResult = await pool.query('SELECT email FROM users WHERE id = $1', [decoded.id]);
+      if (userResult.rows[0].email !== confirmEmail) {
+        return res.status(400).json({ error: 'Email de confirmare incorect' });
+      }
+      
+      // DELETE CASCADE va șterge automat toate datele asociate
+      await pool.query('DELETE FROM users WHERE id = $1', [decoded.id]);
+      
+      console.log(`🗑️ GDPR: User ${decoded.id} deleted permanently`);
+      
+      return res.status(200).json({ 
+        success: true, 
+        message: 'Cont șters permanent. Toate datele au fost eliminate.' 
+      });
+    } catch (error) {
+      console.error('❌ GDPR delete error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
   if (req.method !== 'GET' && req.method !== 'PUT' && req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }

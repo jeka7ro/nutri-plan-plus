@@ -8,6 +8,43 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
+// RATE LIMITING - în memorie (pentru Vercel)
+const loginAttempts = new Map(); // email -> { count, lastAttempt }
+const MAX_ATTEMPTS = 5;
+const LOCKOUT_TIME = 15 * 60 * 1000; // 15 minute
+
+function checkRateLimit(email) {
+  const now = Date.now();
+  const attempt = loginAttempts.get(email);
+  
+  if (!attempt) {
+    loginAttempts.set(email, { count: 1, lastAttempt: now });
+    return { allowed: true };
+  }
+  
+  // Dacă a trecut timpul de lockout, resetează
+  if (now - attempt.lastAttempt > LOCKOUT_TIME) {
+    loginAttempts.set(email, { count: 1, lastAttempt: now });
+    return { allowed: true };
+  }
+  
+  // Dacă a depășit limita
+  if (attempt.count >= MAX_ATTEMPTS) {
+    const remainingTime = Math.ceil((LOCKOUT_TIME - (now - attempt.lastAttempt)) / 60000);
+    return { 
+      allowed: false, 
+      message: `Prea multe încercări. Încearcă din nou în ${remainingTime} minute.` 
+    };
+  }
+  
+  // Incrementează
+  attempt.count++;
+  attempt.lastAttempt = now;
+  loginAttempts.set(email, attempt);
+  
+  return { allowed: true };
+}
+
 export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -77,6 +114,12 @@ export default async function handler(req, res) {
     }
     
     // LOGIN
+    // Check rate limit ÎNAINTE de query
+    const rateCheck = checkRateLimit(email);
+    if (!rateCheck.allowed) {
+      return res.status(429).json({ error: rateCheck.message });
+    }
+    
     // Find user
     const result = await pool.query(
       'SELECT * FROM users WHERE email = $1',
