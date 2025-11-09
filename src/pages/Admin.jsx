@@ -13,6 +13,9 @@ import {
   Users, MessageSquare, TrendingUp, TrendingDown, Activity, Shield, Crown, Calendar,
   CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings, Info
 } from "lucide-react";
+import AdminCRM from "@/components/AdminCRM";
+import AdminSales from "@/components/AdminSales";
+import AdminPromos from "@/components/AdminPromos";
 import { format, subDays, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -461,155 +464,17 @@ export default function Admin() {
 
           {/* ==================== TAB CRM ==================== */}
           <TabsContent value="crm" className="mt-6">
-            <div className="space-y-6">
-              {/* CRM Stats Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card className="bg-emerald-500/10 border-emerald-500/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-400">Total Leads</p>
-                        <p className="text-3xl font-bold text-white">-</p>
-                      </div>
-                      <Users className="w-8 h-8 text-emerald-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-orange-500/10 border-orange-500/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-400">Qualified</p>
-                        <p className="text-3xl font-bold text-white">-</p>
-                      </div>
-                      <TrendingUp className="w-8 h-8 text-orange-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-purple-500/10 border-purple-500/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-400">Converted</p>
-                        <p className="text-3xl font-bold text-white">-</p>
-                      </div>
-                      <CheckCircle className="w-8 h-8 text-purple-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-cyan-500/10 border-cyan-500/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-400">Conversion Rate</p>
-                        <p className="text-3xl font-bold text-white">-%</p>
-                      </div>
-                      <Activity className="w-8 h-8 text-cyan-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* CRM Leads Table */}
-              <Card className="ios-card border-none ios-shadow-lg">
-                <CardHeader>
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-[rgb(var(--ios-text-primary))]">🎯 CRM Leads</CardTitle>
-                    <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600">
-                      <Plus className="w-4 h-4 mr-2" />
-                      Add Lead
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-400">CRM System - În dezvoltare...</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Funcționalitate completă: Pipeline stages, Lead scoring, Activities, etc.
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            <AdminCRM />
           </TabsContent>
 
           {/* ==================== TAB SALES ==================== */}
           <TabsContent value="sales" className="mt-6">
-            <div className="space-y-6">
-              {/* Revenue Stats */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card className="bg-emerald-500/10 border-emerald-500/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-400">Revenue (30 zile)</p>
-                        <p className="text-3xl font-bold text-white">- RON</p>
-                      </div>
-                      <TrendingUp className="w-8 h-8 text-emerald-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-purple-500/10 border-purple-500/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-400">Tranzacții</p>
-                        <p className="text-3xl font-bold text-white">-</p>
-                      </div>
-                      <Activity className="w-8 h-8 text-purple-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="bg-cyan-500/10 border-cyan-500/20">
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-gray-400">Average Transaction</p>
-                        <p className="text-3xl font-bold text-white">- RON</p>
-                      </div>
-                      <Award className="w-8 h-8 text-cyan-500" />
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Sales Table */}
-              <Card className="ios-card border-none ios-shadow-lg">
-                <CardHeader>
-                  <CardTitle className="text-[rgb(var(--ios-text-primary))]">💰 Sales & Revenue</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-400">Sales Tracking - În dezvoltare...</p>
-                  <p className="text-sm text-gray-500 mt-2">
-                    Revenue tracking, Grafice Recharts, Export Excel
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
+            <AdminSales />
           </TabsContent>
 
           {/* ==================== TAB PROMOȚII ==================== */}
           <TabsContent value="promos" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[rgb(var(--ios-text-primary))]">🎁 Coduri Promoționale</CardTitle>
-                  <Button size="sm" className="bg-purple-500 hover:bg-purple-600">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Promo Code
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-400">Promo Codes System - În dezvoltare...</p>
-                <p className="text-sm text-gray-500 mt-2">
-                  Discount codes, Usage tracking, Analytics
-                </p>
-              </CardContent>
-            </Card>
+            <AdminPromos />
           </TabsContent>
 
           {/* TAB RECOMANDĂRI - EDITARE */}
