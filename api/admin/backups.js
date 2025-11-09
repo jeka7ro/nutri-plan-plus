@@ -18,6 +18,54 @@ export default async function handler(req, res) {
   }
 
   try {
+    // ========== VERCEL CRON REQUEST ==========
+    // Rulează la 3 AM zilnic, fără autentificare (verifică Vercel header)
+    if (req.query.cron === 'true') {
+      console.log('⏰ CRON JOB: Daily backup triggered');
+      
+      // Verifică că vine de la Vercel Cron (security)
+      const cronSecret = req.headers['x-vercel-cron-secret'];
+      if (process.env.NODE_ENV === 'production' && cronSecret !== process.env.CRON_SECRET) {
+        return res.status(401).json({ error: 'Invalid cron secret' });
+      }
+      
+      try {
+        // Creează backup automat
+        const tables = ['users', 'daily_checkins', 'weight_entries', 'user_recipes', 'friends', 'subscriptions'];
+        const backupData = {};
+        
+        for (const table of tables) {
+          const result = await pool.query(`SELECT * FROM ${table}`);
+          backupData[table] = result.rows;
+        }
+        
+        const backupJson = JSON.stringify(backupData);
+        const sizeMB = (Buffer.byteLength(backupJson, 'utf8') / (1024 * 1024)).toFixed(2);
+        const filename = `auto_backup_${new Date().toISOString().split('T')[0]}.json`;
+        
+        // Salvează în DB
+        await pool.query(`
+          INSERT INTO backups (filename, backup_data, size_mb, created_by, auto_generated, tables_included)
+          VALUES ($1, $2, $3, NULL, TRUE, $4)
+        `, [filename, backupJson, sizeMB, tables]);
+        
+        console.log(`✅ CRON: Backup created - ${filename} (${sizeMB} MB)`);
+        
+        // Cleanup: șterge backup-uri auto mai vechi de 30 zile
+        await pool.query(`
+          DELETE FROM backups 
+          WHERE auto_generated = TRUE 
+          AND created_at < NOW() - INTERVAL '30 days'
+        `);
+        
+        return res.status(200).json({ success: true, filename, size_mb: sizeMB });
+      } catch (error) {
+        console.error('❌ CRON backup error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+    }
+    
+    // ========== NORMAL REQUESTS (require auth) ==========
     // Verify token
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -95,6 +143,56 @@ export default async function handler(req, res) {
       
       console.log('✅ Backup created:', insertResult.rows[0]);
       return res.status(200).json(insertResult.rows[0]);
+    }
+
+    // PUT - RESTORE backup (⚠️ DESTRUCTIVE!)
+    if (req.method === 'PUT') {
+      const { backupId } = req.body;
+      
+      if (!backupId) {
+        return res.status(400).json({ error: 'Backup ID required' });
+      }
+      
+      console.log('⚠️ RESTORE: Getting backup data...');
+      const backupResult = await pool.query('SELECT backup_data FROM backups WHERE id = $1', [backupId]);
+      
+      if (backupResult.rows.length === 0) {
+        return res.status(404).json({ error: 'Backup not found' });
+      }
+      
+      const backupData = JSON.parse(backupResult.rows[0].backup_data);
+      const restored = [];
+      
+      // RESTORE fiecare tabel
+      for (const [tableName, rows] of Object.entries(backupData)) {
+        if (!rows || rows.length === 0) continue;
+        
+        try {
+          console.log(`📥 Restoring ${tableName} (${rows.length} rows)...`);
+          
+          // Truncate + restart ID sequence
+          await pool.query(`TRUNCATE TABLE ${tableName} RESTART IDENTITY CASCADE`);
+          
+          // Insert rows
+          for (const row of rows) {
+            const columns = Object.keys(row);
+            const values = Object.values(row);
+            const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
+            
+            await pool.query(
+              `INSERT INTO ${tableName} (${columns.join(', ')}) VALUES (${placeholders})`,
+              values
+            );
+          }
+          
+          restored.push(tableName);
+        } catch (error) {
+          console.error(`❌ Error restoring ${tableName}:`, error);
+        }
+      }
+      
+      console.log('✅ RESTORE: Complete!');
+      return res.status(200).json({ success: true, restored_tables: restored });
     }
 
     // DELETE - Delete backup
