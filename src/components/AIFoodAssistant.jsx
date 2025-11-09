@@ -28,6 +28,19 @@ export default function AIFoodAssistant() {
     localApi.auth.me().then(setUser).catch(() => {});
   }, []);
 
+  // FREE users: show Premium overlay
+  if (user && user.subscription_plan === 'free') {
+    return (
+      <Button
+        onClick={() => window.location.href = '/upgrade'}
+        className="fixed bottom-6 right-6 z-50 h-14 px-6 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-2xl rounded-full"
+      >
+        <Sparkles className="w-5 h-5 mr-2" />
+        {language === 'ro' ? '🤖 AI Assistant - Premium' : '🤖 AI Assistant - Premium'}
+      </Button>
+    );
+  }
+
   const getCurrentDay = () => {
     if (!user?.start_date) return 1;
     const startDate = new Date(user.start_date);

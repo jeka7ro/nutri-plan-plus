@@ -21,13 +21,16 @@ import Admin from "@/pages/Admin.jsx"
 import Onboarding from "@/pages/Onboarding.jsx"
 import Recommendations from "@/pages/Recommendations.jsx"
 import Upgrade from "@/pages/Upgrade.jsx"
+import Landing from "@/pages/Landing.jsx"
 
 function App() {
   return (
     <ThemeProvider>
       <LanguageProvider>
         <Routes>
-          <Route path="/" element={<IndexPage />} />
+          <Route path="/" element={<Landing />} />
+          <Route path="/login" element={<IndexPage />} />
+          <Route path="/app" element={<IndexPage />} />
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dailyplan" element={<DailyPlan />} />

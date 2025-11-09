@@ -19,11 +19,23 @@ export default function NotificationBell() {
   const { language } = useLanguage();
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Get user subscription plan
+  React.useEffect(() => {
+    localApi.auth.me().then(setUser).catch(() => {});
+  }, []);
+
+  // Hide for FREE users
+  if (user && user.subscription_plan === 'free') {
+    return null;
+  }
 
   const { data: unreadCount = { count: 0 } } = useQuery({
     queryKey: ['notificationsUnread'],
     queryFn: () => localApi.notifications.getUnreadCount(),
     refetchInterval: 30000, // Refresh la fiecare 30 secunde
+    enabled: user?.subscription_plan === 'premium',
   });
 
   const { data: notifications = [] } = useQuery({

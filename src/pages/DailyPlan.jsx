@@ -1322,7 +1322,7 @@ export default function DailyPlan() {
 
                   {/* Meal Options Grid - FROM DATABASE */}
                   <div className="space-y-3">
-                    {/* 3 TAB-URI: Standard / Ale Mele / De la Prieteni */}
+                    {/* 3 TAB-URI: Standard / Ale Mele / De la Prieteni (doar Premium pentru Ale Mele și Prieteni) */}
                     <div className="flex gap-2 mb-3">
                       <Button
                         size="sm"
@@ -1335,35 +1335,67 @@ export default function DailyPlan() {
                       <Button
                         size="sm"
                         variant={currentTab === 'mine' ? 'default' : 'outline'}
-                        onClick={() => setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'mine' })}
+                        onClick={() => {
+                          if (user?.subscription_plan === 'free') {
+                            alert(language === 'ro' ? '🔒 Rețete personalizate disponibile doar în Premium!' : '🔒 Custom recipes available only in Premium!');
+                            return;
+                          }
+                          setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'mine' });
+                        }}
                         className={currentTab === 'mine' ? 'bg-purple-600 hover:bg-purple-700' : ''}
+                        disabled={user?.subscription_plan === 'free'}
                       >
                         🍽️ {language === 'ro' ? 'Ale Mele' : 'Mine'} ({myFilteredRecipes.length})
+                        {user?.subscription_plan === 'free' && ' 🔒'}
                       </Button>
                       <Button
                         size="sm"
                         variant={currentTab === 'friends' ? 'default' : 'outline'}
-                        onClick={() => setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'friends' })}
+                        onClick={() => {
+                          if (user?.subscription_plan === 'free') {
+                            alert(language === 'ro' ? '🔒 Rețete prieteni disponibile doar în Premium!' : '🔒 Friends recipes available only in Premium!');
+                            return;
+                          }
+                          setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'friends' });
+                        }}
                         className={currentTab === 'friends' ? 'bg-blue-600 hover:bg-blue-700' : ''}
+                        disabled={user?.subscription_plan === 'free'}
                       >
                         👥 {language === 'ro' ? 'Prieteni' : 'Friends'} ({friendsFilteredRecipes.length})
+                        {user?.subscription_plan === 'free' && ' 🔒'}
                       </Button>
                     </div>
-                    <div className="grid md:grid-cols-3 gap-3">
+                    <div className="grid md:grid-cols-3 gap-3 relative">
                       {(expandedMeals[meal.mealType] ? options : options.slice(0, 3)).map((option, index) => {
                       const favoriteScore = scoreMealOption(option);
                       // FIXAT: Compară AMBELE nume pentru a evita false positive
                       const currentName = language === 'ro' ? option.name_ro : option.name_en;
                       const isSelected = selectedOptionName === currentName;
+                      
+                      // FREE: vezi doar prima opțiune, restul blur
+                      const isBlurred = user?.subscription_plan === 'free' && index > 0;
 
                       return (
                         <div
                           key={option.id || index}
                           className={`border-2 rounded-lg overflow-hidden hover:shadow-md transition-all cursor-pointer relative bg-[rgb(var(--ios-bg-primary))] ${
                             isSelected ? 'border-emerald-500 dark:border-emerald-600 ring-2 ring-emerald-200 dark:ring-emerald-800' : 'border-[rgb(var(--ios-border))]'
-                          }`}
-                          onClick={() => handleMealSelection(meal.mealType, option)}
+                          } ${isBlurred ? 'opacity-50' : ''}`}
+                          onClick={() => {
+                            if (isBlurred) {
+                              alert(language === 'ro' ? '🔒 Upgrade la Premium pentru mai multe opțiuni!' : '🔒 Upgrade to Premium for more options!');
+                              return;
+                            }
+                            handleMealSelection(meal.mealType, option);
+                          }}
                         >
+                          {isBlurred && (
+                            <div className="absolute inset-0 z-20 bg-white/60 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
+                              <div className="bg-yellow-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg">
+                                🔒 PREMIUM
+                              </div>
+                            </div>
+                          )}
                           {favoriteScore > 0 && (
                             <div className="absolute top-2 right-2 z-10">
                               <div className="bg-pink-500 text-white rounded-full px-2 py-1 text-xs font-bold flex items-center gap-1 shadow-lg">

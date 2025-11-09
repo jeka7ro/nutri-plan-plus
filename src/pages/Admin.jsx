@@ -447,7 +447,7 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-7 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))]">
+          <TabsList className="grid w-full grid-cols-8 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))]">
             <TabsTrigger value="recipes">Rețete ({filteredRecipes.length})</TabsTrigger>
             <TabsTrigger value="recommendations">📖 Recomandări</TabsTrigger>
             <TabsTrigger value="resources">📚 Resurse</TabsTrigger>
@@ -455,6 +455,7 @@ export default function Admin() {
             <TabsTrigger value="users">Utilizatori</TabsTrigger>
             <TabsTrigger value="logs">📋 Loguri</TabsTrigger>
             <TabsTrigger value="backups">💾 Backup</TabsTrigger>
+            <TabsTrigger value="settings">⚙️ Setări App</TabsTrigger>
           </TabsList>
 
           {/* TAB RECOMANDĂRI - EDITARE */}
@@ -1294,6 +1295,98 @@ export default function Admin() {
                     </Button>
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* TAB SETĂRI APP - Prețuri dinamice */}
+          <TabsContent value="settings" className="mt-6">
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">⚙️ Setări Aplicație</CardTitle>
+                <p className="text-sm text-[rgb(var(--ios-text-secondary))] mt-2">
+                  Setări globale pentru aplicație (prețuri, contact, etc.)
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div className="space-y-4">
+                    <div>
+                      <Label>💰 Preț Prima Lună (RON)</Label>
+                      <Input 
+                        type="number" 
+                        defaultValue="200"
+                        placeholder="200"
+                        className="text-lg font-bold"
+                      />
+                      <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
+                        Preț pentru primul abonament Premium
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label>💰 Preț Lunar Recurent (RON)</Label>
+                      <Input 
+                        type="number" 
+                        defaultValue="20"
+                        placeholder="20"
+                        className="text-lg font-bold"
+                      />
+                      <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
+                        Preț pentru lunile următoare (recurent)
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label>📧 Email Suport</Label>
+                      <Input 
+                        type="email" 
+                        defaultValue="support@eatnfit.app"
+                        placeholder="support@eatnfit.app"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div>
+                      <Label>🔗 Netopia Merchant ID</Label>
+                      <Input 
+                        placeholder="Merchant ID de la Netopia"
+                      />
+                      <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
+                        Pentru integrare plăți Netopia Payments
+                      </p>
+                    </div>
+
+                    <div>
+                      <Label>🔑 Netopia API Key</Label>
+                      <Input 
+                        type="password"
+                        placeholder="API Key Netopia"
+                      />
+                    </div>
+
+                    <div className="flex items-center space-x-2">
+                      <Checkbox id="enable-reg" defaultChecked />
+                      <Label htmlFor="enable-reg">🔓 Permite înregistrări noi</Label>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <Button className="bg-emerald-600 hover:bg-emerald-700 flex-1">
+                    💾 Salvează Setări
+                  </Button>
+                  <Button variant="outline" className="flex-1">
+                    🔄 Resetează la Default
+                  </Button>
+                </div>
+
+                <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
+                  <p className="text-sm text-[rgb(var(--ios-text-secondary))]">
+                    <strong>ℹ️ Notă:</strong> După salvare, prețurile se vor actualiza automat pe pagina /upgrade și în toate locurile unde sunt afișate.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
