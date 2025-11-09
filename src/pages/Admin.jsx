@@ -16,6 +16,7 @@ import {
 import AdminCRM from "@/components/AdminCRM";
 import AdminSales from "@/components/AdminSales";
 import AdminPromos from "@/components/AdminPromos";
+import AdminEmail from "@/components/AdminEmail";
 import { format, subDays, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -454,6 +455,7 @@ export default function Admin() {
             <TabsTrigger value="crm" className="flex-1 min-w-[100px]">🎯 CRM</TabsTrigger>
             <TabsTrigger value="sales" className="flex-1 min-w-[100px]">💰 Sales</TabsTrigger>
             <TabsTrigger value="promos" className="flex-1 min-w-[100px]">🎁 Promoții</TabsTrigger>
+            <TabsTrigger value="email" className="flex-1 min-w-[100px]">📧 Email</TabsTrigger>
             <TabsTrigger value="users" className="flex-1 min-w-[100px]">👥 Users</TabsTrigger>
             <TabsTrigger value="recipes" className="flex-1 min-w-[100px]">🍽️ Rețete</TabsTrigger>
             <TabsTrigger value="support" className="flex-1 min-w-[100px]">💬 Suport</TabsTrigger>
@@ -475,6 +477,11 @@ export default function Admin() {
           {/* ==================== TAB PROMOȚII ==================== */}
           <TabsContent value="promos" className="mt-6">
             <AdminPromos />
+          </TabsContent>
+
+          {/* ==================== TAB EMAIL ==================== */}
+          <TabsContent value="email" className="mt-6">
+            <AdminEmail />
           </TabsContent>
 
           {/* TAB RECOMANDĂRI - EDITARE */}
