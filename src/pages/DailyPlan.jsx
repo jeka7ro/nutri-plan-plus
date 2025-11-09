@@ -294,13 +294,15 @@ export default function DailyPlan() {
     const userAllergies = user.allergies ? user.allergies.split(',').map(a => a.trim()) : [];
 
     return options.filter(option => {
-      // STRICT FILTERING: If user is vegetarian and recipe is NOT vegetarian, REJECT IT
-      if (isVegetarian && !option.is_vegetarian) {
+      // PERMISIV: Dacă rețeta NU are carne/pește explicit, e OK pentru vegetarieni
+      if (isVegetarian && option.is_vegetarian === false) {
+        // DOAR dacă explicit marcat ca NON-vegetarian
         return false;
       }
       
-      // STRICT FILTERING: If user is vegan and recipe is NOT vegan, REJECT IT
-      if (isVegan && !option.is_vegan) {
+      // PERMISIV: Dacă rețeta NU are produse animale explicit, e OK pentru vegani
+      if (isVegan && option.is_vegan === false) {
+        // DOAR dacă explicit marcat ca NON-vegan
         return false;
       }
       
