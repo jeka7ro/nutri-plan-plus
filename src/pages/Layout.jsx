@@ -3,7 +3,8 @@
 import React from "react";
 import { Link, useLocation, Outlet, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { Home, Calendar, TrendingDown, BookOpen, User, LogOut, Users, MessageCircle, HelpCircle, Shield, Settings, ChefHat } from "lucide-react";
+import { Home, Calendar, TrendingDown, BookOpen, User, LogOut, Users, MessageCircle, HelpCircle, Shield, Settings, ChefHat, Crown } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import localApi from "@/api/localClient";
 import { LanguageProvider, useLanguage } from "../components/LanguageContext";
 import { ThemeProvider, useTheme } from "../components/ThemeContext";
@@ -215,9 +216,19 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <p className="font-medium text-[rgb(var(--ios-text-primary))] text-sm truncate">
-                {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.name || 'User')}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-medium text-[rgb(var(--ios-text-primary))] text-sm truncate">
+                  {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : (user.name || 'User')}
+                </p>
+                {user.subscription_plan === 'free' ? (
+                  <Badge className="bg-gray-500 text-white text-[10px] px-1.5 py-0">FREE</Badge>
+                ) : (
+                  <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white text-[10px] px-1.5 py-0 font-bold">
+                    <Crown className="w-2.5 h-2.5 mr-0.5" />
+                    PRO
+                  </Badge>
+                )}
+              </div>
               <p className="text-xs text-[rgb(var(--ios-text-tertiary))] truncate">{user.email}</p>
             </div>
           </div>

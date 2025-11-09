@@ -40,6 +40,7 @@ export default function MyRecipes() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [user, setUser] = useState(null);
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -54,6 +55,11 @@ export default function MyRecipes() {
     queryKey: ['myRecipes'],
     queryFn: () => localApi.userRecipes.list(),
   });
+
+  // Get user info
+  React.useEffect(() => {
+    localApi.auth.me().then(setUser).catch(() => {});
+  }, []);
 
   const createMutation = useMutation({
     mutationFn: (data) => localApi.userRecipes.create(data),
@@ -178,6 +184,18 @@ export default function MyRecipes() {
           </div>
           <Button
             onClick={() => {
+              // Verifică limita FREE
+              if (user?.subscription_plan === 'free' && myRecipes.length >= 1) {
+                toast({
+                  title: language === 'ro' ? '⚠️ Limită FREE atinsă' : '⚠️ FREE Limit Reached',
+                  description: language === 'ro' 
+                    ? 'Ai atins limita de 1 rețetă pentru contul FREE. Upgrade la Premium pentru rețete nelimitate!' 
+                    : 'You reached the limit of 1 recipe for FREE account. Upgrade to Premium for unlimited recipes!',
+                  variant: 'destructive',
+                  duration: 5000,
+                });
+                return;
+              }
               resetForm();
               setEditingRecipe(null);
               setShowAddDialog(true);

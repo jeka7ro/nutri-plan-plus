@@ -458,6 +458,19 @@ export const localApi = {
     markAsRead: (id) => request(`/social?type=notifications&id=${id}`, { method: 'PUT' }),
     markAllAsRead: () => request('/social?type=notifications&readAll=true', { method: 'PUT' }),
   },
+
+  // Subscription (combined in /api/auth/me with query params)
+  subscription: {
+    getStatus: () => request('/auth/me?subscription=status'),
+    checkLimits: (feature) => request('/auth/me?subscription=check-limits', {
+      method: 'POST',
+      body: JSON.stringify({ feature }),
+    }),
+    grantPremium: (targetUserId, durationMonths) => request('/auth/me?subscription=grant', {
+      method: 'POST',
+      body: JSON.stringify({ targetUserId, durationMonths }),
+    }),
+  },
   
   // Integrations - pentru compatibilitate cu base44
   integrations: {

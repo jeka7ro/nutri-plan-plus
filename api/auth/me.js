@@ -81,6 +81,43 @@ export default async function handler(req, res) {
       `);
       migrations.push('last_login_column');
       
+      // Adaugă coloane subscription
+      console.log('💳 Checking subscription columns...');
+      await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_plan VARCHAR(20) DEFAULT 'free'`);
+      await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS subscription_status VARCHAR(20) DEFAULT 'active'`);
+      migrations.push('subscription_columns');
+      
+      // Creează tabel subscriptions
+      console.log('📊 Creating subscriptions table...');
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS subscriptions (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          plan_type VARCHAR(20) NOT NULL,
+          price_amount DECIMAL(10,2) NOT NULL,
+          payment_method VARCHAR(50),
+          payment_status VARCHAR(20) DEFAULT 'pending',
+          payment_provider_id VARCHAR(255),
+          started_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          expires_at TIMESTAMP,
+          is_first_month BOOLEAN DEFAULT FALSE,
+          created_by_admin BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      migrations.push('subscriptions_table');
+      
+      // Marchează useri existenți ca PREMIUM gratis
+      console.log('⭐ Marking existing users as PREMIUM...');
+      const premiumResult = await pool.query(`
+        UPDATE users 
+        SET subscription_plan = 'premium', subscription_status = 'active'
+        WHERE created_at < '2025-11-09 17:00:00' AND subscription_plan = 'free'
+        RETURNING id, email
+      `);
+      console.log(`✅ ${premiumResult.rowCount} users marked as PREMIUM`);
+      migrations.push(`premium_users_${premiumResult.rowCount}`);
+      
       console.log('✅ MIGRATION COMPLETE!');
       
       return res.status(200).json({ 
@@ -201,6 +238,103 @@ export default async function handler(req, res) {
         success: true,
         message: 'Password changed successfully' 
       });
+    }
+    
+    // POST ?subscription=status - Get subscription info (combined to stay within 12 functions)
+    if (req.method === 'GET' && req.query.subscription === 'status') {
+      const result = await pool.query(
+        'SELECT subscription_plan, subscription_status FROM users WHERE id = $1',
+        [decoded.id]
+      );
+      
+      const subscriptionHistory = await pool.query(
+        'SELECT COUNT(*) as count FROM subscriptions WHERE user_id = $1 AND payment_status = $2',
+        [decoded.id, 'paid']
+      );
+      
+      const isFirstPayment = subscriptionHistory.rows[0].count === '0';
+      
+      return res.status(200).json({
+        plan: result.rows[0].subscription_plan || 'free',
+        status: result.rows[0].subscription_status || 'active',
+        isFirstPayment,
+        firstMonthPrice: 200,
+        monthlyPrice: 20
+      });
+    }
+    
+    // POST ?subscription=check-limits - Check FREE limits (combined)
+    if (req.method === 'POST' && req.query.subscription === 'check-limits') {
+      const { feature } = req.body;
+      
+      const userResult = await pool.query(
+        'SELECT subscription_plan FROM users WHERE id = $1',
+        [decoded.id]
+      );
+      
+      if (userResult.rows[0].subscription_plan === 'premium') {
+        return res.status(200).json({ allowed: true, isPremium: true });
+      }
+      
+      // FREE limits
+      if (feature === 'recipes') {
+        const count = await pool.query('SELECT COUNT(*) as count FROM user_recipes WHERE user_id = $1', [decoded.id]);
+        const allowed = parseInt(count.rows[0].count) < 1;
+        return res.status(200).json({ 
+          allowed, 
+          isPremium: false,
+          limit: 1,
+          current: parseInt(count.rows[0].count),
+          message: allowed ? 'OK' : 'Limită FREE atinsă (1 rețetă). Upgrade la Premium.'
+        });
+      }
+      
+      if (feature === 'friends') {
+        return res.status(200).json({ 
+          allowed: false, 
+          isPremium: false,
+          message: 'Prieteni disponibili doar în Premium.'
+        });
+      }
+      
+      if (feature === 'food-db') {
+        return res.status(200).json({ 
+          allowed: false, 
+          isPremium: false,
+          message: 'Food Database disponibil doar în Premium.'
+        });
+      }
+      
+      return res.status(200).json({ allowed: true });
+    }
+    
+    // POST ?subscription=grant - Admin grants premium (combined)
+    if (req.method === 'POST' && req.query.subscription === 'grant') {
+      const { targetUserId, durationMonths } = req.body;
+      
+      // Check if admin
+      const adminCheck = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.id]);
+      
+      if (adminCheck.rows[0]?.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin only' });
+      }
+      
+      // Grant Premium
+      const expiresAt = durationMonths === 'lifetime' 
+        ? null 
+        : new Date(Date.now() + durationMonths * 30 * 24 * 60 * 60 * 1000);
+      
+      await pool.query(
+        'UPDATE users SET subscription_plan = $1, subscription_status = $2 WHERE id = $3',
+        ['premium', 'active', targetUserId]
+      );
+      
+      await pool.query(`
+        INSERT INTO subscriptions (user_id, plan_type, price_amount, payment_method, payment_status, expires_at, created_by_admin)
+        VALUES ($1, $2, $3, $4, $5, $6, $7)
+      `, [targetUserId, 'premium', 0, 'admin_grant', 'paid', expiresAt, true]);
+      
+      return res.status(200).json({ success: true });
     }
     
   } catch (error) {

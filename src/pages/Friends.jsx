@@ -18,12 +18,32 @@ import { useLanguage } from "../components/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
 import { format } from "date-fns";
 import { ro } from "date-fns/locale";
+import Paywall from "../components/Paywall";
 
 export default function FriendsNew() {
   const { language } = useLanguage();
   const { toast } = useToast();
   const [searchEmail, setSearchEmail] = useState("");
+  const [user, setUser] = useState(null);
   const queryClient = useQueryClient();
+
+  // Get user info
+  React.useEffect(() => {
+    localApi.auth.me().then(setUser).catch(() => {});
+  }, []);
+
+  // Check if FREE user
+  if (user && user.subscription_plan === 'free') {
+    return (
+      <Paywall 
+        title={language === 'ro' ? '👥 Prieteni - Premium Feature' : '👥 Friends - Premium Feature'}
+        description={language === 'ro' 
+          ? 'Conectează-te cu prieteni, partajează rețete și urmărește progresul împreună!' 
+          : 'Connect with friends, share recipes and track progress together!'}
+        feature="friends"
+      />
+    );
+  }
 
   // Fetch friends list
   const { data: friends = [], isLoading: loadingFriends } = useQuery({
