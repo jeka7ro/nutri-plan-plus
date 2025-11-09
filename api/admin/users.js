@@ -70,6 +70,11 @@ export default async function handler(req, res) {
       return handlePromos(req, res, pool, userId);
     }
     
+    // ========== EMAIL MANAGEMENT ==========
+    if (type === 'email') {
+      return handleEmail(req, res, pool, userId);
+    }
+    
     // ========== DEFAULT: USERS ==========
     
     // PUT - Change user role
@@ -424,5 +429,179 @@ async function handlePromos(req, res, pool, adminId) {
   }
   
   return res.status(405).json({ error: 'Method not allowed' });
+}
+
+// ==================== EMAIL MANAGEMENT HANDLER ====================
+async function handleEmail(req, res, pool, adminId) {
+  const { action } = req.query; // 'templates' | 'campaigns' | 'analytics'
+  
+  try {
+    // Ensure email tables exist
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS email_templates (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        subject VARCHAR(500) NOT NULL,
+        body_html TEXT NOT NULL,
+        category VARCHAR(50) DEFAULT 'marketing',
+        created_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS email_campaigns (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        template_id INTEGER REFERENCES email_templates(id) ON DELETE CASCADE,
+        target_audience VARCHAR(50) DEFAULT 'all',
+        status VARCHAR(50) DEFAULT 'draft',
+        scheduled_at TIMESTAMP,
+        sent_at TIMESTAMP,
+        sent_count INTEGER DEFAULT 0,
+        open_count INTEGER DEFAULT 0,
+        click_count INTEGER DEFAULT 0,
+        created_by INTEGER REFERENCES users(id),
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // ========== TEMPLATES ==========
+    if (action === 'templates') {
+      // GET - List templates
+      if (req.method === 'GET') {
+        const result = await pool.query(`
+          SELECT * FROM email_templates ORDER BY created_at DESC
+        `);
+        return res.status(200).json({ templates: result.rows });
+      }
+      
+      // POST - Create template
+      if (req.method === 'POST') {
+        const { name, subject, body_html, category } = req.body;
+        const result = await pool.query(`
+          INSERT INTO email_templates (name, subject, body_html, category, created_by)
+          VALUES ($1, $2, $3, $4, $5)
+          RETURNING *
+        `, [name, subject, body_html, category || 'marketing', adminId]);
+        return res.status(200).json(result.rows[0]);
+      }
+      
+      // PUT - Update template
+      if (req.method === 'PUT') {
+        const { templateId, name, subject, body_html } = req.body;
+        const result = await pool.query(`
+          UPDATE email_templates SET
+            name = COALESCE($1, name),
+            subject = COALESCE($2, subject),
+            body_html = COALESCE($3, body_html)
+          WHERE id = $4
+          RETURNING *
+        `, [name, subject, body_html, templateId]);
+        return res.status(200).json(result.rows[0]);
+      }
+      
+      // DELETE
+      if (req.method === 'DELETE') {
+        const { templateId } = req.body;
+        await pool.query('DELETE FROM email_templates WHERE id = $1', [templateId]);
+        return res.status(200).json({ success: true });
+      }
+    }
+    
+    // ========== CAMPAIGNS ==========
+    if (action === 'campaigns') {
+      // GET - List campaigns
+      if (req.method === 'GET') {
+        const result = await pool.query(`
+          SELECT 
+            c.*,
+            t.name as template_name
+          FROM email_campaigns c
+          LEFT JOIN email_templates t ON c.template_id = t.id
+          ORDER BY c.created_at DESC
+        `);
+        return res.status(200).json({ campaigns: result.rows });
+      }
+      
+      // POST - Create campaign
+      if (req.method === 'POST') {
+        const { name, template_id, target_audience, scheduled_at } = req.body;
+        
+        const status = scheduled_at ? 'scheduled' : 'draft';
+        
+        const result = await pool.query(`
+          INSERT INTO email_campaigns (name, template_id, target_audience, status, scheduled_at, created_by)
+          VALUES ($1, $2, $3, $4, $5, $6)
+          RETURNING *
+        `, [name, template_id, target_audience || 'all', status, scheduled_at || null, adminId]);
+        
+        return res.status(200).json(result.rows[0]);
+      }
+      
+      // PUT - Update campaign
+      if (req.method === 'PUT') {
+        const { campaignId, status, sent_count, open_count, click_count } = req.body;
+        const result = await pool.query(`
+          UPDATE email_campaigns SET
+            status = COALESCE($1, status),
+            sent_count = COALESCE($2, sent_count),
+            open_count = COALESCE($3, open_count),
+            click_count = COALESCE($4, click_count),
+            sent_at = CASE WHEN $1 = 'sent' THEN CURRENT_TIMESTAMP ELSE sent_at END
+          WHERE id = $5
+          RETURNING *
+        `, [status, sent_count, open_count, click_count, campaignId]);
+        return res.status(200).json(result.rows[0]);
+      }
+    }
+    
+    // ========== ANALYTICS ==========
+    if (action === 'analytics') {
+      // GET - Analytics stats
+      if (req.method === 'GET') {
+        const statsResult = await pool.query(`
+          SELECT 
+            COALESCE(SUM(sent_count), 0) as sent,
+            COALESCE(SUM(open_count), 0) as opened,
+            COALESCE(SUM(click_count), 0) as clicked
+          FROM email_campaigns
+          WHERE status = 'sent'
+        `);
+        
+        const stats = statsResult.rows[0];
+        const openRate = stats.sent > 0 ? ((stats.opened / stats.sent) * 100).toFixed(1) : 0;
+        const clickRate = stats.sent > 0 ? ((stats.clicked / stats.sent) * 100).toFixed(1) : 0;
+        
+        const historyResult = await pool.query(`
+          SELECT 
+            name as campaign_name,
+            sent_count as sent,
+            open_count as opened,
+            click_count as clicked,
+            sent_at
+          FROM email_campaigns
+          WHERE status = 'sent' AND sent_at IS NOT NULL
+          ORDER BY sent_at DESC
+          LIMIT 20
+        `);
+        
+        return res.status(200).json({
+          stats: {
+            ...stats,
+            openRate: parseFloat(openRate),
+            clickRate: parseFloat(clickRate)
+          },
+          history: historyResult.rows
+        });
+      }
+    }
+    
+    return res.status(400).json({ error: 'Invalid action or method' });
+    
+  } catch (error) {
+    console.error('❌ Email handler error:', error);
+    return res.status(500).json({ error: error.message });
+  }
 }
 
