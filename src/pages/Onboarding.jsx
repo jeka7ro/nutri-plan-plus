@@ -83,9 +83,15 @@ export default function Onboarding() {
 
   // Încarcă lista de țări
   React.useEffect(() => {
-    fetch('http://localhost:3001/api/countries')
-      .then(res => res.json())
-      .then(data => setCountries(data))
+    localApi.countries.list()
+      .then(data => {
+        // Convert array to object: { "România": ["București", ...], ... }
+        const countriesObj = {};
+        data.forEach(country => {
+          countriesObj[country.name] = country.cities;
+        });
+        setCountries(countriesObj);
+      })
       .catch(err => console.error('Error loading countries:', err));
   }, []);
 

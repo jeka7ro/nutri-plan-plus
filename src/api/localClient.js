@@ -223,6 +223,11 @@ export const localApi = {
     }),
     delete: (id) => request(`/recipes/${id}`, { method: 'DELETE' }),
   },
+
+  // Countries (combined in /api/recipes.js with ?countries=true)
+  countries: {
+    list: () => request('/recipes?countries=true'),
+  },
   
   // Progress
   progress: {
@@ -411,47 +416,47 @@ export const localApi = {
     },
   },
   
-  // Friends
+  // Friends (combined in /api/social.js)
   friends: {
-    list: () => request('/friends'),
-    search: (email) => request(`/friends?search=${encodeURIComponent(email)}`),
-    sendRequest: (friendEmail) => request('/friends', {
+    list: () => request('/social?type=friends'),
+    search: (email) => request(`/social?type=friends&search=${encodeURIComponent(email)}`),
+    sendRequest: (friendEmail) => request('/social?type=friends', {
       method: 'POST',
       body: JSON.stringify({ friendEmail }),
     }),
-    getRequests: () => request('/friends?requests=true'),
-    acceptRequest: (requestId) => request('/friends', {
+    getRequests: () => request('/social?type=friends&requests=true'),
+    acceptRequest: (requestId) => request('/social?type=friends', {
       method: 'PUT',
       body: JSON.stringify({ requestId, action: 'accept' }),
     }),
-    rejectRequest: (requestId) => request('/friends', {
+    rejectRequest: (requestId) => request('/social?type=friends', {
       method: 'PUT',
       body: JSON.stringify({ requestId, action: 'reject' }),
     }),
-    remove: (friendshipId) => request(`/friends?id=${friendshipId}`, { method: 'DELETE' }),
+    remove: (friendshipId) => request(`/social?type=friends&id=${friendshipId}`, { method: 'DELETE' }),
   },
 
-  // User Recipes
+  // User Recipes (combined in /api/social.js)
   userRecipes: {
-    list: () => request('/user-recipes'),
-    friendsRecipes: () => request('/user-recipes?friends=true'),
-    create: (recipe) => request('/user-recipes', {
+    list: () => request('/social?type=recipes'),
+    friendsRecipes: () => request('/social?type=recipes&friends=true'),
+    create: (recipe) => request('/social?type=recipes', {
       method: 'POST',
       body: JSON.stringify(recipe),
     }),
-    update: (id, data) => request('/user-recipes', {
+    update: (id, data) => request('/social?type=recipes', {
       method: 'PUT',
       body: JSON.stringify({ id, ...data }),
     }),
-    delete: (id) => request(`/user-recipes?id=${id}`, { method: 'DELETE' }),
+    delete: (id) => request(`/social?type=recipes&id=${id}`, { method: 'DELETE' }),
   },
 
-  // Notifications
+  // Notifications (combined in /api/social.js)
   notifications: {
-    list: () => request('/notifications'),
-    getUnreadCount: () => request('/notifications?unread=true'),
-    markAsRead: (id) => request(`/notifications?id=${id}`, { method: 'PUT' }),
-    markAllAsRead: () => request('/notifications?readAll=true', { method: 'PUT' }),
+    list: () => request('/social?type=notifications'),
+    getUnreadCount: () => request('/social?type=notifications&unread=true'),
+    markAsRead: (id) => request(`/social?type=notifications&id=${id}`, { method: 'PUT' }),
+    markAllAsRead: () => request('/social?type=notifications&readAll=true', { method: 'PUT' }),
   },
   
   // Integrations - pentru compatibilitate cu base44
