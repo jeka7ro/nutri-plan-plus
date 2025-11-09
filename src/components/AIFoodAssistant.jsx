@@ -23,6 +23,7 @@ export default function AIFoodAssistant() {
   const [response, setResponse] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [checkIn, setCheckIn] = useState(null);
+  const [showTimeline, setShowTimeline] = useState(false);
 
   useEffect(() => {
     localApi.auth.me().then(setUser).catch(() => {});
@@ -128,6 +129,86 @@ export default function AIFoodAssistant() {
       feedback: feedback.length > 0 ? feedback : [language === 'ro' ? '✅ Excellent! Mâncare perfectă pentru faza ta!' : '✅ Excellent! Perfect meal for your phase!'],
       badge: score >= 8 ? '🟢' : score >= 6 ? '🟡' : '🔴'
     };
+  };
+
+  // ========== MEAL TIMELINE - Grafic vizual pentru mese ==========
+  const getMealTimeline = () => {
+    const meals = [
+      { time: '08:00', name: language === 'ro' ? 'Mic Dejun' : 'Breakfast', key: 'breakfast_completed', icon: '☕' },
+      { time: '10:00', name: language === 'ro' ? 'Gustare 1' : 'Snack 1', key: 'snack1_completed', icon: '🍎' },
+      { time: '13:00', name: language === 'ro' ? 'Prânz' : 'Lunch', key: 'lunch_completed', icon: '🍽️' },
+      { time: '16:00', name: language === 'ro' ? 'Gustare 2' : 'Snack 2', key: 'snack2_completed', icon: '🥗' },
+      { time: '19:00', name: language === 'ro' ? 'Cină' : 'Dinner', key: 'dinner_completed', icon: '🌙' },
+    ];
+
+    const currentHour = new Date().getHours();
+    
+    return meals.map(meal => {
+      const mealHour = parseInt(meal.time.split(':')[0]);
+      const isPast = currentHour > mealHour;
+      const isNow = currentHour === mealHour;
+      const isCompleted = checkIn?.[meal.key];
+      
+      return {
+        ...meal,
+        isPast,
+        isNow,
+        isCompleted,
+        status: isCompleted ? 'done' : isPast ? 'missed' : isNow ? 'current' : 'upcoming'
+      };
+    });
+  };
+
+  // ========== SMART REMINDERS ==========
+  const getSmartReminders = () => {
+    const reminders = [];
+    const hour = new Date().getHours();
+    const timeline = getMealTimeline();
+    const currentMeal = timeline.find(m => m.isNow);
+    const nextMeal = timeline.find(m => m.status === 'upcoming');
+    
+    // Reminder pentru masa curentă
+    if (currentMeal && !currentMeal.isCompleted) {
+      reminders.push({
+        type: 'urgent',
+        message: language === 'ro' 
+          ? `⏰ Este ora pentru ${currentMeal.name}! Nu uita să mănânci!`
+          : `⏰ Time for ${currentMeal.name}! Don't forget to eat!`
+      });
+    }
+    
+    // Reminder pentru apă
+    const waterGlasses = checkIn?.water_glasses || 0;
+    if (waterGlasses < 8) {
+      reminders.push({
+        type: 'water',
+        message: language === 'ro'
+          ? `💧 Ai băut doar ${waterGlasses}/8 pahare de apă azi. Bea mai multă apă!`
+          : `💧 You've had only ${waterGlasses}/8 glasses of water today. Drink more!`
+      });
+    }
+    
+    // Reminder pentru următoarea masă
+    if (nextMeal) {
+      reminders.push({
+        type: 'info',
+        message: language === 'ro'
+          ? `📅 Următoarea masă: ${nextMeal.name} la ${nextMeal.time}`
+          : `📅 Next meal: ${nextMeal.name} at ${nextMeal.time}`
+      });
+    }
+    
+    // Reminder pentru exerciții
+    if (hour > 17 && (!checkIn?.exercise_calories_burned || checkIn.exercise_calories_burned === 0)) {
+      reminders.push({
+        type: 'exercise',
+        message: language === 'ro'
+          ? `🏃 Nu ai făcut exerciții fizice azi! 30 min de cardio te ajută să arzi grăsime!'`
+          : `🏃 No exercise today! 30 min of cardio helps burn fat!`
+      });
+    }
+    
+    return reminders;
   };
 
   const getNextMeal = () => {
