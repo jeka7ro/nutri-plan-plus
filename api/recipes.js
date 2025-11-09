@@ -95,6 +95,64 @@ export default function handler(req, res) {
     return res.status(200).end();
   }
   
+  // Handle food ingredients request (Food Database)
+  if (req.query.food === 'list' || req.query.food === 'search') {
+    try {
+      // Ensure food_ingredients table exists
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS food_ingredients (
+          id SERIAL PRIMARY KEY,
+          name_en VARCHAR(255) NOT NULL,
+          name_ro VARCHAR(255) NOT NULL,
+          category VARCHAR(100),
+          calories_per_100g DECIMAL(6,2),
+          protein_per_100g DECIMAL(6,2),
+          carbs_per_100g DECIMAL(6,2),
+          fat_per_100g DECIMAL(6,2),
+          fiber_per_100g DECIMAL(6,2),
+          is_approved BOOLEAN DEFAULT TRUE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      
+      await pool.query(`CREATE INDEX IF NOT EXISTS idx_food_name_ro ON food_ingredients(name_ro)`);
+      await pool.query(`CREATE INDEX IF NOT EXISTS idx_food_category ON food_ingredients(category)`);
+      
+      // Check if table is empty (seed needed)
+      const countResult = await pool.query('SELECT COUNT(*) FROM food_ingredients');
+      const count = parseInt(countResult.rows[0].count);
+      
+      if (count === 0) {
+        console.log('📦 Seeding food database - run seed script manually or via migration');
+        // Note: Seeding se face manual sau prin script separat
+        // Pentru a evita timeout-uri la deployment
+      }
+      
+      // Search or list
+      if (req.query.food === 'search') {
+        const { q } = req.query;
+        const result = await pool.query(`
+          SELECT * FROM food_ingredients
+          WHERE name_ro ILIKE $1 OR name_en ILIKE $1
+          ORDER BY name_ro
+          LIMIT 50
+        `, [`%${q}%`]);
+        return res.status(200).json(result.rows);
+      }
+      
+      // List all
+      const result = await pool.query(`
+        SELECT * FROM food_ingredients
+        ORDER BY category, name_ro
+        LIMIT 500
+      `);
+      return res.status(200).json(result.rows);
+    } catch (error) {
+      console.error('❌ Food database error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
   // Handle countries request (combined to stay within Vercel 12 function limit)
   if (req.query.countries === 'true') {
     const countries = [

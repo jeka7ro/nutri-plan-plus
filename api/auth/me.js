@@ -2,11 +2,26 @@ import pkg from 'pg';
 const { Pool } = pkg;
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 
 const pool = new Pool({
   connectionString: process.env.POSTGRES_URL,
   ssl: { rejectUnauthorized: false }
 });
+
+// Email service helper (inline pentru Vercel)
+async function sendEmail({ to, subject, html }) {
+  // DEV MODE - doar log
+  console.log(`📧 [EMAIL] To: ${to}, Subject: ${subject}`);
+  const link = html.match(/https?:\/\/[^\s"<>]+/)?.[0];
+  if (link) console.log(`🔗 Link: ${link}`);
+  return { success: true, dev_mode: true };
+  
+  // TODO: Activează SendGrid sau Gmail SMTP în production
+  // const sgMail = require('@sendgrid/mail');
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  // await sgMail.send({ to, from: 'noreply@eatnfit.app', subject, html });
+}
 
 export default async function handler(req, res) {
   // CORS
@@ -134,6 +149,188 @@ export default async function handler(req, res) {
         error: error.message,
         stack: error.stack
       });
+    }
+  }
+  
+  // ========== EMAIL VERIFICATION ==========
+  // POST /api/auth/me?verify=send - Trimite email de verificare
+  if (req.method === 'POST' && req.query.verify === 'send') {
+    const { email } = req.body;
+    
+    try {
+      // Creează tabel pentru tokens
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS email_verification_tokens (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          token VARCHAR(255) UNIQUE NOT NULL,
+          expires_at TIMESTAMP NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      
+      // Găsește user-ul
+      const userResult = await pool.query('SELECT id, email FROM users WHERE email = $1', [email]);
+      if (userResult.rows.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+      
+      const user = userResult.rows[0];
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 ore
+      
+      // Salvează token
+      await pool.query(`
+        INSERT INTO email_verification_tokens (user_id, token, expires_at)
+        VALUES ($1, $2, $3)
+      `, [user.id, token, expiresAt]);
+      
+      // Trimite email
+      const link = `https://www.eatnfit.app/verify-email?token=${token}`;
+      const html = `
+        <h2>🎉 Bine ai venit la EatnFit!</h2>
+        <p>Click pentru a-ți verifica email-ul:</p>
+        <a href="${link}" style="display: inline-block; background: #10b981; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold;">
+          ✅ Activează Contul
+        </a>
+        <p style="color: #6b7280; margin-top: 20px;">Link-ul expiră în 24 ore.</p>
+      `;
+      
+      await sendEmail({ to: user.email, subject: 'Verifică-ți emailul - EatnFit', html });
+      
+      return res.status(200).json({ success: true, message: 'Email de verificare trimis!' });
+    } catch (error) {
+      console.error('❌ Email verification send error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
+  // GET /api/auth/me?verify=<token> - Verifică token-ul
+  if (req.method === 'GET' && req.query.verify) {
+    const token = req.query.verify;
+    
+    try {
+      const result = await pool.query(`
+        SELECT evt.*, u.id as user_id, u.email
+        FROM email_verification_tokens evt
+        JOIN users u ON evt.user_id = u.id
+        WHERE evt.token = $1 AND evt.expires_at > NOW()
+      `, [token]);
+      
+      if (result.rows.length === 0) {
+        return res.status(400).json({ error: 'Token invalid sau expirat' });
+      }
+      
+      const { user_id, email } = result.rows[0];
+      
+      // Marchează user-ul ca verificat
+      await pool.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN DEFAULT FALSE`);
+      await pool.query('UPDATE users SET email_verified = TRUE WHERE id = $1', [user_id]);
+      
+      // Șterge token-ul
+      await pool.query('DELETE FROM email_verification_tokens WHERE token = $1', [token]);
+      
+      return res.status(200).json({ success: true, message: 'Email verificat cu succes!', email });
+    } catch (error) {
+      console.error('❌ Email verification error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
+  // ========== PASSWORD RESET ==========
+  // POST /api/auth/me?reset=request - Cere resetare parolă
+  if (req.method === 'POST' && req.query.reset === 'request') {
+    const { email } = req.body;
+    
+    try {
+      // Creează tabel pentru reset tokens
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS password_reset_tokens (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          token VARCHAR(255) UNIQUE NOT NULL,
+          expires_at TIMESTAMP NOT NULL,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      
+      // Găsește user-ul
+      const userResult = await pool.query('SELECT id, email FROM users WHERE email = $1', [email]);
+      if (userResult.rows.length === 0) {
+        // Nu dezvăluim dacă email-ul există (security)
+        return res.status(200).json({ success: true, message: 'Dacă email-ul există, vei primi link de resetare.' });
+      }
+      
+      const user = userResult.rows[0];
+      const token = crypto.randomBytes(32).toString('hex');
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 oră
+      
+      // Șterge token-uri vechi pentru acest user
+      await pool.query('DELETE FROM password_reset_tokens WHERE user_id = $1', [user.id]);
+      
+      // Salvează token nou
+      await pool.query(`
+        INSERT INTO password_reset_tokens (user_id, token, expires_at)
+        VALUES ($1, $2, $3)
+      `, [user.id, token, expiresAt]);
+      
+      // Trimite email
+      const link = `https://www.eatnfit.app/reset-password?token=${token}`;
+      const html = `
+        <h2>🔑 Resetare Parolă</h2>
+        <p>Click pentru a-ți reseta parola:</p>
+        <a href="${link}" style="display: inline-block; background: #f59e0b; color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold;">
+          🔄 Resetează Parola
+        </a>
+        <p style="color: #ef4444; margin-top: 20px;"><strong>⚠️ Link-ul expiră în 1 oră.</strong></p>
+        <p style="color: #6b7280;">Dacă nu ai solicitat resetarea, poți ignora acest email.</p>
+      `;
+      
+      await sendEmail({ to: user.email, subject: 'Resetare Parolă - EatnFit', html });
+      
+      return res.status(200).json({ success: true, message: 'Dacă email-ul există, vei primi link de resetare.' });
+    } catch (error) {
+      console.error('❌ Password reset request error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
+  // POST /api/auth/me?reset=<token> - Resetează parola cu token-ul
+  if (req.method === 'POST' && req.query.reset && req.query.reset !== 'request') {
+    const token = req.query.reset;
+    const { newPassword } = req.body;
+    
+    if (!newPassword || newPassword.length < 6) {
+      return res.status(400).json({ error: 'Parola trebuie să aibă minim 6 caractere' });
+    }
+    
+    try {
+      const result = await pool.query(`
+        SELECT prt.*, u.id as user_id, u.email
+        FROM password_reset_tokens prt
+        JOIN users u ON prt.user_id = u.id
+        WHERE prt.token = $1 AND prt.expires_at > NOW()
+      `, [token]);
+      
+      if (result.rows.length === 0) {
+        return res.status(400).json({ error: 'Token invalid sau expirat' });
+      }
+      
+      const { user_id } = result.rows[0];
+      
+      // Hash parola nouă
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
+      // Actualizează parola
+      await pool.query('UPDATE users SET password = $1 WHERE id = $2', [hashedPassword, user_id]);
+      
+      // Șterge toate token-urile de reset pentru acest user
+      await pool.query('DELETE FROM password_reset_tokens WHERE user_id = $1', [user_id]);
+      
+      return res.status(200).json({ success: true, message: 'Parolă resetată cu succes!' });
+    } catch (error) {
+      console.error('❌ Password reset error:', error);
+      return res.status(500).json({ error: error.message });
     }
   }
   
