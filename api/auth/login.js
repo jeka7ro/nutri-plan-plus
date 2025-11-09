@@ -59,6 +59,68 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
   
+  // ========== OAUTH LOGIN (Google/Apple) ==========
+  if (req.query.oauth) {
+    try {
+      const { provider, id_token } = req.body;
+      
+      if (!id_token) {
+        return res.status(400).json({ error: 'ID token required' });
+      }
+      
+      // Parse JWT payload (DEV mode - în production verifică signature!)
+      const payload = JSON.parse(Buffer.from(id_token.split('.')[1], 'base64').toString());
+      const email = payload.email;
+      const first_name = payload.given_name || payload.name?.split(' ')[0] || 'User';
+      const last_name = payload.family_name || payload.name?.split(' ')[1] || '';
+      const profile_picture = payload.picture;
+      
+      console.log(`🔐 OAuth ${provider}:`, email);
+      
+      // Găsește sau creează user
+      let userResult = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+      let user;
+
+      if (userResult.rows.length === 0) {
+        console.log('➕ Creating OAuth user:', email);
+        
+        const insertResult = await pool.query(`
+          INSERT INTO users (email, first_name, last_name, profile_picture, role, subscription_plan)
+          VALUES ($1, $2, $3, $4, 'user', 'free')
+          RETURNING *
+        `, [email, first_name, last_name, profile_picture]);
+        
+        user = insertResult.rows[0];
+      } else {
+        user = userResult.rows[0];
+        
+        // Update profile picture dacă lipsește
+        if (!user.profile_picture && profile_picture) {
+          await pool.query('UPDATE users SET profile_picture = $1 WHERE id = $2', [profile_picture, user.id]);
+          user.profile_picture = profile_picture;
+        }
+      }
+
+      // Update last_login
+      await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
+
+      // Generate JWT
+      const token = jwt.sign(
+        { id: user.id, email: user.email, role: user.role },
+        process.env.JWT_SECRET || 'your-secret-key-change-in-production',
+        { expiresIn: '7d' }
+      );
+
+      delete user.password;
+
+      return res.status(200).json({ token, user });
+    } catch (error) {
+      console.error('❌ OAuth error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
+  // ========== NORMAL LOGIN/REGISTER ==========
   try {
     const { email, password, first_name, last_name, phone, country_code, country, city, date_of_birth, isRegister } = req.body;
     
