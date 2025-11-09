@@ -56,6 +56,80 @@ export default function AIFoodAssistant() {
     return 3;
   };
 
+  // ========== AI ANALYZER: Scor 0-10 pentru mese ==========
+  const analyzeMeal = (meal, phase) => {
+    let score = 10;
+    const feedback = [];
+    
+    const mealLower = meal.toLowerCase();
+    
+    // REGULI FAZA 1: Carbohidrați + Proteine, FĂRĂ grăsimi
+    if (phase === 1) {
+      // Interzise: grăsimi, ulei, nuci, avocado, lactate
+      if (/ulei|oil|unt|butter|nuci|nuts|avocado|smântână|cream|brânză|cheese|bacon/.test(mealLower)) {
+        score -= 4;
+        feedback.push(language === 'ro' ? '❌ Faza 1: FĂRĂ grăsimi!' : '❌ Phase 1: NO fats!');
+      }
+      // Banane interzise
+      if (/banan|banana/.test(mealLower)) {
+        score -= 3;
+        feedback.push(language === 'ro' ? '❌ Bananele sunt interzise!' : '❌ Bananas forbidden!');
+      }
+      // Trebuie carbohidrați
+      if (!/orez|rice|quinoa|ovăz|oat|pâine|bread|paste|pasta/.test(mealLower)) {
+        score -= 2;
+        feedback.push(language === 'ro' ? '⚠️ Adaugă carbohidrați (orez, quinoa, ovăz)' : '⚠️ Add carbs (rice, quinoa, oats)');
+      }
+    }
+    
+    // REGULI FAZA 2: Proteine + Legume, FĂRĂ carbohidrați și grăsimi
+    if (phase === 2) {
+      if (/orez|rice|pâine|bread|paste|pasta|cartofi|potato|quinoa|ovăz|oat/.test(mealLower)) {
+        score -= 4;
+        feedback.push(language === 'ro' ? '❌ Faza 2: FĂRĂ carbohidrați!' : '❌ Phase 2: NO carbs!');
+      }
+      if (/ulei|oil|unt|butter|nuci|nuts|avocado/.test(mealLower)) {
+        score -= 3;
+        feedback.push(language === 'ro' ? '❌ Fază 2: FĂRĂ grăsimi!' : '❌ Phase 2: NO fats!');
+      }
+      // Trebuie proteine
+      if (!/pui|chicken|pește|fish|curcan|turkey|carne|meat|ou|egg/.test(mealLower)) {
+        score -= 2;
+        feedback.push(language === 'ro' ? '⚠️ Adaugă proteine (pui, pește, ou)' : '⚠️ Add protein (chicken, fish, eggs)');
+      }
+    }
+    
+    // REGULI FAZA 3: TOT permis (grăsimi sănătoase incluse)
+    if (phase === 3) {
+      // Verifică echilibru
+      const hasProtein = /pui|chicken|pește|fish|carne|meat/.test(mealLower);
+      const hasCarbs = /orez|rice|quinoa|ovăz|oat/.test(mealLower);
+      const hasFats = /ulei|oil|avocado|nuci|nuts|somon|salmon/.test(mealLower);
+      
+      if (!hasProtein) {
+        score -= 2;
+        feedback.push(language === 'ro' ? '⚠️ Adaugă proteine' : '⚠️ Add protein');
+      }
+      if (!hasCarbs && !hasFats) {
+        score -= 1;
+        feedback.push(language === 'ro' ? 'ℹ️ Poți adăuga carbohidrați sau grăsimi sănătoase' : 'ℹ️ You can add carbs or healthy fats');
+      }
+    }
+    
+    // Bonus pentru legume
+    if (/salată|salad|broccoli|spanac|spinach|legume|vegetable/.test(mealLower)) {
+      feedback.push(language === 'ro' ? '✅ Perfect! Legume incluse' : '✅ Great! Veggies included');
+    }
+    
+    score = Math.max(0, Math.min(10, score));
+    
+    return {
+      score,
+      feedback: feedback.length > 0 ? feedback : [language === 'ro' ? '✅ Excellent! Mâncare perfectă pentru faza ta!' : '✅ Excellent! Perfect meal for your phase!'],
+      badge: score >= 8 ? '🟢' : score >= 6 ? '🟡' : '🔴'
+    };
+  };
+
   const getNextMeal = () => {
     const hour = new Date().getHours();
     if (!checkIn) {
