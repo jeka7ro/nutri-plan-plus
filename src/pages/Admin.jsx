@@ -51,7 +51,7 @@ export default function Admin() {
   const [bookUrl, setBookUrl] = useState("");
   const [recipeSearchQuery, setRecipeSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState(null); // Pentru dialog detalii user
-  const [activeTab, setActiveTab] = useState("recipes"); // Control tab-uri
+  const [activeTab, setActiveTab] = useState("crm"); // Control tab-uri - CRM primul
   const [showCreateUser, setShowCreateUser] = useState(false); // Dialog creare utilizator
   const [newUserData, setNewUserData] = useState({
     email: '',
@@ -447,16 +447,170 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-8 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))]">
-            <TabsTrigger value="recipes">Rețete ({filteredRecipes.length})</TabsTrigger>
-            <TabsTrigger value="recommendations">📖 Recomandări</TabsTrigger>
-            <TabsTrigger value="resources">📚 Resurse</TabsTrigger>
-            <TabsTrigger value="support">Suport ({stats.pendingSupport})</TabsTrigger>
-            <TabsTrigger value="users">Utilizatori</TabsTrigger>
-            <TabsTrigger value="logs">📋 Loguri</TabsTrigger>
-            <TabsTrigger value="backups">💾 Backup</TabsTrigger>
-            <TabsTrigger value="settings">⚙️ Setări App</TabsTrigger>
+          <TabsList className="flex flex-wrap w-full bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] p-1 gap-1">
+            <TabsTrigger value="crm" className="flex-1 min-w-[100px]">🎯 CRM</TabsTrigger>
+            <TabsTrigger value="sales" className="flex-1 min-w-[100px]">💰 Sales</TabsTrigger>
+            <TabsTrigger value="promos" className="flex-1 min-w-[100px]">🎁 Promoții</TabsTrigger>
+            <TabsTrigger value="users" className="flex-1 min-w-[100px]">👥 Users</TabsTrigger>
+            <TabsTrigger value="recipes" className="flex-1 min-w-[100px]">🍽️ Rețete</TabsTrigger>
+            <TabsTrigger value="support" className="flex-1 min-w-[100px]">💬 Suport</TabsTrigger>
+            <TabsTrigger value="logs" className="flex-1 min-w-[100px]">📋 Logs</TabsTrigger>
+            <TabsTrigger value="backups" className="flex-1 min-w-[100px]">💾 Backup</TabsTrigger>
+            <TabsTrigger value="settings" className="flex-1 min-w-[100px]">⚙️ Setări</TabsTrigger>
           </TabsList>
+
+          {/* ==================== TAB CRM ==================== */}
+          <TabsContent value="crm" className="mt-6">
+            <div className="space-y-6">
+              {/* CRM Stats Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card className="bg-emerald-500/10 border-emerald-500/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Total Leads</p>
+                        <p className="text-3xl font-bold text-white">-</p>
+                      </div>
+                      <Users className="w-8 h-8 text-emerald-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-orange-500/10 border-orange-500/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Qualified</p>
+                        <p className="text-3xl font-bold text-white">-</p>
+                      </div>
+                      <TrendingUp className="w-8 h-8 text-orange-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-purple-500/10 border-purple-500/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Converted</p>
+                        <p className="text-3xl font-bold text-white">-</p>
+                      </div>
+                      <CheckCircle className="w-8 h-8 text-purple-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-cyan-500/10 border-cyan-500/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Conversion Rate</p>
+                        <p className="text-3xl font-bold text-white">-%</p>
+                      </div>
+                      <Activity className="w-8 h-8 text-cyan-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* CRM Leads Table */}
+              <Card className="ios-card border-none ios-shadow-lg">
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-[rgb(var(--ios-text-primary))]">🎯 CRM Leads</CardTitle>
+                    <Button size="sm" className="bg-emerald-500 hover:bg-emerald-600">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Lead
+                    </Button>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-400">CRM System - În dezvoltare...</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Funcționalitate completă: Pipeline stages, Lead scoring, Activities, etc.
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* ==================== TAB SALES ==================== */}
+          <TabsContent value="sales" className="mt-6">
+            <div className="space-y-6">
+              {/* Revenue Stats */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="bg-emerald-500/10 border-emerald-500/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Revenue (30 zile)</p>
+                        <p className="text-3xl font-bold text-white">- RON</p>
+                      </div>
+                      <TrendingUp className="w-8 h-8 text-emerald-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-purple-500/10 border-purple-500/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Tranzacții</p>
+                        <p className="text-3xl font-bold text-white">-</p>
+                      </div>
+                      <Activity className="w-8 h-8 text-purple-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="bg-cyan-500/10 border-cyan-500/20">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm text-gray-400">Average Transaction</p>
+                        <p className="text-3xl font-bold text-white">- RON</p>
+                      </div>
+                      <Award className="w-8 h-8 text-cyan-500" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Sales Table */}
+              <Card className="ios-card border-none ios-shadow-lg">
+                <CardHeader>
+                  <CardTitle className="text-[rgb(var(--ios-text-primary))]">💰 Sales & Revenue</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-400">Sales Tracking - În dezvoltare...</p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Revenue tracking, Grafice Recharts, Export Excel
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          {/* ==================== TAB PROMOȚII ==================== */}
+          <TabsContent value="promos" className="mt-6">
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-[rgb(var(--ios-text-primary))]">🎁 Coduri Promoționale</CardTitle>
+                  <Button size="sm" className="bg-purple-500 hover:bg-purple-600">
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Promo Code
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-400">Promo Codes System - În dezvoltare...</p>
+                <p className="text-sm text-gray-500 mt-2">
+                  Discount codes, Usage tracking, Analytics
+                </p>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           {/* TAB RECOMANDĂRI - EDITARE */}
           <TabsContent value="recommendations" className="mt-6">
