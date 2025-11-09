@@ -49,11 +49,11 @@ export default async function handler(req, res) {
       'SELECT * FROM daily_checkins WHERE user_id = $1 AND date = $2',
       [userId, date]
     );
-    
+  
     const checkin = result.rows[0] || null;
-    console.log(`✅ GET /api/checkins/${date}:`, checkin ? 'FOUND' : 'NULL');
-    
-    return res.status(200).json(checkin);
+  console.log(`✅ GET /api/checkins/${date}:`, checkin ? 'FOUND' : 'NULL');
+  
+  return res.status(200).json(checkin);
   } catch (error) {
     console.error(`❌ GET /api/checkins/${date} error:`, error);
     return res.status(500).json({ error: error.message });

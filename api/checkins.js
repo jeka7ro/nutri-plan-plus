@@ -121,7 +121,7 @@ export default async function handler(req, res) {
         data.exercise_completed || false, data.exercise_type, data.exercise_duration || 0, data.exercise_calories_burned || 0, JSON.stringify(data.exercises || []),
         data.water_intake || 0, data.total_calories || 0, data.notes || ''
       ]);
-      
+    
       console.log('✅ Check-in UPSERT success:', result.rows[0]);
       return res.status(200).json(result.rows[0]);
     } catch (error) {

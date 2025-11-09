@@ -528,7 +528,7 @@ function LayoutContent() {
 
               <div className="flex items-center gap-2">
                 <NotificationBell />
-                <ThemeSelector />
+              <ThemeSelector />
               </div>
             </div>
           </header>

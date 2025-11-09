@@ -33,7 +33,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  const { type } = req.query; // type = 'friends' | 'recipes' | 'notifications'
+  const { type } = req.query; // type = 'friends' | 'recipes' | 'notifications' | 'food'
   
   // ========== FRIENDS ==========
   if (type === 'friends') {
@@ -50,7 +50,12 @@ export default async function handler(req, res) {
     return handleNotifications(req, res, pool, userId);
   }
   
-  return res.status(400).json({ error: 'Missing or invalid type parameter. Use ?type=friends|recipes|notifications' });
+  // ========== FOOD DATABASE ==========
+  if (type === 'food') {
+    return handleFoodDatabase(req, res, pool, userId);
+  }
+  
+  return res.status(400).json({ error: 'Missing or invalid type parameter. Use ?type=friends|recipes|notifications|food' });
 }
 
 // ==================== FRIENDS HANDLER ====================

@@ -45,7 +45,7 @@ export default function WeightTracking() {
       setWeight(lastWeight.toFixed(1));
       console.log('✅ Pre-populat greutate:', lastWeight);
     } else if (user?.current_weight && !weight && weightEntries.length === 0) {
-      setWeight(user.current_weight.toFixed(1));
+      setWeight(parseFloat(user.current_weight).toFixed(1));
       console.log('✅ Pre-populat greutate din profil:', user.current_weight);
     }
   }, [weightEntries, user, weight]);
@@ -271,42 +271,42 @@ export default function WeightTracking() {
                 <Label htmlFor="weight" className="text-center block text-[rgb(var(--ios-text-primary))] font-semibold">
                   Greutatea de astăzi
                 </Label>
-                
+                  
                 {/* Mobile & Desktop: iOS-style increment/decrement */}
                 <div className="flex items-center justify-center gap-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
                     className="h-14 w-14 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
-                    onClick={() => setWeight(Math.max(0, (parseFloat(weight) || 0) - 0.5).toFixed(1))}
-                  >
+                        onClick={() => setWeight(Math.max(0, (parseFloat(weight) || 0) - 0.5).toFixed(1))}
+                      >
                     <span className="text-3xl font-light text-blue-600 dark:text-blue-400">−</span>
-                  </Button>
-                  
+                      </Button>
+                      
                   <div className="text-center">
-                    <Input
+                        <Input
                       id="weight"
-                      name="weight"
-                      type="number"
-                      step="0.1"
-                      value={weight}
-                      onChange={(e) => setWeight(e.target.value)}
-                      placeholder="75.5"
+                          name="weight"
+                          type="number"
+                          step="0.1"
+                          value={weight}
+                          onChange={(e) => setWeight(e.target.value)}
+                          placeholder="75.5"
                       className="text-center text-4xl font-bold h-20 w-32 border-2 border-blue-300 dark:border-blue-700 bg-white dark:bg-gray-900 rounded-[16px] shadow-lg"
-                    />
+                        />
                     <p className="text-sm text-[rgb(var(--ios-text-tertiary))] mt-2 font-medium">kilogramе</p>
-                  </div>
-                  
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
+                      </div>
+                      
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
                     className="h-14 w-14 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
-                    onClick={() => setWeight(((parseFloat(weight) || 0) + 0.5).toFixed(1))}
-                  >
+                        onClick={() => setWeight(((parseFloat(weight) || 0) + 0.5).toFixed(1))}
+                      >
                     <span className="text-3xl font-light text-blue-600 dark:text-blue-400">+</span>
-                  </Button>
+                      </Button>
                 </div>
               </div>
 

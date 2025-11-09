@@ -823,8 +823,8 @@ export default function DailyPlan() {
                   </div>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+          </CardContent>
+        </Card>
 
           {/* Card 2: Mese Completate */}
           <Card className="ios-card border-none ios-shadow-lg rounded-[20px] overflow-hidden relative">
@@ -1575,22 +1575,22 @@ export default function DailyPlan() {
                 {/* LISTĂ EXERCIȚII ADĂUGATE */}
                 {exercises.map((exercise, index) => (
                   <div key={index} className="flex items-center justify-between p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-xl">
-                    <div className="flex items-center gap-3">
-                      <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
-                        <Dumbbell className="w-6 h-6 text-purple-600 dark:text-purple-400" />
-                      </div>
-                      <div>
-                        <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-purple-100 dark:bg-purple-900/50 rounded-xl flex items-center justify-center">
+                      <Dumbbell className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
                           {exerciseTypes[exercise.type]?.name[language] || exerciseTypes.walking.name[language]}
-                        </div>
-                        <div className="text-sm text-[rgb(var(--ios-text-secondary))]">
+                      </div>
+                      <div className="text-sm text-[rgb(var(--ios-text-secondary))]">
                           {exercise.duration} {language === 'ro' ? 'minute' : 'minutes'} • {exercise.calories} {language === 'ro' ? 'calorii arse' : 'calories burned'}
-                        </div>
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
                       onClick={() => {
                         const updatedExercises = exercises.filter((_, i) => i !== index);
                         const totalCaloriesBurned = updatedExercises.reduce((sum, ex) => sum + ex.calories, 0);
@@ -1605,10 +1605,10 @@ export default function DailyPlan() {
                         });
                       }}
                       className="text-red-600 dark:text-red-400"
-                    >
+                  >
                       <X className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  </Button>
+                </div>
                 ))}
                 
                 {/* TOTAL */}
@@ -1620,7 +1620,7 @@ export default function DailyPlan() {
                     <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
                       {checkIn.exercise_duration || 0} {language === 'ro' ? 'min' : 'min'} • 🔥 {checkIn.exercise_calories_burned || 0} cal
                     </span>
-                  </div>
+              </div>
                 </div>
               </div>
             ) : null}

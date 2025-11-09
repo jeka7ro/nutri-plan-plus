@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import localApi from "@/api/localClient"; // Direct client pentru auth
 import { createPageUrl } from "@/utils";
-import { Loader2, Apple, Dumbbell, TrendingDown, Heart, Mail, Lock, User, Phone, MapPin, Calendar } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -68,10 +68,9 @@ export default function IndexPage() {
                 navigate(createPageUrl("Onboarding"));
               }
       } catch (error) {
-        // User NEAUTENTIFICAT - afișează pagina de login
-        console.log("User not authenticated - showing login page");
+        // User NEAUTENTIFICAT - verifică credențiale salvate pentru AUTO-LOGIN
+        console.log("User not authenticated - checking saved credentials");
         
-        // Încarcă credențialele salvate dacă există
         const savedEmail = localStorage.getItem('remembered_email');
         const savedPassword = localStorage.getItem('remembered_password');
         const savedRemember = localStorage.getItem('remember_me') === 'true';
@@ -79,46 +78,43 @@ export default function IndexPage() {
         console.log('🔍 Remember me check:', { savedEmail, hasSavedPassword: !!savedPassword, savedRemember });
         
         if (savedEmail && savedPassword && savedRemember) {
-          // AUTO-LOGIN dacă avem email + parolă + remember me
-          console.log('🔐 AUTO-LOGIN cu credențiale salvate...');
-          setFormData({ email: savedEmail, password: savedPassword, first_name: '', last_name: '' });
-          setRememberMe(true);
+          // ✨ AUTO-LOGIN INSTANT - PĂSTRĂM LOADING ACTIV!
+          console.log('🔐 AUTO-LOGIN cu credențiale salvate... (LOADING rămâne activ)');
           
-          // Trimite form automat (IMEDIAT, nu mai așteptăm)
-          (async () => {
-            try {
-              const loginResult = await localApi.auth.login(savedEmail, savedPassword);
-              console.log('✅ AUTO-LOGIN SUCCESS!');
-              
-              const user = await localApi.auth.me();
-              
-              // ADMINS bypass onboarding complet
-              if (user.role === 'admin') {
-                console.log('✅ Admin detectat - SKIP onboarding');
-                navigate(createPageUrl("DailyPlan"));
-                return;
-              }
-              
-              const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
-              const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
-              
-              if (hasCompletedProfile || hasBasicInfo) {
-                // Navighează la DailyPlan (ziua curentă) în loc de Dashboard
-                navigate(createPageUrl("DailyPlan"));
-              } else {
-                navigate(createPageUrl("Onboarding"));
-              }
-            } catch (error) {
-              console.error('❌ AUTO-LOGIN FAILED:', error);
-              // Șterge credențialele invalide
-              localStorage.removeItem('remembered_email');
-              localStorage.removeItem('remembered_password');
-              localStorage.removeItem('remember_me');
-              setIsLoading(false);
+          try {
+            const loginResult = await localApi.auth.login(savedEmail, savedPassword);
+            console.log('✅ AUTO-LOGIN SUCCESS! Navigare automată...');
+            
+            const user = await localApi.auth.me();
+            
+            // ADMINS bypass onboarding complet
+            if (user.role === 'admin') {
+              console.log('✅ Admin detectat - SKIP onboarding');
+              navigate(createPageUrl("DailyPlan"));
+              return;
             }
-          })();
+            
+            const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
+            const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
+            
+            if (hasCompletedProfile || hasBasicInfo) {
+              // Navighează la DailyPlan (ziua curentă)
+              navigate(createPageUrl("DailyPlan"));
+            } else {
+              navigate(createPageUrl("Onboarding"));
+            }
+            // NU setăm isLoading(false) aici - navigarea se va face automat
+          } catch (autoLoginError) {
+            console.error('❌ AUTO-LOGIN FAILED:', autoLoginError);
+            // Șterge credențialele invalide
+            localStorage.removeItem('remembered_email');
+            localStorage.removeItem('remembered_password');
+            localStorage.removeItem('remember_me');
+            // Acum DA, arătăm login form-ul
+            setIsLoading(false);
+          }
         } else {
-          // Nu avem credențiale salvate sau auto-login
+          // Nu avem credențiale salvate - arătăm login form-ul
           if (savedEmail) {
             setFormData(prev => ({ ...prev, email: savedEmail }));
             setRememberMe(savedRemember);
@@ -245,25 +241,25 @@ export default function IndexPage() {
 
   // Pagina de Login/Register
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-900/20 py-4 px-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-[rgb(var(--ios-bg-primary))] py-8 px-4">
+      <div className="w-full max-w-lg">
         {/* Language Selector */}
         <div className="flex justify-end mb-4">
           <LanguageSelector />
         </div>
         
-        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 space-y-4">
-          {/* Logo */}
-          <div className="text-center">
+        <div className="bg-[rgb(var(--ios-bg-secondary))] rounded-[28px] shadow-2xl p-8 space-y-6 border border-[rgb(var(--ios-border))]">
+          {/* Logo MARE și Tagline */}
+          <div className="text-center mb-2">
             <img 
               src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
               alt="EatnFit Logo" 
-              className="w-56 h-56 object-contain mx-auto"
+              className="w-48 h-48 object-contain mx-auto mb-2"
             />
-            <p className="text-base font-bold text-gray-600 dark:text-gray-300 -mt-2 mb-4">
+            <p className="text-lg font-bold text-emerald-600 dark:text-emerald-400 -mt-3 mb-6 tracking-wide">
               Eat Smart. Stay Fit
             </p>
-            <p className="text-gray-600 dark:text-gray-300 text-sm">
+            <p className="text-[rgb(var(--ios-text-secondary))] text-base font-medium">
               {isLogin 
                 ? (language === 'ro' ? 'Autentifică-te pentru a continua' : 'Sign in to continue')
                 : (language === 'ro' ? 'Creează un cont nou' : 'Create a new account')
@@ -277,31 +273,26 @@ export default function IndexPage() {
               <>
                 {/* 2 COLOANE: Prenume și Nume */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="first_name" className="text-gray-700 dark:text-gray-300">
+                <div className="space-y-2">
+                    <Label htmlFor="first_name" className="text-[rgb(var(--ios-text-primary))] font-semibold">
                       {language === 'ro' ? 'Prenume' : 'First Name'}
-                    </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
+                  </Label>
+                    <Input
                         id="first_name"
                         name="first_name"
-                        type="text"
+                      type="text"
                         placeholder={language === 'ro' ? 'Ion' : 'John'}
                         value={formData.first_name}
-                        onChange={handleChange}
-                        className="pl-10 py-6 rounded-xl"
-                        required={!isLogin}
-                      />
-                    </div>
-                  </div>
+                      onChange={handleChange}
+                      className="h-12 rounded-[12px] text-base"
+                      required={!isLogin}
+                    />
+                </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="last_name" className="text-gray-700 dark:text-gray-300">
+                    <Label htmlFor="last_name" className="text-[rgb(var(--ios-text-primary))] font-semibold">
                       {language === 'ro' ? 'Nume' : 'Last Name'}
                     </Label>
-                    <div className="relative">
-                      <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                       <Input
                         id="last_name"
                         name="last_name"
@@ -309,33 +300,28 @@ export default function IndexPage() {
                         placeholder={language === 'ro' ? 'Popescu' : 'Doe'}
                         value={formData.last_name}
                         onChange={handleChange}
-                        className="pl-10 py-6 rounded-xl"
+                        className="h-12 rounded-[12px] text-base"
                         required={!isLogin}
                       />
-                    </div>
                   </div>
                 </div>
 
                 {/* Telefon - pe toată lățimea */}
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="phone" className="text-[rgb(var(--ios-text-primary))] font-semibold">
                     {language === 'ro' ? 'Număr Telefon' : 'Phone Number'}
                   </Label>
                   <div className="flex gap-2">
-                    <div className="relative w-24">
-                      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
+                    <Input
                         id="country_code"
                         name="country_code"
                         type="text"
                         placeholder="Cod"
                         value={formData.country_code}
                         onChange={handleChange}
-                        className="pl-10 py-6 rounded-xl"
+                        className="h-12 rounded-[12px] text-base w-20"
                         required={!isLogin}
                       />
-                    </div>
-                    <div className="relative flex-1">
                       <Input
                         id="phone"
                         name="phone"
@@ -343,82 +329,70 @@ export default function IndexPage() {
                         placeholder={language === 'ro' ? '712345678' : '712345678'}
                         value={formData.phone}
                         onChange={handleChange}
-                        className="py-6 rounded-xl"
+                        className="h-12 rounded-[12px] text-base flex-1"
                         required={!isLogin}
                       />
-                    </div>
                   </div>
                 </div>
 
                 {/* 2 COLOANE: Țara și Orașul */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="country" className="text-gray-700 dark:text-gray-300">
-                      {language === 'ro' ? 'Țara' : 'Country'}
-                    </Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        id="country"
-                        name="country"
-                        type="text"
-                        placeholder={language === 'ro' ? 'România' : 'Romania'}
-                        value={formData.country}
-                        onChange={handleChange}
-                        className="pl-10 py-6 rounded-xl"
-                        required={!isLogin}
-                      />
-                    </div>
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="country" className="text-[rgb(var(--ios-text-primary))] font-semibold">
+                    {language === 'ro' ? 'Țara' : 'Country'}
+                  </Label>
+                    <Input
+                      id="country"
+                      name="country"
+                      type="text"
+                      placeholder={language === 'ro' ? 'România' : 'Romania'}
+                      value={formData.country}
+                      onChange={handleChange}
+                      className="h-12 rounded-[12px] text-base"
+                      required={!isLogin}
+                    />
+                </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="city" className="text-gray-700 dark:text-gray-300">
-                      {language === 'ro' ? 'Orașul' : 'City'}
-                    </Label>
-                    <div className="relative">
-                      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                      <Input
-                        id="city"
-                        name="city"
-                        type="text"
-                        placeholder={language === 'ro' ? 'București' : 'Bucharest'}
-                        value={formData.city}
-                        onChange={handleChange}
-                        className="pl-10 py-6 rounded-xl"
-                        required={!isLogin}
-                      />
-                    </div>
+                <div className="space-y-2">
+                  <Label htmlFor="city" className="text-[rgb(var(--ios-text-primary))] font-semibold">
+                    {language === 'ro' ? 'Orașul' : 'City'}
+                  </Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      type="text"
+                      placeholder={language === 'ro' ? 'București' : 'Bucharest'}
+                      value={formData.city}
+                      onChange={handleChange}
+                      className="h-12 rounded-[12px] text-base"
+                      required={!isLogin}
+                    />
                   </div>
                 </div>
 
                 {/* Data Nașterii - pe toată lățimea */}
                 <div className="space-y-2">
-                  <Label htmlFor="date_of_birth" className="text-gray-700 dark:text-gray-300">
+                  <Label htmlFor="date_of_birth" className="text-[rgb(var(--ios-text-primary))] font-semibold">
                     {language === 'ro' ? 'Data Nașterii' : 'Date of Birth'}
                   </Label>
-                  <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                     <Input
                       id="date_of_birth"
                       name="date_of_birth"
                       type="date"
                       value={formData.date_of_birth}
                       onChange={handleChange}
-                      className="pl-10 py-6 rounded-xl"
+                      className="h-12 rounded-[12px] text-base"
                       required={!isLogin}
                       max={new Date().toISOString().split('T')[0]}
                     />
-                  </div>
                 </div>
               </>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-gray-700 dark:text-gray-300">
+              <Label htmlFor="email" className="text-[rgb(var(--ios-text-primary))] font-semibold">
                 Email
               </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   id="email"
                   name="email"
@@ -426,18 +400,15 @@ export default function IndexPage() {
                   placeholder={language === 'ro' ? 'email@exemplu.com' : 'email@example.com'}
                   value={formData.email}
                   onChange={handleChange}
-                  className="pl-10 py-6 rounded-xl"
+                  className="h-12 rounded-[12px] text-base"
                   required
                 />
-              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-gray-700 dark:text-gray-300">
+              <Label htmlFor="password" className="text-[rgb(var(--ios-text-primary))] font-semibold">
                 {language === 'ro' ? 'Parolă' : 'Password'}
               </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   id="password"
                   name="password"
@@ -445,33 +416,29 @@ export default function IndexPage() {
                   placeholder="••••••••"
                   value={formData.password}
                   onChange={handleChange}
-                  className="pl-10 py-6 rounded-xl"
+                  className="h-12 rounded-[12px] text-base"
                   required
                   minLength={6}
                 />
-              </div>
             </div>
 
             {/* Remember Me Checkbox - doar la login */}
             {isLogin && (
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="rememberMe" 
-                  checked={rememberMe}
-                  onCheckedChange={setRememberMe}
-                />
-                <Label 
-                  htmlFor="rememberMe" 
-                  className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer"
-                >
-                  {language === 'ro' ? 'Ține-mă minte' : 'Remember me'}
-                </Label>
-              </div>
-            )}
-
-            {/* Link Recuperare Parolă */}
-            {isLogin && (
-              <div className="text-right">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-2">
+                  <Checkbox 
+                    id="rememberMe" 
+                    checked={rememberMe}
+                    onCheckedChange={setRememberMe}
+                    className="border-[rgb(var(--ios-border))]"
+                  />
+                  <Label 
+                    htmlFor="rememberMe" 
+                    className="text-sm text-[rgb(var(--ios-text-secondary))] cursor-pointer font-medium"
+                  >
+                    {language === 'ro' ? 'Ține-mă minte' : 'Remember me'}
+                  </Label>
+                </div>
                 <button
                   type="button"
                   onClick={() => setShowForgotPassword(true)}
@@ -485,7 +452,7 @@ export default function IndexPage() {
             <Button 
               type="submit"
               disabled={submitting}
-              className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700 text-white py-6 text-lg font-semibold rounded-xl shadow-lg"
+              className="w-full bg-gradient-to-r from-emerald-500 to-cyan-500 hover:from-emerald-600 hover:to-cyan-600 text-white h-14 text-lg font-bold rounded-[14px] shadow-xl"
             >
               {submitting ? (
                 <>
@@ -494,7 +461,7 @@ export default function IndexPage() {
                 </>
               ) : (
                 isLogin 
-                  ? (language === 'ro' ? 'Autentifică-te' : 'Sign In')
+                  ? (language === 'ro' ? 'Intră în cont' : 'Sign In')
                   : (language === 'ro' ? 'Creează cont' : 'Create Account')
               )}
             </Button>
@@ -553,28 +520,6 @@ export default function IndexPage() {
             </button>
           </div>
 
-          {/* Features Info */}
-          {isLogin && (
-            <div className="pt-4 border-t border-gray-200 dark:border-gray-700 space-y-3">
-              <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                {language === 'ro' ? 'Ce vei obține:' : 'What you will get:'}
-              </p>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Dumbbell className="w-4 h-4 text-emerald-600" />
-                  <span>{language === 'ro' ? 'Plan personalizat de exerciții' : 'Personalized exercise plan'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <Apple className="w-4 h-4 text-emerald-600" />
-                  <span>{language === 'ro' ? 'Rețete sănătoase zilnice' : 'Daily healthy recipes'}</span>
-                </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <TrendingDown className="w-4 h-4 text-emerald-600" />
-                  <span>{language === 'ro' ? 'Monitorizare progres' : 'Progress tracking'}</span>
-                </div>
-              </div>
-            </div>
-          )}
         </div>
 
       </div>
