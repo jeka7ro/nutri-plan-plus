@@ -33,15 +33,33 @@ export default function NotificationBell() {
 
   const { data: unreadCount = { count: 0 } } = useQuery({
     queryKey: ['notificationsUnread'],
-    queryFn: () => localApi.notifications.getUnreadCount(),
+    queryFn: async () => {
+      try {
+        const result = await localApi.notifications.getUnreadCount();
+        console.log('🔔 Unread count:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Unread count error:', error);
+        return { count: 0 };
+      }
+    },
     refetchInterval: 30000, // Refresh la fiecare 30 secunde
-    enabled: user?.subscription_plan === 'premium',
+    enabled: !!user && user.subscription_plan === 'premium',
   });
 
   const { data: notifications = [] } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => localApi.notifications.list(),
-    enabled: isOpen,
+    queryFn: async () => {
+      try {
+        const result = await localApi.notifications.list();
+        console.log('🔔 Notifications list:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Notifications list error:', error);
+        return [];
+      }
+    },
+    enabled: isOpen && !!user && user.subscription_plan === 'premium',
   });
 
   const markAsReadMutation = useMutation({
