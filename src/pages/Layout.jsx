@@ -486,6 +486,7 @@ function LayoutContent() {
         />
 
         <main className="flex-1 flex flex-col relative max-w-full overflow-x-hidden">
+          {/* HEADER MOBIL (ascuns pe desktop) */}
           <header className="bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-gray-200 dark:border-[rgb(var(--ios-border))] px-6 py-3 md:hidden sticky top-0 z-10 ios-shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
@@ -530,6 +531,56 @@ function LayoutContent() {
                 <NotificationBell />
                 <ThemeSelector />
               </div>
+            </div>
+          </header>
+
+          {/* HEADER DESKTOP (ascuns pe mobil, vizibil pe desktop) */}
+          <header className="hidden md:flex bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-gray-200 dark:border-[rgb(var(--ios-border))] px-6 py-3 sticky top-0 z-10 ios-shadow-sm items-center justify-between">
+            <div className="flex items-center gap-3">
+              {user && (
+                <div className="flex items-center gap-2">
+                  {user.profile_picture ? (
+                    <img 
+                      src={user.profile_picture} 
+                      alt={user.full_name || 'User profile picture'}
+                      className="w-9 h-9 rounded-full object-cover border-2 border-emerald-500"
+                    />
+                  ) : (
+                    <div className="w-9 h-9 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center">
+                      <span className="text-white font-bold">
+                        {user.first_name?.[0]?.toUpperCase() || user.full_name?.[0]?.toUpperCase() || 'U'}
+                      </span>
+                    </div>
+                  )}
+                  <div>
+                    <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                      {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.full_name || user.email}
+                    </div>
+                    {user.start_date && (
+                      <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
+                        {language === 'ro' ? 'Ziua' : 'Day'} {currentDay}/28
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Progress Bar - Desktop */}
+            {user?.start_date && (
+              <div className="flex-1 max-w-[200px] mx-6">
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                  <div 
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-500"
+                    style={{ width: `${(currentDay / 28) * 100}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="flex items-center gap-3">
+              <NotificationBell />
+              <ThemeSelector />
             </div>
           </header>
 
