@@ -209,166 +209,65 @@ export default function WeightTracking() {
           <p className="text-[rgb(var(--ios-text-secondary))] mt-1">Urmărește-ți progresul zilnic</p>
         </div>
 
-        {/* Stats Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
-          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-[rgb(var(--ios-border))]">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Greutate curentă</span>
-                <Scale className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+        {/* Stats Card - Greutate Curentă */}
+        <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-[rgb(var(--ios-border))]">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Greutate curentă</span>
+              <Scale className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
+              {latestWeight?.weight || user?.current_weight || '-'} kg
+            </div>
+            {weightChange !== 0 && (
+              <div className={`flex items-center gap-1 mt-2 text-sm ${
+                weightChange < 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+              }`}>
+                {weightChange < 0 ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                {Math.abs(weightChange)} kg față de ultima înregistrare
               </div>
-              <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-                {latestWeight?.weight || user?.current_weight || '-'} kg
-              </div>
-              {weightChange !== 0 && (
-                <div className={`flex items-center gap-1 mt-2 text-sm ${
-                  weightChange < 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {weightChange < 0 ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
-                  {Math.abs(weightChange)} kg față de ultima înregistrare
-                </div>
-              )}
-            </CardContent>
-          </Card>
+            )}
+          </CardContent>
+        </Card>
 
-          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 border-[rgb(var(--ios-border))]">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Total pierdut</span>
-                <TrendingDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              </div>
-              <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
-                {totalWeightLost} kg
-              </div>
-              <div className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">
-                Felicitări pentru progres! 🎉
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-[rgb(var(--ios-border))]">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Până la țintă</span>
-                <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-              </div>
-              <div className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                {remainingWeight > 0 ? remainingWeight : '0'} kg
-              </div>
-              <div className="text-sm text-purple-600 dark:text-purple-400 mt-2">
-                Țintă: {user?.target_weight || '-'} kg
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* IMC (Indicele de Masă Corporală) Card */}
-        {(() => {
-          const height = user?.height ? parseFloat(user.height) / 100 : null;
-          const currentWeight = latestWeight?.weight || user?.current_weight || null;
-          const bmi = height && currentWeight ? (currentWeight / (height * height)) : null;
-          
-          let bmiCategory = '';
-          let bmiColor = '';
-          let bmiEmoji = '';
-          let bmiGradient = '';
-          
-          if (bmi) {
-            if (bmi < 18.5) {
-              bmiCategory = 'Greutate sub normală (denutriție)';
-              bmiColor = 'text-orange-700 dark:text-orange-300';
-              bmiEmoji = '⚠️';
-              bmiGradient = 'from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30';
-            } else if (bmi >= 18.5 && bmi < 25) {
-              bmiCategory = 'Greutate normală';
-              bmiColor = 'text-green-700 dark:text-green-300';
-              bmiEmoji = '✅';
-              bmiGradient = 'from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30';
-            } else if (bmi >= 25 && bmi < 30) {
-              bmiCategory = 'Supraponderal';
-              bmiColor = 'text-yellow-700 dark:text-yellow-300';
-              bmiEmoji = '⚡';
-              bmiGradient = 'from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30';
-            } else if (bmi >= 30 && bmi < 35) {
-              bmiCategory = 'Obezitate grad 1';
-              bmiColor = 'text-red-700 dark:text-red-300';
-              bmiEmoji = '🔴';
-              bmiGradient = 'from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30';
-            } else if (bmi >= 35 && bmi < 40) {
-              bmiCategory = 'Obezitate grad 2';
-              bmiColor = 'text-red-700 dark:text-red-300';
-              bmiEmoji = '🔴🔴';
-              bmiGradient = 'from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30';
-            } else {
-              bmiCategory = 'Obezitate grad 3 (morbidă)';
-              bmiColor = 'text-red-900 dark:text-red-200';
-              bmiEmoji = '🚨';
-              bmiGradient = 'from-red-100 to-red-200 dark:from-red-950/50 dark:to-red-900/50';
-            }
-          }
-          
-          return bmi ? (
-            <Card className={`ios-card ios-shadow-lg bg-gradient-to-br ${bmiGradient} border-[rgb(var(--ios-border))]`}>
-              <CardContent className="p-6">
+        {/* Card Combinat: Total Pierdut + Până la Țintă */}
+        <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-emerald-50 via-teal-50 to-purple-50 dark:from-emerald-900/30 dark:via-teal-900/30 dark:to-purple-900/30 border-[rgb(var(--ios-border))]">
+          <CardContent className="p-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Total Pierdut */}
+              <div>
                 <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-[rgb(var(--ios-text-primary))] mb-1">
-                      📊 Indicele de Masă Corporală (IMC)
-                    </h3>
-                    <p className="text-xs text-[rgb(var(--ios-text-tertiary))]">
-                      Formula: IMC = greutate (kg) / [înălțime (m)]²
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <div className={`text-4xl font-bold ${bmiColor}`}>
-                      {bmi.toFixed(1)}
-                    </div>
-                    <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
-                      IMC
-                    </div>
-                  </div>
+                  <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">📉 Total pierdut</span>
+                  <TrendingDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                
-                <div className={`flex items-center gap-2 p-3 bg-white/50 dark:bg-black/20 rounded-[12px] ${bmiColor}`}>
-                  <span className="text-2xl">{bmiEmoji}</span>
-                  <div>
-                    <div className="font-bold text-sm">{bmiCategory}</div>
-                    <div className="text-xs opacity-80">
-                      {height && `Înălțime: ${(height * 100).toFixed(0)} cm • Greutate: ${currentWeight} kg`}
-                    </div>
-                  </div>
+                <div className="text-4xl font-bold text-emerald-900 dark:text-emerald-100 mb-2">
+                  {totalWeightLost} kg
                 </div>
-                
-                <div className="mt-4 text-xs text-[rgb(var(--ios-text-tertiary))] grid grid-cols-2 md:grid-cols-3 gap-2">
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
-                    <span>&lt; 18.5 Subponderal</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    <span>18.5-24.9 Normal</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
-                    <span>25-29.9 Supraponderal</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                    <span>30-34.9 Obezitate I</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-red-600 rounded-full"></span>
-                    <span>35-39.9 Obezitate II</span>
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <span className="w-2 h-2 bg-red-900 rounded-full"></span>
-                    <span>&ge; 40 Obezitate III</span>
-                  </div>
+                <div className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                  <span>Felicitări pentru progres!</span>
+                  <span className="text-xl">🎉</span>
                 </div>
-              </CardContent>
-            </Card>
-          ) : null;
-        })()}
+              </div>
+
+              {/* Separator vertical */}
+              <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-gradient-to-b from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
+
+              {/* Până la Țintă */}
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-sm font-medium text-purple-700 dark:text-purple-300">🎯 Până la țintă</span>
+                  <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                </div>
+                <div className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-2">
+                  {remainingWeight > 0 ? remainingWeight : '0'} kg
+                </div>
+                <div className="text-sm text-purple-600 dark:text-purple-400">
+                  Țintă: <strong>{user?.target_weight ? `${parseFloat(user.target_weight).toFixed(1)} kg` : '-'}</strong>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Smart Weight Widget - iOS Style */}
         <Card className="ios-card ios-shadow-lg rounded-[24px] border-[rgb(var(--ios-border))] overflow-hidden bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20">
