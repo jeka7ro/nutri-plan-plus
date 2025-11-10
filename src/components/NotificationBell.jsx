@@ -5,12 +5,11 @@ import { Bell, Check, X, UserPlus, ChefHat } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { useLanguage } from "./LanguageContext";
 import { formatDistanceToNow } from "date-fns";
 import { ro, enUS } from "date-fns/locale";
@@ -148,60 +147,63 @@ export default function NotificationBell() {
     }
   };
 
-  const handleBellClick = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const newState = !isOpen;
-    console.log('🔔 Bell clicked! Opening:', newState, 'Unread:', unreadCount.count, 'User:', user?.email);
-    setIsOpen(newState);
+  const handleBellClick = () => {
+    console.log('🔔 Bell clicked! Opening:', !isOpen, 'Unread:', unreadCount.count, 'User:', user?.email);
+    setIsOpen(!isOpen);
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={(open) => {
-      console.log('🔔 Dropdown state change:', open);
-      setIsOpen(open);
-    }}>
-      <DropdownMenuTrigger asChild>
-        <button
-          className="relative inline-flex items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-          onClick={handleBellClick}
-          aria-label="Notifications"
-        >
-          <Bell className="w-5 h-5 text-[rgb(var(--ios-text-primary))]" />
-          {unreadCount.count > 0 && (
-            <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full">
-              {unreadCount.count > 9 ? '9+' : unreadCount.count}
-            </span>
-          )}
-        </button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-80 max-h-[500px] overflow-y-auto">
-        <div className="p-3 border-b">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-[rgb(var(--ios-text-primary))]">
-              🔔 {language === 'ro' ? 'Notificări' : 'Notifications'} 
-              {unreadCount.count > 0 && ` (${unreadCount.count})`}
-            </h3>
-            {unreadCount.count > 0 && (
-              <Button
-                size="sm"
-                variant="ghost"
-                onClick={() => markAllAsReadMutation.mutate()}
-                className="text-xs"
-              >
-                {language === 'ro' ? 'Citește toate' : 'Mark all read'}
-              </Button>
-            )}
-          </div>
-        </div>
+    <>
+      {/* BELL BUTTON - MOBIL FRIENDLY! */}
+      <button
+        className="relative inline-flex items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+        onClick={handleBellClick}
+        aria-label="Notifications"
+      >
+        <Bell className="w-5 h-5 text-[rgb(var(--ios-text-primary))]" />
+        {unreadCount.count > 0 && (
+          <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full animate-pulse">
+            {unreadCount.count > 9 ? '9+' : unreadCount.count}
+          </span>
+        )}
+      </button>
 
-        {notifications.length > 0 ? (
-          notifications.map((notification) => (
-            <div key={notification.id}>
-              <DropdownMenuItem
-                className={`p-3 ${!notification.is_read ? 'bg-blue-50 dark:bg-blue-950/30' : ''} ${notification.type === 'friend_request' ? 'cursor-default' : 'cursor-pointer'}`}
-                onClick={() => notification.type !== 'friend_request' && handleNotificationClick(notification)}
-              >
+      {/* NOTIFICATIONS DIALOG - MOBIL PERFECT! */}
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogContent className="max-w-md max-h-[80vh] overflow-hidden p-0">
+          <DialogHeader className="p-4 border-b">
+            <DialogTitle className="flex items-center justify-between">
+              <span className="flex items-center gap-2">
+                🔔 {language === 'ro' ? 'Notificări' : 'Notifications'}
+                {unreadCount.count > 0 && (
+                  <Badge className="bg-red-500 text-white">{unreadCount.count}</Badge>
+                )}
+              </span>
+              {unreadCount.count > 0 && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => markAllAsReadMutation.mutate()}
+                  className="text-xs"
+                >
+                  {language === 'ro' ? 'Citește toate' : 'Mark all'}
+                </Button>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="overflow-y-auto max-h-[60vh] p-4 space-y-3">
+            {notifications.length > 0 ? (
+              notifications.map((notification) => (
+                <div 
+                  key={notification.id}
+                  className={`p-4 rounded-xl border transition-all ${
+                    !notification.is_read 
+                      ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800' 
+                      : 'bg-[rgb(var(--ios-bg-tertiary))] border-[rgb(var(--ios-border))]'
+                  } ${notification.type !== 'friend_request' ? 'cursor-pointer hover:shadow-md' : ''}`}
+                  onClick={() => notification.type !== 'friend_request' && handleNotificationClick(notification)}
+                >
                 <div className="flex gap-3 w-full">
                   <div className="flex-shrink-0 mt-1">
                     {getNotificationIcon(notification.type)}
@@ -258,20 +260,20 @@ export default function NotificationBell() {
                     <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
                   )}
                 </div>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-            </div>
-          ))
-        ) : (
-          <div className="p-8 text-center text-[rgb(var(--ios-text-tertiary))]">
-            <Bell className="w-12 h-12 mx-auto mb-3 opacity-30" />
-            <p className="text-sm">
-              {language === 'ro' ? 'Nicio notificare' : 'No notifications'}
-            </p>
+                </div>
+              ))
+            ) : (
+              <div className="py-12 text-center text-[rgb(var(--ios-text-tertiary))]">
+                <Bell className="w-16 h-16 mx-auto mb-4 opacity-30" />
+                <p className="text-sm font-medium">
+                  {language === 'ro' ? 'Nicio notificare' : 'No notifications'}
+                </p>
+              </div>
+            )}
           </div>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
