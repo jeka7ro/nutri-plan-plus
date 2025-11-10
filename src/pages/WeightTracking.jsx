@@ -99,37 +99,40 @@ export default function WeightTracking() {
     },
   });
 
-  // ✨ MAGIE: Generează particule care zboară!
+  // ✨ MAGIE TARE: Generează MULTE particule care EXPLODEAZĂ!
   const createMagicParticles = (color) => {
     const newParticles = [];
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 25; i++) { // 25 particule (vs 12)!
+      const angle = (Math.PI * 2 * i) / 25; // Circle explosion
       newParticles.push({
         id: Date.now() + i,
         color: color,
-        left: Math.random() * 100, // 0-100%
-        delay: Math.random() * 200, // 0-200ms
+        left: 50 + Math.cos(angle) * 40, // Explodează în cerc!
+        top: 50 + Math.sin(angle) * 40,
+        delay: Math.random() * 100, // 0-100ms (mai rapid!)
+        size: Math.random() * 1.5 + 1, // 1-2.5rem
       });
     }
     setParticles(newParticles);
-    setTimeout(() => setParticles([]), 1000); // Clear după 1s
+    setTimeout(() => setParticles([]), 1200); // Clear după 1.2s
   };
 
   const handleDecrement = () => {
-    const newWeight = Math.max(0, (parseFloat(weight) || 0) - 0.5).toFixed(1);
+    const newWeight = Math.max(0, (parseFloat(weight) || 0) - 0.1).toFixed(1); // 0.1 increment!
     setWeight(newWeight);
     setFlashColor('green'); // VERDE = scade = BUN
-    createMagicParticles('green'); // ✨ MAGIE VERDE!
-    setTimeout(() => setFlashColor(null), 500);
-    console.log('🟢 MINUS: Greutate scade (bun!) + ✨ MAGIE');
+    createMagicParticles('green'); // ✨ MAGIE VERDE EXPLOZIVĂ!
+    setTimeout(() => setFlashColor(null), 600);
+    console.log('🟢 MINUS: Greutate scade cu 0.1 kg + ✨ EXPLOZIE VERDE');
   };
 
   const handleIncrement = () => {
-    const newWeight = ((parseFloat(weight) || 0) + 0.5).toFixed(1);
+    const newWeight = ((parseFloat(weight) || 0) + 0.1).toFixed(1); // 0.1 increment!
     setWeight(newWeight);
     setFlashColor('red'); // ROȘU = crește = RĂU
-    createMagicParticles('red'); // ✨ MAGIE ROȘIE!
-    setTimeout(() => setFlashColor(null), 500);
-    console.log('🔴 PLUS: Greutate crește (rău!) + ✨ MAGIE');
+    createMagicParticles('red'); // ✨ MAGIE ROȘIE EXPLOZIVĂ!
+    setTimeout(() => setFlashColor(null), 600);
+    console.log('🔴 PLUS: Greutate crește cu 0.1 kg + ✨ EXPLOZIE ROȘIE');
   };
 
   const handleSubmit = (e) => {
@@ -244,6 +247,114 @@ export default function WeightTracking() {
           </Card>
         </div>
 
+        {/* IMC (Indicele de Masă Corporală) Card */}
+        {(() => {
+          const height = user?.height ? parseFloat(user.height) / 100 : null;
+          const currentWeight = latestWeight?.weight || user?.current_weight || null;
+          const bmi = height && currentWeight ? (currentWeight / (height * height)) : null;
+          
+          let bmiCategory = '';
+          let bmiColor = '';
+          let bmiEmoji = '';
+          let bmiGradient = '';
+          
+          if (bmi) {
+            if (bmi < 18.5) {
+              bmiCategory = 'Greutate sub normală (denutriție)';
+              bmiColor = 'text-orange-700 dark:text-orange-300';
+              bmiEmoji = '⚠️';
+              bmiGradient = 'from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30';
+            } else if (bmi >= 18.5 && bmi < 25) {
+              bmiCategory = 'Greutate normală';
+              bmiColor = 'text-green-700 dark:text-green-300';
+              bmiEmoji = '✅';
+              bmiGradient = 'from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30';
+            } else if (bmi >= 25 && bmi < 30) {
+              bmiCategory = 'Supraponderal';
+              bmiColor = 'text-yellow-700 dark:text-yellow-300';
+              bmiEmoji = '⚡';
+              bmiGradient = 'from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30';
+            } else if (bmi >= 30 && bmi < 35) {
+              bmiCategory = 'Obezitate grad 1';
+              bmiColor = 'text-red-700 dark:text-red-300';
+              bmiEmoji = '🔴';
+              bmiGradient = 'from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30';
+            } else if (bmi >= 35 && bmi < 40) {
+              bmiCategory = 'Obezitate grad 2';
+              bmiColor = 'text-red-700 dark:text-red-300';
+              bmiEmoji = '🔴🔴';
+              bmiGradient = 'from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30';
+            } else {
+              bmiCategory = 'Obezitate grad 3 (morbidă)';
+              bmiColor = 'text-red-900 dark:text-red-200';
+              bmiEmoji = '🚨';
+              bmiGradient = 'from-red-100 to-red-200 dark:from-red-950/50 dark:to-red-900/50';
+            }
+          }
+          
+          return bmi ? (
+            <Card className={`ios-card ios-shadow-lg bg-gradient-to-br ${bmiGradient} border-[rgb(var(--ios-border))]`}>
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-3">
+                  <div>
+                    <h3 className="text-lg font-bold text-[rgb(var(--ios-text-primary))] mb-1">
+                      📊 Indicele de Masă Corporală (IMC)
+                    </h3>
+                    <p className="text-xs text-[rgb(var(--ios-text-tertiary))]">
+                      Formula: IMC = greutate (kg) / [înălțime (m)]²
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <div className={`text-4xl font-bold ${bmiColor}`}>
+                      {bmi.toFixed(1)}
+                    </div>
+                    <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
+                      IMC
+                    </div>
+                  </div>
+                </div>
+                
+                <div className={`flex items-center gap-2 p-3 bg-white/50 dark:bg-black/20 rounded-[12px] ${bmiColor}`}>
+                  <span className="text-2xl">{bmiEmoji}</span>
+                  <div>
+                    <div className="font-bold text-sm">{bmiCategory}</div>
+                    <div className="text-xs opacity-80">
+                      {height && `Înălțime: ${(height * 100).toFixed(0)} cm • Greutate: ${currentWeight} kg`}
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="mt-4 text-xs text-[rgb(var(--ios-text-tertiary))] grid grid-cols-2 md:grid-cols-3 gap-2">
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-orange-500 rounded-full"></span>
+                    <span>&lt; 18.5 Subponderal</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                    <span>18.5-24.9 Normal</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-yellow-500 rounded-full"></span>
+                    <span>25-29.9 Supraponderal</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+                    <span>30-34.9 Obezitate I</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-red-600 rounded-full"></span>
+                    <span>35-39.9 Obezitate II</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 bg-red-900 rounded-full"></span>
+                    <span>&ge; 40 Obezitate III</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null;
+        })()}
+
         {/* Smart Weight Widget - iOS Style */}
         <Card className="ios-card ios-shadow-lg rounded-[24px] border-[rgb(var(--ios-border))] overflow-hidden bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20">
           <CardContent className="p-6">
@@ -267,36 +378,70 @@ export default function WeightTracking() {
                 </div>
               </div>
 
-              {/* Smart Forecast */}
+              {/* GREUTATEA IDEALĂ (bazată pe înălțime, vârstă, sex) */}
               {(() => {
-                const avgWeeklyLoss = weightEntries.length >= 2 
-                  ? weightEntries.slice(0, Math.min(7, weightEntries.length)).reduce((sum, entry, idx, arr) => {
-                      if (idx === arr.length - 1) return sum;
-                      return sum + (arr[idx + 1].weight - entry.weight);
-                    }, 0) / Math.min(6, weightEntries.length - 1)
-                  : 0;
+                // Calculăm greutatea ideală bazată pe BMI sănătos (20-25)
+                const height = user?.height ? parseFloat(user.height) / 100 : null; // cm -> m
+                const age = user?.birth_date ? new Date().getFullYear() - new Date(user.birth_date).getFullYear() : null;
+                const gender = user?.gender || 'other';
                 
-                const daysToTarget = remainingWeight > 0 && avgWeeklyLoss < 0
-                  ? Math.ceil((remainingWeight / Math.abs(avgWeeklyLoss)) * 7)
-                  : null;
+                if (!height || height < 1.2 || height > 2.5) {
+                  return (
+                    <div className="p-4 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-[16px]">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        <span className="font-semibold text-emerald-900 dark:text-emerald-100">🎯 Greutatea ta ideală</span>
+                      </div>
+                      <p className="text-sm text-emerald-700 dark:text-emerald-300">
+                        💡 Completează înălțimea în profil pentru a vedea greutatea ta ideală!
+                      </p>
+                    </div>
+                  );
+                }
+                
+                // BMI sănătos: 20-25 (ajustat ușor pentru vârstă/sex)
+                let minBMI = 20;
+                let maxBMI = 25;
+                
+                // Ajustări pentru vârstă (opțional)
+                if (age && age > 50) {
+                  minBMI = 21; // Peste 50 ani, BMI ușor mai mare e OK
+                  maxBMI = 26;
+                }
+                
+                const idealWeightMin = (minBMI * height * height).toFixed(1);
+                const idealWeightMax = (maxBMI * height * height).toFixed(1);
+                const currentWeight = latestWeight?.weight || user?.current_weight || 0;
+                const currentBMI = currentWeight / (height * height);
+                
+                let message = '';
+                let emoji = '';
+                
+                if (currentBMI < minBMI) {
+                  emoji = '⬆️';
+                  message = `Ești sub greutatea ideală. Ar fi sănătos să ajungi în range-ul ${idealWeightMin}-${idealWeightMax} kg.`;
+                } else if (currentBMI > maxBMI) {
+                  emoji = '⬇️';
+                  message = `Ai depășit greutatea ideală. Obiectivul tău de ${user?.target_weight || idealWeightMin} kg e excelent!`;
+                } else {
+                  emoji = '✅';
+                  message = `Felicitări! Ești în range-ul sănătos (IMC ${currentBMI.toFixed(1)}). Menține-te!`;
+                }
 
                 return (
-                  <div className="p-4 bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900/30 dark:to-blue-900/30 rounded-[16px]">
+                  <div className="p-4 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-[16px]">
                     <div className="flex items-center gap-2 mb-2">
-                      <TrendingDown className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                      <span className="font-semibold text-purple-900 dark:text-purple-100">Prognoză inteligentă</span>
+                      <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                      <span className="font-semibold text-emerald-900 dark:text-emerald-100">🎯 Greutatea ta ideală</span>
                     </div>
-                    <p className="text-sm text-purple-700 dark:text-purple-300">
-                      {daysToTarget && daysToTarget > 0 && daysToTarget < 365
-                        ? `În ritmul actual, vei ajunge la ținta de ${user?.target_weight} kg în aproximativ ${daysToTarget} zile (${Math.round(daysToTarget / 7)} săptămâni). ${avgWeeklyLoss < -0.5 ? '🔥 Ritm excelent!' : avgWeeklyLoss < 0 ? '✨ Progres constant!' : ''}`
-                        : avgWeeklyLoss < -0.5
-                        ? `🔥 Progres excelent! Pierzi în medie ${Math.abs(avgWeeklyLoss * 7).toFixed(1)} kg/săptămână.`
-                        : avgWeeklyLoss < 0
-                        ? `✨ Continui pe drumul cel bun! Ritmul actual: ${Math.abs(avgWeeklyLoss * 7).toFixed(1)} kg/săptămână.`
-                        : weightEntries.length < 2
-                        ? '📊 Adaugă mai multe înregistrări pentru o prognoză precisă.'
-                        : '💪 Menține-ți greutatea stabilă! Continuă cu rutina ta.'}
+                    <p className="text-sm text-emerald-700 dark:text-emerald-300 mb-2">
+                      {emoji} {message}
                     </p>
+                    <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-white/50 dark:bg-black/20 px-3 py-2 rounded-lg">
+                      💚 Range sănătos (IMC 20-25): <strong>{idealWeightMin}-{idealWeightMax} kg</strong>
+                      {age && ` • Vârstă: ${age} ani`}
+                      {height && ` • Înălțime: ${(height * 100).toFixed(0)} cm`}
+                    </div>
                   </div>
                 );
               })()}
@@ -319,20 +464,23 @@ export default function WeightTracking() {
                     <span className="text-3xl md:text-4xl font-light text-blue-600 dark:text-blue-400">−</span>
                       </Button>
                       
-                  <div className="text-center relative">
-                    {/* ✨ PARTICULE MAGICE! */}
+                  <div className="text-center relative overflow-visible">
+                    {/* ✨ PARTICULE MAGICE EXPLOZIVE! */}
                     {particles.map((particle) => (
                       <div
                         key={particle.id}
-                        className={`absolute pointer-events-none ${
-                          particle.color === 'green' ? 'text-green-500' : 'text-red-500'
+                        className={`absolute pointer-events-none z-50 ${
+                          particle.color === 'green' 
+                            ? 'text-green-400 drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]' 
+                            : 'text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]'
                         }`}
                         style={{
                           left: `${particle.left}%`,
-                          bottom: '50%',
-                          animation: `floatUp 1s ease-out forwards`,
+                          top: `${particle.top}%`,
+                          animation: `explodeOut 1.2s ease-out forwards`,
                           animationDelay: `${particle.delay}ms`,
-                          fontSize: '1.5rem',
+                          fontSize: `${particle.size}rem`,
+                          transform: 'translate(-50%, -50%)',
                         }}
                       >
                         ✨
@@ -369,15 +517,19 @@ export default function WeightTracking() {
                       </Button>
                 </div>
                 
-                {/* CSS ANIMATION pentru particule */}
+                {/* CSS ANIMATION pentru EXPLOZIE RADIALĂ! */}
                 <style>{`
-                  @keyframes floatUp {
+                  @keyframes explodeOut {
                     0% {
-                      transform: translateY(0) scale(1);
+                      transform: translate(-50%, -50%) scale(0) rotate(0deg);
+                      opacity: 1;
+                    }
+                    50% {
+                      transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
                       opacity: 1;
                     }
                     100% {
-                      transform: translateY(-80px) scale(0.3);
+                      transform: translate(-50%, -50%) scale(0.2) rotate(360deg);
                       opacity: 0;
                     }
                   }
