@@ -85,7 +85,7 @@ const recipes = [
   { id: 50, name: "Avocado Slices", name_ro: "Felii de Avocado", phase: 3, meal_type: "snack2", calories: 160, protein: 2, carbs: 9, fat: 15, ingredients_en: ["1/2 avocado"], ingredients_ro: ["1/2 avocado"], instructions_en: ["Slice"], instructions_ro: ["Taie"], image_url: "https://images.unsplash.com/photo-1523049673857-eb18f1d7b578?w=800", is_vegetarian: true, is_vegan: true }
 ];
 
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
