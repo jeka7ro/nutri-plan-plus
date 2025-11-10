@@ -232,21 +232,140 @@ export default function AIFoodAssistant() {
     return language === 'ro' ? 'următoarea masă' : 'next meal';
   };
 
-  // ========== GROCERY LIST GENERATOR ==========
+  // ========== GROCERY LIST GENERATOR (cu GRAMAJE!) ==========
   const generateGroceryList = (days) => {
     const currentDay = getCurrentDay();
+    const mealsPerDay = 5; // breakfast, snack1, lunch, snack2, dinner
+    const totalMeals = days * mealsPerDay;
+    
     const groceryItems = {
-      1: { // Faza 1
-        ro: ['Ovăz', 'Orez brun/sălbatic', 'Quinoa', 'Secară (pâine de secară)', 'Hrișcă', 'Mei', 'Linte', 'Fasole', 'Mazărea', 'Pui (piept)', 'Curcan', 'Pește alb', 'Mere', 'Pere', 'Portocale', 'Piersici', 'Kiwi', 'Pepene verde', 'Fructe de pădure', 'Broccoli', 'Spanac', 'Salată verde', 'Roșii', 'Castraveți'],
-        en: ['Oats', 'Brown/wild rice', 'Quinoa', 'Rye bread', 'Buckwheat', 'Millet', 'Lentils', 'Beans', 'Peas', 'Chicken breast', 'Turkey', 'White fish', 'Apples', 'Pears', 'Oranges', 'Peaches', 'Kiwi', 'Watermelon', 'Berries', 'Broccoli', 'Spinach', 'Lettuce', 'Tomatoes', 'Cucumbers']
+      1: { // Faza 1: HIGH carbs, LOW fat
+        ro: [
+          { name: 'Ovăz', qty: `${days * 100}g`, cat: 'Cereale' },
+          { name: 'Orez brun/sălbatic', qty: `${days * 200}g`, cat: 'Cereale' },
+          { name: 'Quinoa', qty: `${days * 150}g`, cat: 'Cereale' },
+          { name: 'Pâine de secară', qty: `${days * 4} felii`, cat: 'Cereale' },
+          { name: 'Hrișcă', qty: `${days * 100}g`, cat: 'Cereale' },
+          { name: 'Mei', qty: `${days * 100}g`, cat: 'Cereale' },
+          { name: 'Linte', qty: `${days * 150}g`, cat: 'Leguminoase' },
+          { name: 'Fasole', qty: `${days * 150}g`, cat: 'Leguminoase' },
+          { name: 'Mazărea', qty: `${days * 100}g`, cat: 'Leguminoase' },
+          { name: 'Pui (piept)', qty: `${days * 200}g`, cat: 'Proteine' },
+          { name: 'Curcan (piept)', qty: `${days * 180}g`, cat: 'Proteine' },
+          { name: 'Pește alb (cod/tilapia)', qty: `${days * 200}g`, cat: 'Proteine' },
+          { name: 'Mere', qty: `${days * 2} buc`, cat: 'Fructe' },
+          { name: 'Pere', qty: `${days * 2} buc`, cat: 'Fructe' },
+          { name: 'Portocale', qty: `${days * 2} buc`, cat: 'Fructe' },
+          { name: 'Piersici', qty: `${days * 3} buc`, cat: 'Fructe' },
+          { name: 'Kiwi', qty: `${days * 4} buc`, cat: 'Fructe' },
+          { name: 'Pepene verde', qty: `${Math.ceil(days / 2)} bucată`, cat: 'Fructe' },
+          { name: 'Fructe de pădure', qty: `${days * 200}g`, cat: 'Fructe' },
+          { name: 'Broccoli', qty: `${days * 300}g`, cat: 'Legume' },
+          { name: 'Spanac', qty: `${days * 200}g`, cat: 'Legume' },
+          { name: 'Salată verde', qty: `${days} buc`, cat: 'Legume' },
+          { name: 'Roșii', qty: `${days * 4} buc`, cat: 'Legume' },
+          { name: 'Castraveți', qty: `${days * 2} buc`, cat: 'Legume' }
+        ],
+        en: [
+          { name: 'Oats', qty: `${days * 100}g`, cat: 'Grains' },
+          { name: 'Brown/wild rice', qty: `${days * 200}g`, cat: 'Grains' },
+          { name: 'Quinoa', qty: `${days * 150}g`, cat: 'Grains' },
+          { name: 'Rye bread', qty: `${days * 4} slices`, cat: 'Grains' },
+          { name: 'Buckwheat', qty: `${days * 100}g`, cat: 'Grains' },
+          { name: 'Millet', qty: `${days * 100}g`, cat: 'Grains' },
+          { name: 'Lentils', qty: `${days * 150}g`, cat: 'Legumes' },
+          { name: 'Beans', qty: `${days * 150}g`, cat: 'Legumes' },
+          { name: 'Peas', qty: `${days * 100}g`, cat: 'Legumes' },
+          { name: 'Chicken breast', qty: `${days * 200}g`, cat: 'Protein' },
+          { name: 'Turkey breast', qty: `${days * 180}g`, cat: 'Protein' },
+          { name: 'White fish (cod/tilapia)', qty: `${days * 200}g`, cat: 'Protein' },
+          { name: 'Apples', qty: `${days * 2} pcs`, cat: 'Fruits' },
+          { name: 'Pears', qty: `${days * 2} pcs`, cat: 'Fruits' },
+          { name: 'Oranges', qty: `${days * 2} pcs`, cat: 'Fruits' },
+          { name: 'Peaches', qty: `${days * 3} pcs`, cat: 'Fruits' },
+          { name: 'Kiwi', qty: `${days * 4} pcs`, cat: 'Fruits' },
+          { name: 'Watermelon', qty: `${Math.ceil(days / 2)} piece`, cat: 'Fruits' },
+          { name: 'Berries', qty: `${days * 200}g`, cat: 'Fruits' },
+          { name: 'Broccoli', qty: `${days * 300}g`, cat: 'Vegetables' },
+          { name: 'Spinach', qty: `${days * 200}g`, cat: 'Vegetables' },
+          { name: 'Lettuce', qty: `${days} head`, cat: 'Vegetables' },
+          { name: 'Tomatoes', qty: `${days * 4} pcs`, cat: 'Vegetables' },
+          { name: 'Cucumbers', qty: `${days * 2} pcs`, cat: 'Vegetables' }
+        ]
       },
-      2: { // Faza 2
-        ro: ['Pui (piept)', 'Curcan', 'Pește alb', 'Ton', 'Somon', 'Creveți', 'Ouă (doar albuș)', 'Broccoli', 'Spanac', 'Salată verde', 'Varză kale', 'Castraveți', 'Țelină', 'Sparanghel', 'Ardei gras', 'Roșii cherry', 'Fasole verde'],
-        en: ['Chicken breast', 'Turkey', 'White fish', 'Tuna', 'Salmon', 'Shrimp', 'Egg whites', 'Broccoli', 'Spinach', 'Lettuce', 'Kale', 'Cucumbers', 'Celery', 'Asparagus', 'Bell peppers', 'Cherry tomatoes', 'Green beans']
+      2: { // Faza 2: HIGH protein, NO carbs/fats
+        ro: [
+          { name: 'Pui (piept)', qty: `${days * 400}g`, cat: 'Proteine' },
+          { name: 'Curcan (piept)', qty: `${days * 350}g`, cat: 'Proteine' },
+          { name: 'Pește alb', qty: `${days * 300}g`, cat: 'Proteine' },
+          { name: 'Ton', qty: `${days * 200}g`, cat: 'Proteine' },
+          { name: 'Somon', qty: `${days * 200}g`, cat: 'Proteine' },
+          { name: 'Creveți', qty: `${days * 150}g`, cat: 'Proteine' },
+          { name: 'Ouă (doar albuș)', qty: `${days * 10} ouă`, cat: 'Proteine' },
+          { name: 'Broccoli', qty: `${days * 400}g`, cat: 'Legume' },
+          { name: 'Spanac', qty: `${days * 300}g`, cat: 'Legume' },
+          { name: 'Salată verde', qty: `${days * 2} buc`, cat: 'Legume' },
+          { name: 'Varză kale', qty: `${days * 200}g`, cat: 'Legume' },
+          { name: 'Castraveți', qty: `${days * 3} buc`, cat: 'Legume' },
+          { name: 'Țelină', qty: `${days} legătură`, cat: 'Legume' },
+          { name: 'Sparanghel', qty: `${days * 200}g`, cat: 'Legume' },
+          { name: 'Ardei gras', qty: `${days * 3} buc`, cat: 'Legume' },
+          { name: 'Roșii cherry', qty: `${days * 250}g`, cat: 'Legume' },
+          { name: 'Fasole verde', qty: `${days * 200}g`, cat: 'Legume' }
+        ],
+        en: [
+          { name: 'Chicken breast', qty: `${days * 400}g`, cat: 'Protein' },
+          { name: 'Turkey breast', qty: `${days * 350}g`, cat: 'Protein' },
+          { name: 'White fish', qty: `${days * 300}g`, cat: 'Protein' },
+          { name: 'Tuna', qty: `${days * 200}g`, cat: 'Protein' },
+          { name: 'Salmon', qty: `${days * 200}g`, cat: 'Protein' },
+          { name: 'Shrimp', qty: `${days * 150}g`, cat: 'Protein' },
+          { name: 'Eggs (whites only)', qty: `${days * 10} eggs`, cat: 'Protein' },
+          { name: 'Broccoli', qty: `${days * 400}g`, cat: 'Vegetables' },
+          { name: 'Spinach', qty: `${days * 300}g`, cat: 'Vegetables' },
+          { name: 'Lettuce', qty: `${days * 2} heads`, cat: 'Vegetables' },
+          { name: 'Kale', qty: `${days * 200}g`, cat: 'Vegetables' },
+          { name: 'Cucumbers', qty: `${days * 3} pcs`, cat: 'Vegetables' },
+          { name: 'Celery', qty: `${days} bunch`, cat: 'Vegetables' },
+          { name: 'Asparagus', qty: `${days * 200}g`, cat: 'Vegetables' },
+          { name: 'Bell peppers', qty: `${days * 3} pcs`, cat: 'Vegetables' },
+          { name: 'Cherry tomatoes', qty: `${days * 250}g`, cat: 'Vegetables' },
+          { name: 'Green beans', qty: `${days * 200}g`, cat: 'Vegetables' }
+        ]
       },
-      3: { // Faza 3
-        ro: ['Avocado', 'Nuci', 'Migdale', 'Caju', 'Semințe (chia, in, floarea-soarelui)', 'Ulei măsline extravirgin', 'Ulei cocos', 'Somon', 'Sardine', 'Ouă întregi', 'Pui cu piele', 'Carne slabă', 'Legume variete', 'Fructe moderate (mere, pere)'],
-        en: ['Avocado', 'Walnuts', 'Almonds', 'Cashews', 'Seeds (chia, flax, sunflower)', 'Extra virgin olive oil', 'Coconut oil', 'Salmon', 'Sardines', 'Whole eggs', 'Chicken with skin', 'Lean meat', 'Various vegetables', 'Moderate fruits (apples, pears)']
+      3: { // Faza 3: Healthy fats + balanced
+        ro: [
+          { name: 'Avocado', qty: `${days * 2} buc`, cat: 'Grăsimi' },
+          { name: 'Nuci', qty: `${days * 100}g`, cat: 'Grăsimi' },
+          { name: 'Migdale', qty: `${days * 100}g`, cat: 'Grăsimi' },
+          { name: 'Caju', qty: `${days * 80}g`, cat: 'Grăsimi' },
+          { name: 'Semințe chia', qty: `${days * 30}g`, cat: 'Grăsimi' },
+          { name: 'Ulei măsline extravirgin', qty: `${days * 50}ml`, cat: 'Grăsimi' },
+          { name: 'Ulei cocos', qty: `${days * 30}ml`, cat: 'Grăsimi' },
+          { name: 'Somon', qty: `${days * 250}g`, cat: 'Proteine' },
+          { name: 'Sardine', qty: `${days * 150}g`, cat: 'Proteine' },
+          { name: 'Ouă întregi', qty: `${days * 8} ouă`, cat: 'Proteine' },
+          { name: 'Pui (cu piele)', qty: `${days * 300}g`, cat: 'Proteine' },
+          { name: 'Carne slabă (vită/porc)', qty: `${days * 250}g`, cat: 'Proteine' },
+          { name: 'Broccoli/Spanac', qty: `${days * 300}g`, cat: 'Legume' },
+          { name: 'Mere/Pere', qty: `${days * 3} buc`, cat: 'Fructe' }
+        ],
+        en: [
+          { name: 'Avocado', qty: `${days * 2} pcs`, cat: 'Fats' },
+          { name: 'Walnuts', qty: `${days * 100}g`, cat: 'Fats' },
+          { name: 'Almonds', qty: `${days * 100}g`, cat: 'Fats' },
+          { name: 'Cashews', qty: `${days * 80}g`, cat: 'Fats' },
+          { name: 'Chia seeds', qty: `${days * 30}g`, cat: 'Fats' },
+          { name: 'Extra virgin olive oil', qty: `${days * 50}ml`, cat: 'Fats' },
+          { name: 'Coconut oil', qty: `${days * 30}ml`, cat: 'Fats' },
+          { name: 'Salmon', qty: `${days * 250}g`, cat: 'Protein' },
+          { name: 'Sardines', qty: `${days * 150}g`, cat: 'Protein' },
+          { name: 'Whole eggs', qty: `${days * 8} eggs`, cat: 'Protein' },
+          { name: 'Chicken (with skin)', qty: `${days * 300}g`, cat: 'Protein' },
+          { name: 'Lean meat (beef/pork)', qty: `${days * 250}g`, cat: 'Protein' },
+          { name: 'Broccoli/Spinach', qty: `${days * 300}g`, cat: 'Vegetables' },
+          { name: 'Apples/Pears', qty: `${days * 3} pcs`, cat: 'Fruits' }
+        ]
       }
     };
 
@@ -258,20 +377,35 @@ export default function AIFoodAssistant() {
       phasesNeeded.add(phase);
     }
 
-    // Combină liste pentru toate fazele necesare
-    let allItems = [];
+    // Combină liste pentru toate fazele necesare, grupate pe categorii
+    const allItemsByCategory = {};
     phasesNeeded.forEach(phase => {
-      allItems = [...allItems, ...groceryItems[phase][language]];
+      groceryItems[phase][language].forEach(item => {
+        if (!allItemsByCategory[item.cat]) {
+          allItemsByCategory[item.cat] = [];
+        }
+        // Check dacă item deja există (pentru duplicate merge)
+        const existing = allItemsByCategory[item.cat].find(i => i.name === item.name);
+        if (!existing) {
+          allItemsByCategory[item.cat].push(item);
+        }
+      });
     });
 
-    // Elimină duplicate
-    allItems = [...new Set(allItems)];
+    // Formatează în listă sortată pe categorii
+    const formattedItems = [];
+    Object.keys(allItemsByCategory).sort().forEach(category => {
+      formattedItems.push(`\n**${category}:**`);
+      allItemsByCategory[category].forEach(item => {
+        formattedItems.push(`  • ${item.name} - ${item.qty}`);
+      });
+    });
 
     return {
       days,
       phases: Array.from(phasesNeeded).sort(),
-      items: allItems,
-      totalItems: allItems.length
+      items: formattedItems,
+      totalItems: Object.values(allItemsByCategory).flat().length
     };
   };
 
@@ -404,8 +538,8 @@ export default function AIFoodAssistant() {
         
         const grocery = generateGroceryList(days);
         const answer = language === 'ro'
-          ? `🛒 **Listă Cumpărături pentru ${days} ${days === 1 ? 'zi' : 'zile'}**\n\n📍 Ziua ${currentDay}, Faze necesare: ${grocery.phases.join(', ')}\n\n✅ **${grocery.totalItems} alimente** recomandate:\n\n${grocery.items.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}\n\n💡 Aceste alimente acoperă toate mesele pentru următoarele ${days} ${days === 1 ? 'zi' : 'zile'}!`
-          : `🛒 **Grocery List for ${days} ${days === 1 ? 'day' : 'days'}**\n\n📍 Day ${currentDay}, Phases needed: ${grocery.phases.join(', ')}\n\n✅ **${grocery.totalItems} items** recommended:\n\n${grocery.items.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}\n\n💡 These foods cover all meals for the next ${days} ${days === 1 ? 'day' : 'days'}!`;
+          ? `🛒 **Listă Cumpărături pentru ${days} ${days === 1 ? 'zi' : 'zile'}**\n\n📍 Ziua ${currentDay}, ${days === 1 ? 'Fază' : 'Faze'}: ${grocery.phases.join(', ')}\n✅ **${grocery.totalItems} alimente** organizate pe categorii:\n${grocery.items.join('\n')}\n\n💡 Cantități ajustate pentru ${days} ${days === 1 ? 'zi' : 'zile'} (${days * 5} mese)!`
+          : `🛒 **Grocery List for ${days} ${days === 1 ? 'day' : 'days'}**\n\n📍 Day ${currentDay}, ${days === 1 ? 'Phase' : 'Phases'}: ${grocery.phases.join(', ')}\n✅ **${grocery.totalItems} items** organized by category:\n${grocery.items.join('\n')}\n\n💡 Quantities adjusted for ${days} ${days === 1 ? 'day' : 'days'} (${days * 5} meals)!`;
         
         setChatHistory(prev => [...prev, { question: userQuestion, response: answer, timestamp: new Date() }]);
         setResponse(answer);
@@ -647,16 +781,24 @@ export default function AIFoodAssistant() {
               </div>
             )}
 
-            {/* CURRENT RESPONSE */}
+            {/* CURRENT RESPONSE - SCROLLABLE! */}
             {response && (
               <Card className="border-2 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20">
-                <CardHeader className="pb-3">
+                <CardHeader className="pb-3 flex flex-row items-center justify-between">
                   <CardTitle className="text-base flex items-center gap-2">
                     <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     {language === 'ro' ? 'Răspuns' : 'Response'}
                   </CardTitle>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setResponse("")}
+                    className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900/30"
+                  >
+                    <X className="w-4 h-4 text-red-600 dark:text-red-400" />
+                  </Button>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="max-h-[400px] overflow-y-auto">
                   <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
                     {response}
                   </div>
