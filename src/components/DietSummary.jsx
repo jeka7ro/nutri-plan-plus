@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Info, Flame, Droplet, Ban } from 'lucide-react';
+import { Info, Flame, Droplet, Ban, ChevronDown, ChevronUp } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default function DietSummary({ language = 'ro' }) {
+  const [showAllowedCarbs, setShowAllowedCarbs] = useState(false);
+  const [showForbidden, setShowForbidden] = useState(false);
   const content = {
     ro: {
       title: "Bine ai venit în Dieta Fast Metabolism!",
@@ -122,34 +125,62 @@ export default function DietSummary({ language = 'ro' }) {
           </div>
         ))}
 
-        {/* CARBOHIDRAȚI PERMISI */}
-        <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800">
-          <div className="flex items-center gap-2 mb-3">
-            <Flame className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-            <h3 className="font-bold text-emerald-800 dark:text-emerald-200">{t.allowedCarbs.title}</h3>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {t.allowedCarbs.items.map((item, idx) => (
-              <Badge key={idx} variant="outline" className="bg-white dark:bg-emerald-950 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300">
-                {item}
-              </Badge>
-            ))}
-          </div>
+        {/* CARBOHIDRAȚI PERMISI - OPTIMIZAT cu Collapse */}
+        <div className="bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
+          <Button
+            variant="ghost"
+            onClick={() => setShowAllowedCarbs(!showAllowedCarbs)}
+            className="w-full p-4 flex items-center justify-between hover:bg-emerald-100 dark:hover:bg-emerald-900/40 rounded-xl"
+          >
+            <div className="flex items-center gap-2">
+              <Flame className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <h3 className="font-bold text-emerald-800 dark:text-emerald-200">{t.allowedCarbs.title}</h3>
+              <Badge className="bg-emerald-600 text-white">{t.allowedCarbs.items.length}</Badge>
+            </div>
+            {showAllowedCarbs ? (
+              <ChevronUp className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+            )}
+          </Button>
+          {showAllowedCarbs && (
+            <div className="px-4 pb-4 flex flex-wrap gap-2">
+              {t.allowedCarbs.items.map((item, idx) => (
+                <Badge key={idx} variant="outline" className="bg-white dark:bg-emerald-950 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300">
+                  ✅ {item}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* PRODUSE INTERZISE */}
-        <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-xl border border-red-200 dark:border-red-800">
-          <div className="flex items-center gap-2 mb-3">
-            <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
-            <h3 className="font-bold text-red-800 dark:text-red-200">{t.forbidden.title}</h3>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            {t.forbidden.items.map((item, idx) => (
-              <Badge key={idx} variant="outline" className="bg-white dark:bg-red-950 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300">
-                ❌ {item}
-              </Badge>
-            ))}
-          </div>
+        {/* PRODUSE INTERZISE - OPTIMIZAT cu Collapse */}
+        <div className="bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800">
+          <Button
+            variant="ghost"
+            onClick={() => setShowForbidden(!showForbidden)}
+            className="w-full p-4 flex items-center justify-between hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl"
+          >
+            <div className="flex items-center gap-2">
+              <Ban className="w-5 h-5 text-red-600 dark:text-red-400" />
+              <h3 className="font-bold text-red-800 dark:text-red-200">{t.forbidden.title}</h3>
+              <Badge className="bg-red-600 text-white">{t.forbidden.items.length}</Badge>
+            </div>
+            {showForbidden ? (
+              <ChevronUp className="w-5 h-5 text-red-600 dark:text-red-400" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-red-600 dark:text-red-400" />
+            )}
+          </Button>
+          {showForbidden && (
+            <div className="px-4 pb-4 flex flex-wrap gap-2">
+              {t.forbidden.items.map((item, idx) => (
+                <Badge key={idx} variant="outline" className="bg-white dark:bg-red-950 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300">
+                  ❌ {item}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800">

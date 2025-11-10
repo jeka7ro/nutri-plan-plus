@@ -357,9 +357,9 @@ export default function MyRecipes() {
           </Card>
         )}
 
-        {/* Add/Edit Dialog */}
+        {/* Add/Edit Dialog - SCROLLABLE! */}
         <Dialog open={showAddDialog} onOpenChange={setShowAddDialog}>
-          <DialogContent className="max-w-2xl">
+          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <ChefHat className="w-6 h-6 text-purple-600 dark:text-purple-400" />
