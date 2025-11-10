@@ -544,61 +544,33 @@ export default function Dashboard() {
             </Card>
           )}
 
-        {/* 3 GRAFICE PE 1 RÂND - CLICKABILE */}
-        <div className="grid md:grid-cols-3 gap-4">
-          {/* Grafic 1: Calorii */}
-          <Card 
-            className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))] cursor-pointer hover:shadow-2xl transition-shadow"
-            onClick={() => setExpandedChart('calories')}
-          >
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center gap-2 text-base text-[rgb(var(--ios-text-primary))]">
-                <Flame className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-                {language === 'ro' ? 'Calorii (7 zile)' : 'Calories (7 days)'}
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={150}>
-                <BarChart data={last7Days}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" style={{ fontSize: '10px' }} />
-                  <YAxis style={{ fontSize: '10px' }} />
-                  <Tooltip 
-                    contentStyle={{
-                      backgroundColor: 'rgb(var(--ios-bg-primary))',
-                      border: '1px solid rgb(var(--ios-border))',
-                      borderRadius: '12px',
-                      fontSize: '12px'
-                    }}
-                  />
-                  <Bar 
-                    dataKey="calories" 
-                    fill="#f97316" 
-                    radius={[6, 6, 0, 0]}
-                    name={language === 'ro' ? 'Calorii' : 'Calories'}
-                  />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Grafic 2: Mese completate */}
+        {/* 2 GRAFICE PE 1 RÂND - CA AI CERUT TU! */}
+        <div className="grid md:grid-cols-2 gap-4">
+          {/* Grafic 1: Mese completate */}
           <Card 
             className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))] cursor-pointer hover:shadow-2xl transition-shadow"
             onClick={() => setExpandedChart('meals')}
           >
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base text-[rgb(var(--ios-text-primary))]">
-                <Award className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+                <UtensilsCrossed className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
                 {language === 'ro' ? 'Mese completate (7 zile)' : 'Meals Completed (7 days)'}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={150}>
+              <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={last7Days}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" style={{ fontSize: '10px' }} />
-                  <YAxis style={{ fontSize: '10px' }} domain={[0, 5]} />
+                  <CartesianGrid strokeDasharray="3 3" stroke="rgba(var(--ios-border-rgb), 0.3)" />
+                  <XAxis 
+                    dataKey="date" 
+                    style={{ fontSize: '12px' }}
+                    stroke="rgb(var(--ios-text-tertiary))"
+                  />
+                  <YAxis 
+                    style={{ fontSize: '12px' }}
+                    domain={[0, 5]}
+                    stroke="rgb(var(--ios-text-tertiary))"
+                  />
                   <Tooltip 
                     contentStyle={{
                       backgroundColor: 'rgb(var(--ios-bg-primary))',
@@ -610,7 +582,7 @@ export default function Dashboard() {
                   <Bar 
                     dataKey="meals" 
                     fill="#10b981" 
-                    radius={[6, 6, 0, 0]}
+                    radius={[8, 8, 0, 0]}
                     name={language === 'ro' ? 'Mese (max 5)' : 'Meals (max 5)'}
                   />
                 </BarChart>
@@ -618,19 +590,19 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          {/* Grafic 3: Calorii consumate vs arse */}
+          {/* Grafic 2: Calorii consumate vs arse */}
           <Card 
             className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))] cursor-pointer hover:shadow-2xl transition-shadow"
             onClick={() => setExpandedChart('balance')}
           >
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-base text-[rgb(var(--ios-text-primary))]">
-                <Flame className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                <Activity className="w-4 h-4 text-orange-600 dark:text-orange-400" />
                 {language === 'ro' ? 'Calorii consumate vs arse' : 'Calories In vs Out'}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={150}>
+              <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={last7Days}>
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="date" style={{ fontSize: '10px' }} />
@@ -666,28 +638,11 @@ export default function Dashboard() {
           <DialogContent className="max-w-4xl">
             <DialogHeader>
               <DialogTitle>
-                {expandedChart === 'calories' && (language === 'ro' ? 'Calorii (7 zile)' : 'Calories (7 days)')}
                 {expandedChart === 'meals' && (language === 'ro' ? 'Mese completate (7 zile)' : 'Meals Completed (7 days)')}
                 {expandedChart === 'balance' && (language === 'ro' ? 'Calorii consumate vs arse' : 'Calories In vs Out')}
               </DialogTitle>
             </DialogHeader>
             <div className="mt-4">
-              {expandedChart === 'calories' && (
-                <ResponsiveContainer width="100%" height={400}>
-                  <BarChart data={last7Days}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" style={{ fontSize: '14px' }} />
-                    <YAxis style={{ fontSize: '14px' }} />
-                    <Tooltip />
-                    <Bar 
-                      dataKey="calories" 
-                      fill="#f97316" 
-                      radius={[8, 8, 0, 0]}
-                      name={language === 'ro' ? 'Calorii' : 'Calories'}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
-              )}
               {expandedChart === 'meals' && (
                 <ResponsiveContainer width="100%" height={400}>
                   <BarChart data={last7Days}>
