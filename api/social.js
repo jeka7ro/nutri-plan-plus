@@ -178,6 +178,8 @@ async function handleFriends(req, res, pool, userId) {
   // GET ?progress=true - Friends progress (PRIVACY: doar % weight loss!)
   if (req.method === 'GET' && req.query.progress === 'true') {
     try {
+      console.log('📊 Getting friend progress for user:', userId);
+      
       // Get friends list with profile pictures
       const friendsResult = await pool.query(`
         SELECT 
@@ -191,6 +193,8 @@ async function handleFriends(req, res, pool, userId) {
         LEFT JOIN users u2 ON f.user_id_2 = u2.id
         WHERE f.user_id_1 = $1 OR f.user_id_2 = $1
       `, [userId]);
+      
+      console.log('📊 Friends found:', friendsResult.rows.length);
       
       const friendsProgress = await Promise.all(friendsResult.rows.map(async (friend) => {
         // Calculate weight loss % (PRIVACY: doar %, NU kg absolute!)
@@ -254,19 +258,23 @@ async function handleFriends(req, res, pool, userId) {
           }
         }
         
-        return {
+        const progressData = {
           id: friend.friend_id,
           first_name: friend.first_name,
           last_name: friend.last_name,
           email: friend.email,
           profile_picture: friend.profile_picture,
           weight_loss_percent: weight_loss_percent,
-          meals_completed: mealsResult.rows[0]?.meals_completed || 0,
-          calories_burned: caloriesResult.rows[0]?.calories_burned || 0,
+          meals_completed: parseInt(mealsResult.rows[0]?.meals_completed) || 0,
+          calories_burned: parseInt(caloriesResult.rows[0]?.calories_burned) || 0,
           recent_recipes: recentRecipes,
         };
+        
+        console.log('📊 Friend progress data:', progressData);
+        return progressData;
       }));
       
+      console.log('📊 Total friends with progress:', friendsProgress.length);
       return res.status(200).json(friendsProgress);
     } catch (error) {
       console.error('❌ Friends progress GET error:', error);

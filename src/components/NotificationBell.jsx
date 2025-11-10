@@ -219,40 +219,41 @@ export default function NotificationBell() {
                       })}
                     </p>
                     
-                    {/* FRIEND REQUEST - Accept/Decline buttons */}
+                    {/* FRIEND REQUEST - Accept/Decline buttons MOBIL OPTIMIZAT */}
                     {notification.type === 'friend_request' && notification.related_recipe_id && (
-                      <div className="flex gap-2 mt-3">
-                        <Button
-                          size="sm"
+                      <div className="flex gap-3 mt-4">
+                        <button
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
+                            console.log('✅ ACCEPT clicked!', notification.related_recipe_id);
                             acceptRequestMutation.mutate({ 
                               requestId: notification.related_recipe_id, 
                               notificationId: notification.id 
                             });
                           }}
                           disabled={acceptRequestMutation.isPending || rejectRequestMutation.isPending}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+                          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 flex items-center justify-center gap-2"
                         >
-                          <Check className="w-3 h-3 mr-1" />
+                          <Check className="w-4 h-4" />
                           {language === 'ro' ? 'Acceptă' : 'Accept'}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
+                        </button>
+                        <button
                           onClick={(e) => {
+                            e.preventDefault();
                             e.stopPropagation();
+                            console.log('❌ REJECT clicked!', notification.related_recipe_id);
                             rejectRequestMutation.mutate({ 
                               requestId: notification.related_recipe_id, 
                               notificationId: notification.id 
                             });
                           }}
                           disabled={acceptRequestMutation.isPending || rejectRequestMutation.isPending}
-                          className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 h-8 text-xs"
+                          className="flex-1 bg-red-50 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 font-medium py-3 px-4 rounded-xl text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-95 hover:bg-red-100 dark:hover:bg-red-900/50 flex items-center justify-center gap-2"
                         >
-                          <X className="w-3 h-3 mr-1" />
+                          <X className="w-4 h-4" />
                           {language === 'ro' ? 'Refuză' : 'Decline'}
-                        </Button>
+                        </button>
                       </div>
                     )}
                   </div>

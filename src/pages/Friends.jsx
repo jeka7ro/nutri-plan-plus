@@ -65,8 +65,18 @@ export default function FriendsNew() {
   // Fetch friends progress (PRIVACY: doar % weight loss, NU kg absolute!)
   const { data: friendsProgress = [], isLoading: loadingProgress } = useQuery({
     queryKey: ['friendsProgress'],
-    queryFn: () => localApi.friends.getProgress(),
-    enabled: !!user && user.subscription_plan !== 'free',
+    queryFn: async () => {
+      try {
+        console.log('📊 Fetching friends progress...');
+        const result = await localApi.friends.getProgress();
+        console.log('📊 Friends progress result:', result);
+        return result;
+      } catch (error) {
+        console.error('❌ Friends progress error:', error);
+        return [];
+      }
+    },
+    enabled: !!user && user.subscription_plan !== 'free' && friends.length > 0,
   });
 
   // Search users mutation
@@ -287,27 +297,33 @@ export default function FriendsNew() {
                         </div>
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => acceptMutation.mutate(req.id)}
-                        disabled={acceptMutation.isPending}
-                        className="bg-emerald-600 hover:bg-emerald-700"
-                      >
-                        <Check className="w-4 h-4 mr-1" />
-                        {language === 'ro' ? 'Acceptă' : 'Accept'}
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => rejectMutation.mutate(req.id)}
-                        disabled={rejectMutation.isPending}
-                        className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
-                      >
-                        <X className="w-4 h-4 mr-1" />
-                        {language === 'ro' ? 'Refuză' : 'Reject'}
-                      </Button>
-                    </div>
+                  </div>
+                  {/* BUTOANE PE RÂND SEPARAT - NU SUPRAPUSE! */}
+                  <div className="flex gap-3 mt-4 w-full">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        console.log('✅ ACCEPT friend request:', req.id);
+                        acceptMutation.mutate(req.id);
+                      }}
+                      disabled={acceptMutation.isPending}
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-xl disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <Check className="w-5 h-5" />
+                      {language === 'ro' ? 'Acceptă' : 'Accept'}
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        console.log('❌ REJECT friend request:', req.id);
+                        rejectMutation.mutate(req.id);
+                      }}
+                      disabled={rejectMutation.isPending}
+                      className="flex-1 bg-red-50 dark:bg-red-900/30 border-2 border-red-300 dark:border-red-700 text-red-600 dark:text-red-400 font-medium py-3 px-4 rounded-xl disabled:opacity-50 transition-all active:scale-95 hover:bg-red-100 dark:hover:bg-red-900/50 flex items-center justify-center gap-2"
+                    >
+                      <X className="w-5 h-5" />
+                      {language === 'ro' ? 'Refuză' : 'Decline'}
+                    </button>
                   </div>
                 </div>
               ))}
@@ -440,7 +456,7 @@ export default function FriendsNew() {
                 <div className="text-center py-8 text-[rgb(var(--ios-text-tertiary))]">
                   {language === 'ro' ? 'Se încarcă progres...' : 'Loading progress...'}
                 </div>
-              ) : friendsProgress.length > 0 ? (
+              ) : friends.length > 0 && friendsProgress.length > 0 ? (
                 friendsProgress.map((friend) => (
                   <div key={friend.id} className="p-4 bg-white dark:bg-gray-800 rounded-[16px] border border-emerald-300 dark:border-emerald-700 shadow-md">
                     <div className="flex items-start justify-between">
