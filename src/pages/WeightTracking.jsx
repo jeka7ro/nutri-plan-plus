@@ -26,6 +26,7 @@ export default function WeightTracking() {
   const [weight, setWeight] = useState("");
   const [mood, setMood] = useState("normal");
   const [notes, setNotes] = useState("");
+  const [flashColor, setFlashColor] = useState(null); // 'red', 'green', null pentru animație
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -96,6 +97,22 @@ export default function WeightTracking() {
       });
     },
   });
+
+  const handleDecrement = () => {
+    const newWeight = Math.max(0, (parseFloat(weight) || 0) - 0.5).toFixed(1);
+    setWeight(newWeight);
+    setFlashColor('green'); // VERDE = scade = BUN
+    setTimeout(() => setFlashColor(null), 500);
+    console.log('🟢 MINUS: Greutate scade (bun!)');
+  };
+
+  const handleIncrement = () => {
+    const newWeight = ((parseFloat(weight) || 0) + 0.5).toFixed(1);
+    setWeight(newWeight);
+    setFlashColor('red'); // ROȘU = crește = RĂU
+    setTimeout(() => setFlashColor(null), 500);
+    console.log('🔴 PLUS: Greutate crește (rău!)');
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -272,14 +289,14 @@ export default function WeightTracking() {
                   Greutatea de astăzi
                 </Label>
                   
-                {/* Mobile & Desktop: iOS-style increment/decrement */}
+                {/* Mobile & Desktop: iOS-style increment/decrement cu ANIMAȚIE CULOARE */}
                 <div className="flex items-center justify-center gap-4">
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
                     className="h-14 w-14 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
-                        onClick={() => setWeight(Math.max(0, (parseFloat(weight) || 0) - 0.5).toFixed(1))}
+                        onClick={handleDecrement}
                       >
                     <span className="text-3xl font-light text-blue-600 dark:text-blue-400">−</span>
                       </Button>
@@ -293,7 +310,13 @@ export default function WeightTracking() {
                           value={weight}
                           onChange={(e) => setWeight(e.target.value)}
                           placeholder="75.5"
-                      className="text-center text-4xl font-bold h-20 w-32 border-2 border-blue-300 dark:border-blue-700 bg-white dark:bg-gray-900 rounded-[16px] shadow-lg"
+                      className={`text-center text-4xl font-bold h-20 w-32 border-2 bg-white dark:bg-gray-900 rounded-[16px] shadow-lg transition-all duration-500 ${
+                        flashColor === 'red' 
+                          ? 'ring-4 ring-red-500 border-red-500 text-red-600 dark:text-red-400 animate-pulse' 
+                          : flashColor === 'green'
+                          ? 'ring-4 ring-green-500 border-green-500 text-green-600 dark:text-green-400 animate-pulse'
+                          : 'border-blue-300 dark:border-blue-700 text-[rgb(var(--ios-text-primary))]'
+                      }`}
                         />
                     <p className="text-sm text-[rgb(var(--ios-text-tertiary))] mt-2 font-medium">kilogramе</p>
                       </div>
@@ -303,7 +326,7 @@ export default function WeightTracking() {
                         variant="outline"
                         size="icon"
                     className="h-14 w-14 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
-                        onClick={() => setWeight(((parseFloat(weight) || 0) + 0.5).toFixed(1))}
+                        onClick={handleIncrement}
                       >
                     <span className="text-3xl font-light text-blue-600 dark:text-blue-400">+</span>
                       </Button>
