@@ -22,6 +22,8 @@ export default function Calendar() {
   const [user, setUser] = useState(null);
   const [selectedDay, setSelectedDay] = useState(null);
   const [editingCheckIn, setEditingCheckIn] = useState(null);
+  const [showQuickActionDialog, setShowQuickActionDialog] = useState(false);
+  const [pendingDay, setPendingDay] = useState(null);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -105,6 +107,17 @@ export default function Calendar() {
 
   const handleDayClick = (day) => {
     const dateStr = format(day.date, 'yyyy-MM-dd');
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const isPastDay = dateStr < today;
+    
+    // Dacă e zi trecută, arată Quick Actions dialog
+    if (isPastDay) {
+      setPendingDay(day);
+      setShowQuickActionDialog(true);
+      return;
+    }
+    
+    // Altfel, deschide dialogul normal de editare
     const existingCheckIn = allCheckIns.find(c => c.date?.startsWith(dateStr));
     
     setSelectedDay(day);
@@ -123,6 +136,120 @@ export default function Calendar() {
       snack2_option: null,
       dinner_option: null,
     });
+  };
+
+  // QUICK ACTION: Marchează zi completă (toate mesele + exercițiu)
+  const handleMarkDayComplete = async () => {
+    if (!pendingDay) return;
+    
+    const dateStr = format(pendingDay.date, 'yyyy-MM-dd');
+    const completeCheckIn = {
+      date: dateStr,
+      day_number: pendingDay.dayNumber,
+      phase: pendingDay.phase,
+      breakfast_completed: true,
+      snack1_completed: true,
+      lunch_completed: true,
+      snack2_completed: true,
+      dinner_completed: true,
+      exercise_completed: true,
+      breakfast_option: 'Completat manual',
+      snack1_option: 'Completat manual',
+      lunch_option: 'Completat manual',
+      snack2_option: 'Completat manual',
+      dinner_option: 'Completat manual',
+      exercise_type: 'walking',
+      exercise_duration: 30,
+      exercise_calories_burned: 150,
+      water_intake: 8,
+      total_calories: 0,
+      notes: language === 'ro' ? 'Zi marcată manual ca completă' : 'Day manually marked as complete',
+    };
+    
+    try {
+      await updateCheckInMutation.mutateAsync(completeCheckIn);
+      setShowQuickActionDialog(false);
+      setPendingDay(null);
+    } catch (error) {
+      console.error('❌ Eroare la marcarea zilei complete:', error);
+      alert(language === 'ro' ? 'Eroare la salvare' : 'Error saving');
+    }
+  };
+
+  // QUICK ACTION: Șterge toate datele zilei
+  const handleClearDay = async () => {
+    if (!pendingDay) return;
+    
+    const dateStr = format(pendingDay.date, 'yyyy-MM-dd');
+    const emptyCheckIn = {
+      date: dateStr,
+      day_number: pendingDay.dayNumber,
+      phase: pendingDay.phase,
+      breakfast_completed: false,
+      snack1_completed: false,
+      lunch_completed: false,
+      snack2_completed: false,
+      dinner_completed: false,
+      exercise_completed: false,
+      breakfast_option: null,
+      snack1_option: null,
+      lunch_option: null,
+      snack2_option: null,
+      dinner_option: null,
+      breakfast_image: null,
+      snack1_image: null,
+      lunch_image: null,
+      snack2_image: null,
+      dinner_image: null,
+      breakfast_calories: 0,
+      snack1_calories: 0,
+      lunch_calories: 0,
+      snack2_calories: 0,
+      dinner_calories: 0,
+      exercise_type: null,
+      exercise_duration: 0,
+      exercise_calories_burned: 0,
+      water_intake: 0,
+      total_calories: 0,
+      notes: '',
+    };
+    
+    try {
+      await updateCheckInMutation.mutateAsync(emptyCheckIn);
+      setShowQuickActionDialog(false);
+      setPendingDay(null);
+    } catch (error) {
+      console.error('❌ Eroare la ștergerea datelor:', error);
+      alert(language === 'ro' ? 'Eroare la salvare' : 'Error saving');
+    }
+  };
+
+  // Helper: Deschide dialogul normal de editare (dacă user alege "Editare manuală")
+  const handleOpenEditDialog = () => {
+    if (!pendingDay) return;
+    
+    const dateStr = format(pendingDay.date, 'yyyy-MM-dd');
+    const existingCheckIn = allCheckIns.find(c => c.date?.startsWith(dateStr));
+    
+    setSelectedDay(pendingDay);
+    setEditingCheckIn(existingCheckIn || {
+      date: dateStr,
+      day_number: pendingDay.dayNumber,
+      phase: pendingDay.phase,
+      breakfast_completed: false,
+      snack1_completed: false,
+      lunch_completed: false,
+      snack2_completed: false,
+      dinner_completed: false,
+      breakfast_option: null,
+      snack1_option: null,
+      lunch_option: null,
+      snack2_option: null,
+      dinner_option: null,
+    });
+    
+    setShowQuickActionDialog(false);
+    setPendingDay(null);
   };
 
   const handleMealToggle = (mealKey) => {
@@ -268,6 +395,90 @@ export default function Calendar() {
             );
           })}
         </div>
+
+        {/* Quick Actions Dialog (pentru zile trecute) */}
+        <Dialog open={showQuickActionDialog} onOpenChange={setShowQuickActionDialog}>
+          <DialogContent className="max-w-md">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <CalendarIcon className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                {language === 'ro' ? 'Zi Trecută' : 'Past Day'} - {pendingDay && format(pendingDay.date, 'd MMMM yyyy', { locale: ro })}
+              </DialogTitle>
+            </DialogHeader>
+
+            <div className="space-y-3 mt-4">
+              <p className="text-sm text-[rgb(var(--ios-text-secondary))] mb-4">
+                {language === 'ro' 
+                  ? 'Alege o acțiune rapidă sau editează manual:' 
+                  : 'Choose a quick action or edit manually:'}
+              </p>
+
+              {/* Marchează Zi Completă */}
+              <Button
+                onClick={handleMarkDayComplete}
+                className="w-full h-auto py-4 bg-gradient-to-r from-emerald-500 to-green-600 hover:from-emerald-600 hover:to-green-700"
+                disabled={updateCheckInMutation.isPending}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-3">
+                    <CheckCircle2 className="w-6 h-6" />
+                    <div className="text-left">
+                      <div className="font-bold">
+                        {language === 'ro' ? '✅ Marchează Completă' : '✅ Mark Complete'}
+                      </div>
+                      <div className="text-xs opacity-90">
+                        {language === 'ro' ? 'Toate mesele + exercițiu bifate' : 'All meals + exercise checked'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Button>
+
+              {/* Șterge Tot */}
+              <Button
+                onClick={handleClearDay}
+                variant="destructive"
+                className="w-full h-auto py-4"
+                disabled={updateCheckInMutation.isPending}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <div className="flex items-center gap-3">
+                    <X className="w-6 h-6" />
+                    <div className="text-left">
+                      <div className="font-bold">
+                        {language === 'ro' ? '🗑️ Șterge Tot' : '🗑️ Clear All'}
+                      </div>
+                      <div className="text-xs opacity-90">
+                        {language === 'ro' ? 'Resetează ziua completă' : 'Reset entire day'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Button>
+
+              {/* Editare Manuală */}
+              <Button
+                onClick={handleOpenEditDialog}
+                variant="outline"
+                className="w-full"
+              >
+                {language === 'ro' ? '✏️ Editare Manuală' : '✏️ Manual Edit'}
+              </Button>
+
+              {/* Cancel */}
+              <Button
+                onClick={() => {
+                  setShowQuickActionDialog(false);
+                  setPendingDay(null);
+                }}
+                variant="ghost"
+                className="w-full"
+              >
+                {language === 'ro' ? 'Anulează' : 'Cancel'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
 
         {/* Edit Dialog */}
         <Dialog open={selectedDay !== null} onOpenChange={() => setSelectedDay(null)}>
