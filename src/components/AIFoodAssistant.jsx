@@ -24,6 +24,8 @@ export default function AIFoodAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const [checkIn, setCheckIn] = useState(null);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [chatHistory, setChatHistory] = useState([]); // Array de {question, response, timestamp}
+  const [showGroceryGenerator, setShowGroceryGenerator] = useState(false);
 
   useEffect(() => {
     localApi.auth.me().then(setUser).catch(() => {});
@@ -230,9 +232,53 @@ export default function AIFoodAssistant() {
     return language === 'ro' ? 'următoarea masă' : 'next meal';
   };
 
+  // ========== GROCERY LIST GENERATOR ==========
+  const generateGroceryList = (days) => {
+    const currentDay = getCurrentDay();
+    const groceryItems = {
+      1: { // Faza 1
+        ro: ['Ovăz', 'Orez brun/sălbatic', 'Quinoa', 'Secară (pâine de secară)', 'Hrișcă', 'Mei', 'Linte', 'Fasole', 'Mazărea', 'Pui (piept)', 'Curcan', 'Pește alb', 'Mere', 'Pere', 'Portocale', 'Piersici', 'Kiwi', 'Pepene verde', 'Fructe de pădure', 'Broccoli', 'Spanac', 'Salată verde', 'Roșii', 'Castraveți'],
+        en: ['Oats', 'Brown/wild rice', 'Quinoa', 'Rye bread', 'Buckwheat', 'Millet', 'Lentils', 'Beans', 'Peas', 'Chicken breast', 'Turkey', 'White fish', 'Apples', 'Pears', 'Oranges', 'Peaches', 'Kiwi', 'Watermelon', 'Berries', 'Broccoli', 'Spinach', 'Lettuce', 'Tomatoes', 'Cucumbers']
+      },
+      2: { // Faza 2
+        ro: ['Pui (piept)', 'Curcan', 'Pește alb', 'Ton', 'Somon', 'Creveți', 'Ouă (doar albuș)', 'Broccoli', 'Spanac', 'Salată verde', 'Varză kale', 'Castraveți', 'Țelină', 'Sparanghel', 'Ardei gras', 'Roșii cherry', 'Fasole verde'],
+        en: ['Chicken breast', 'Turkey', 'White fish', 'Tuna', 'Salmon', 'Shrimp', 'Egg whites', 'Broccoli', 'Spinach', 'Lettuce', 'Kale', 'Cucumbers', 'Celery', 'Asparagus', 'Bell peppers', 'Cherry tomatoes', 'Green beans']
+      },
+      3: { // Faza 3
+        ro: ['Avocado', 'Nuci', 'Migdale', 'Caju', 'Semințe (chia, in, floarea-soarelui)', 'Ulei măsline extravirgin', 'Ulei cocos', 'Somon', 'Sardine', 'Ouă întregi', 'Pui cu piele', 'Carne slabă', 'Legume variete', 'Fructe moderate (mere, pere)'],
+        en: ['Avocado', 'Walnuts', 'Almonds', 'Cashews', 'Seeds (chia, flax, sunflower)', 'Extra virgin olive oil', 'Coconut oil', 'Salmon', 'Sardines', 'Whole eggs', 'Chicken with skin', 'Lean meat', 'Various vegetables', 'Moderate fruits (apples, pears)']
+      }
+    };
+
+    // Determină fazele pentru următoarele X zile
+    const phasesNeeded = new Set();
+    for (let i = 0; i < days; i++) {
+      const futureDay = currentDay + i;
+      const phase = getCurrentPhase(futureDay);
+      phasesNeeded.add(phase);
+    }
+
+    // Combină liste pentru toate fazele necesare
+    let allItems = [];
+    phasesNeeded.forEach(phase => {
+      allItems = [...allItems, ...groceryItems[phase][language]];
+    });
+
+    // Elimină duplicate
+    allItems = [...new Set(allItems)];
+
+    return {
+      days,
+      phases: Array.from(phasesNeeded).sort(),
+      items: allItems,
+      totalItems: allItems.length
+    };
+  };
+
   const handleAsk = async () => {
     if (!question.trim()) return;
     
+    const userQuestion = question.trim();
     setIsLoading(true);
     setResponse("");
 
@@ -346,10 +392,30 @@ export default function AIFoodAssistant() {
         }
       };
 
-      const questionLower = question.toLowerCase();
+      const questionLower = userQuestion.toLowerCase();
+      
+      // ========== GROCERY LIST REQUEST ==========
+      if (/cumpăr|cumpar|shopping|grocery|listă|lista|market|magazin|supermarket/i.test(questionLower)) {
+        const days = /mâine|maine|tomorrow/.test(questionLower) ? 1 :
+                     /2 zile|două zile|two days/.test(questionLower) ? 2 :
+                     /3 zile|trei zile|three days/.test(questionLower) ? 3 :
+                     /4 zile|patru zile|four days/.test(questionLower) ? 4 :
+                     /săptămână|saptamana|week|7 zile|șapte zile/.test(questionLower) ? 7 : 3;
+        
+        const grocery = generateGroceryList(days);
+        const answer = language === 'ro'
+          ? `🛒 **Listă Cumpărături pentru ${days} ${days === 1 ? 'zi' : 'zile'}**\n\n📍 Ziua ${currentDay}, Faze necesare: ${grocery.phases.join(', ')}\n\n✅ **${grocery.totalItems} alimente** recomandate:\n\n${grocery.items.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}\n\n💡 Aceste alimente acoperă toate mesele pentru următoarele ${days} ${days === 1 ? 'zi' : 'zile'}!`
+          : `🛒 **Grocery List for ${days} ${days === 1 ? 'day' : 'days'}**\n\n📍 Day ${currentDay}, Phases needed: ${grocery.phases.join(', ')}\n\n✅ **${grocery.totalItems} items** recommended:\n\n${grocery.items.map((item, idx) => `${idx + 1}. ${item}`).join('\n')}\n\n💡 These foods cover all meals for the next ${days} ${days === 1 ? 'day' : 'days'}!`;
+        
+        setChatHistory(prev => [...prev, { question: userQuestion, response: answer, timestamp: new Date() }]);
+        setResponse(answer);
+        setQuestion(""); // CLEAR INPUT!
+        setIsLoading(false);
+        return;
+      }
       
       // Check if it's a yes/no question about food
-      const isCanIEat = /pot|posibil|voie|allow|can i|may i|este ok|e ok|okay/i.test(question);
+      const isCanIEat = /pot|posibil|voie|allow|can i|may i|este ok|e ok|okay/i.test(userQuestion);
       
       if (isCanIEat) {
         // Check forbidden foods first
@@ -360,7 +426,9 @@ export default function AIFoodAssistant() {
           const answer = language === 'ro'
             ? `❌ NU\n\n"${foundForbidden}" ${forbidden.reason_ro}\n\n📍 Ești în Ziua ${currentDay}, Faza ${currentPhase}`
             : `❌ NO\n\n"${foundForbidden}" ${forbidden.reason_en}\n\n📍 You're on Day ${currentDay}, Phase ${currentPhase}`;
+          setChatHistory(prev => [...prev, { question: userQuestion, response: answer, timestamp: new Date() }]);
           setResponse(answer);
+          setQuestion(""); // CLEAR INPUT!
           setIsLoading(false);
           return;
         }
@@ -373,7 +441,9 @@ export default function AIFoodAssistant() {
           const answer = language === 'ro'
             ? `✅ DA\n\n"${foundAllowed}" ${allowed.reason_ro}\n\n📍 Ești în Ziua ${currentDay}, Faza ${currentPhase}`
             : `✅ YES\n\n"${foundAllowed}" ${allowed.reason_en}\n\n📍 You're on Day ${currentDay}, Phase ${currentPhase}`;
+          setChatHistory(prev => [...prev, { question: userQuestion, response: answer, timestamp: new Date() }]);
           setResponse(answer);
+          setQuestion(""); // CLEAR INPUT!
           setIsLoading(false);
           return;
         }
@@ -381,15 +451,19 @@ export default function AIFoodAssistant() {
       
       // Default: show context info
       const contextMessage = language === 'ro' 
-        ? `📍 Ziua ${currentDay}, Faza ${currentPhase}\n\n🕐 Următoarea masă: ${nextMeal}\n✅ Mese completate: ${completedMeals.join(', ') || 'niciuna încă'}\n\n📋 Faza ${currentPhase}:\n✓ Permise: ${phaseInfo[currentPhase].allowed}\n✗ Evită: ${phaseInfo[currentPhase].avoid}\n\n💡 Întreabă-mă: "Pot să mănânc X astăzi?"`
-        : `📍 Day ${currentDay}, Phase ${currentPhase}\n\n🕐 Next meal: ${nextMeal}\n✅ Completed: ${completedMeals.join(', ') || 'none yet'}\n\n📋 Phase ${currentPhase}:\n✓ Allowed: ${phaseInfo[currentPhase].allowed}\n✗ Avoid: ${phaseInfo[currentPhase].avoid}\n\n💡 Ask me: "Can I eat X today?"`;
+        ? `📍 Ziua ${currentDay}, Faza ${currentPhase}\n\n🕐 Următoarea masă: ${nextMeal}\n✅ Mese completate: ${completedMeals.join(', ') || 'niciuna încă'}\n\n📋 Faza ${currentPhase}:\n✓ Permise: ${phaseInfo[currentPhase].allowed}\n✗ Evită: ${phaseInfo[currentPhase].avoid}\n\n💡 Întreabă-mă: "Pot să mănânc X astăzi?" SAU "Ce să cumpăr pentru mâine?"`
+        : `📍 Day ${currentDay}, Phase ${currentPhase}\n\n🕐 Next meal: ${nextMeal}\n✅ Completed: ${completedMeals.join(', ') || 'none yet'}\n\n📋 Phase ${currentPhase}:\n✓ Allowed: ${phaseInfo[currentPhase].allowed}\n✗ Avoid: ${phaseInfo[currentPhase].avoid}\n\n💡 Ask me: "Can I eat X today?" OR "What should I buy for tomorrow?"`;
       
+      setChatHistory(prev => [...prev, { question: userQuestion, response: contextMessage, timestamp: new Date() }]);
       setResponse(contextMessage);
+      setQuestion(""); // CLEAR INPUT!
     } catch (error) {
       console.error('Error asking AI:', error);
-      setResponse(language === 'ro' 
+      const errorMsg = language === 'ro' 
         ? "Ne pare rău, a apărut o eroare. Te rugăm să încerci din nou." 
-        : "Sorry, an error occurred. Please try again.");
+        : "Sorry, an error occurred. Please try again.";
+      setResponse(errorMsg);
+      setQuestion(""); // CLEAR INPUT chiar și la eroare!
     }
 
     setIsLoading(false);
@@ -424,10 +498,10 @@ export default function AIFoodAssistant() {
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-xl border border-purple-200">
+            <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-4 rounded-xl border border-purple-200 dark:border-purple-800">
               <div className="flex items-start gap-2 text-sm">
-                <Apple className="w-5 h-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                <div className="text-gray-700">
+                <Apple className="w-5 h-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" />
+                <div className="text-gray-700 dark:text-gray-300">
                   {language === 'ro' ? (
                     <>
                       <div className="font-medium mb-1">Întreabă despre orice aliment!</div>
@@ -453,14 +527,76 @@ export default function AIFoodAssistant() {
               </div>
             </div>
 
+            {/* GROCERY LIST QUICK BUTTONS */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-[rgb(var(--ios-text-primary))]">
+                  {language === 'ro' ? '🛒 Listă Cumpărături Rapidă:' : '🛒 Quick Grocery List:'}
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setQuestion(language === 'ro' ? 'Ce să cumpăr pentru mâine?' : 'What should I buy for tomorrow?');
+                    setTimeout(() => handleAsk(), 100);
+                  }}
+                  className="text-xs"
+                >
+                  1 zi
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setQuestion(language === 'ro' ? 'Listă cumpărături 2 zile' : 'Grocery list 2 days');
+                    setTimeout(() => handleAsk(), 100);
+                  }}
+                  className="text-xs"
+                >
+                  2 zile
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setQuestion(language === 'ro' ? 'Listă cumpărături 4 zile' : 'Grocery list 4 days');
+                    setTimeout(() => handleAsk(), 100);
+                  }}
+                  className="text-xs"
+                >
+                  4 zile
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setQuestion(language === 'ro' ? 'Listă cumpărături săptămână' : 'Grocery list week');
+                    setTimeout(() => handleAsk(), 100);
+                  }}
+                  className="text-xs"
+                >
+                  7 zile
+                </Button>
+              </div>
+            </div>
+
+            {/* CHAT INPUT */}
             <div className="space-y-2">
               <Textarea
                 placeholder={language === 'ro' 
-                  ? "Ex: Pot mânca avocado acum? Pot să adaug brânză?" 
-                  : "Ex: Can I eat avocado now? Can I add cheese?"}
+                  ? "Ex: Pot mânca avocado acum? Ce să cumpăr pentru mâine?" 
+                  : "Ex: Can I eat avocado now? What to buy for tomorrow?"}
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                rows={3}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    handleAsk();
+                  }
+                }}
+                rows={2}
                 className="resize-none"
                 disabled={isLoading}
               />
@@ -483,16 +619,45 @@ export default function AIFoodAssistant() {
               </Button>
             </div>
 
+            {/* CHAT HISTORY (scroll) */}
+            {chatHistory.length > 0 && (
+              <div className="max-h-96 overflow-y-auto space-y-3 border-t border-b border-[rgb(var(--ios-border))] py-4">
+                <div className="text-xs font-semibold text-[rgb(var(--ios-text-secondary))] mb-2 px-2">
+                  {language === 'ro' ? '💬 Istoric Chat:' : '💬 Chat History:'}
+                </div>
+                {chatHistory.map((chat, idx) => (
+                  <div key={idx} className="space-y-2 px-2">
+                    {/* User Question */}
+                    <div className="flex justify-end">
+                      <div className="bg-emerald-500 text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[80%]">
+                        <div className="text-sm">{chat.question}</div>
+                        <div className="text-[10px] opacity-70 mt-1">
+                          {format(chat.timestamp, 'HH:mm')}
+                        </div>
+                      </div>
+                    </div>
+                    {/* AI Response */}
+                    <div className="flex justify-start">
+                      <div className="bg-purple-100 dark:bg-purple-900/30 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-2xl rounded-tl-sm max-w-[85%]">
+                        <div className="text-sm whitespace-pre-wrap leading-relaxed">{chat.response}</div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* CURRENT RESPONSE */}
             {response && (
-              <Card className="border-2 border-purple-200 bg-purple-50">
+              <Card className="border-2 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-purple-600" />
+                    <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
                     {language === 'ro' ? 'Răspuns' : 'Response'}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-sm text-gray-900 whitespace-pre-wrap leading-relaxed">
+                  <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
                     {response}
                   </div>
                 </CardContent>
