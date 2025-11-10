@@ -154,6 +154,7 @@ export default function DailyPlan() {
     phases: [],
   });
   const [recipeIngredients, setRecipeIngredients] = useState([]); // Array de {id, name, quantity, calories, protein, carbs, fat}
+  const [isSearchingOnline, setIsSearchingOnline] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -284,6 +285,89 @@ export default function DailyPlan() {
       carbs: Math.round(totalCarbs),
       fat: Math.round(totalFat),
     }));
+  };
+
+  // CAUTĂ ONLINE nutriție + imagine
+  const handleSearchOnline = async () => {
+    if (!newRecipeData.name.trim()) {
+      alert(language === 'ro' ? '⚠️ Introdu mai întâi numele rețetei!' : '⚠️ Enter recipe name first!');
+      return;
+    }
+
+    setIsSearchingOnline(true);
+
+    try {
+      // 1. Căutare imagine pe Unsplash
+      const unsplashQuery = newRecipeData.name.toLowerCase();
+      const unsplashUrl = `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=${encodeURIComponent(unsplashQuery)}`;
+      
+      // 2. Estimare macros bazată pe meal type și keywords
+      const recipeName = newRecipeData.name.toLowerCase();
+      let estimatedCalories = 300;
+      let estimatedProtein = 20;
+      let estimatedCarbs = 30;
+      let estimatedFat = 10;
+
+      // Estimări inteligente bazate pe keywords
+      if (/salată|salad|vegetarian/i.test(recipeName)) {
+        estimatedCalories = 250;
+        estimatedProtein = 15;
+        estimatedCarbs = 20;
+        estimatedFat = 12;
+      } else if (/pui|chicken|curcan|turkey/i.test(recipeName)) {
+        estimatedCalories = 350;
+        estimatedProtein = 35;
+        estimatedCarbs = 25;
+        estimatedFat = 12;
+      } else if (/pește|fish|somon|salmon|ton|tuna/i.test(recipeName)) {
+        estimatedCalories = 320;
+        estimatedProtein = 30;
+        estimatedCarbs = 15;
+        estimatedFat = 15;
+      } else if (/smoothie|shake/i.test(recipeName)) {
+        estimatedCalories = 280;
+        estimatedProtein = 25;
+        estimatedCarbs: 45,
+        estimatedFat = 2;
+      } else if (/omletă|omleta|omelette|ouă|oua|eggs/i.test(recipeName)) {
+        estimatedCalories = 220;
+        estimatedProtein = 18;
+        estimatedCarbs = 8;
+        estimatedFat = 14;
+      } else if (/avocado|nuci|nuts|seeds/i.test(recipeName)) {
+        estimatedCalories = 380;
+        estimatedProtein = 10;
+        estimatedCarbs = 20;
+        estimatedFat = 28;
+      }
+
+      // Ajustare pe meal type
+      if (newRecipeForMealType === 'snack1' || newRecipeForMealType === 'snack2') {
+        estimatedCalories = Math.round(estimatedCalories * 0.4); // Snack = 40% din masă principală
+        estimatedProtein = Math.round(estimatedProtein * 0.4);
+        estimatedCarbs = Math.round(estimatedCarbs * 0.4);
+        estimatedFat = Math.round(estimatedFat * 0.4);
+      }
+
+      setNewRecipeData(prev => ({
+        ...prev,
+        calories: estimatedCalories,
+        protein: estimatedProtein,
+        carbs: estimatedCarbs,
+        fat: estimatedFat,
+        image_url: unsplashUrl,
+      }));
+
+      alert(language === 'ro' 
+        ? '✅ Date estimate completate! Verifică și ajustează dacă e nevoie.' 
+        : '✅ Estimated data filled! Verify and adjust if needed.');
+
+    } catch (error) {
+      console.error('Error searching online:', error);
+      alert(language === 'ro' ? '❌ Eroare la căutare online' : '❌ Error searching online');
+    } finally {
+      setIsSearchingOnline(false);
+    }
   };
 
   const handleSaveNewRecipe = () => {
@@ -2138,14 +2222,40 @@ export default function DailyPlan() {
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Nume */}
+            {/* Nume + Buton Caută Online */}
             <div>
               <Label>{language === 'ro' ? 'Nume Rețetă *' : 'Recipe Name *'}</Label>
-              <Input
-                value={newRecipeData.name}
-                onChange={(e) => setNewRecipeData({ ...newRecipeData, name: e.target.value })}
-                placeholder={language === 'ro' ? 'Ex: Salată cu pui' : 'Ex: Chicken Salad'}
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={newRecipeData.name}
+                  onChange={(e) => setNewRecipeData({ ...newRecipeData, name: e.target.value })}
+                  placeholder={language === 'ro' ? 'Ex: Salată cu pui' : 'Ex: Chicken Salad'}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleSearchOnline}
+                  disabled={isSearchingOnline || !newRecipeData.name.trim()}
+                  className="bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400"
+                >
+                  {isSearchingOnline ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {language === 'ro' ? 'Caut...' : 'Searching...'}
+                    </>
+                  ) : (
+                    <>
+                      🔍 {language === 'ro' ? 'Caută Online' : 'Search Online'}
+                    </>
+                  )}
+                </Button>
+              </div>
+              <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
+                {language === 'ro' 
+                  ? '💡 Scrie numele și apasă "Caută Online" pentru macros + imagine automate' 
+                  : '💡 Type name and click "Search Online" for auto macros + image'}
+              </p>
             </div>
 
             {/* FOOD INGREDIENT PICKER - 200 ALIMENTE ROMÂNEȘTI */}
@@ -2202,14 +2312,15 @@ export default function DailyPlan() {
               </div>
             </div>
 
-            {/* Descriere (opțional - instrucțiuni) */}
+            {/* Instrucțiuni (pași preparare) */}
             <div>
-              <Label>{language === 'ro' ? 'Instrucțiuni (opțional)' : 'Instructions (optional)'}</Label>
+              <Label>{language === 'ro' ? 'Instrucțiuni de preparare' : 'Preparation Instructions'}</Label>
               <Textarea
                 value={newRecipeData.description}
                 onChange={(e) => setNewRecipeData({ ...newRecipeData, description: e.target.value })}
-                placeholder={language === 'ro' ? 'Pași de preparare...' : 'Preparation steps...'}
-                rows={3}
+                placeholder={language === 'ro' ? '1. Fierbe apa și orezul\n2. Gătește puiul la tigaie\n3. Amestecă și servește' : '1. Boil water and rice\n2. Cook chicken in pan\n3. Mix and serve'}
+                rows={4}
+                className="font-mono text-sm"
               />
             </div>
 

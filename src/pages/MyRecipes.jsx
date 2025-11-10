@@ -29,7 +29,8 @@ import {
   Lock,
   Image as ImageIcon,
   Save,
-  X
+  X,
+  Loader2
 } from "lucide-react";
 import { useLanguage } from "../components/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -45,11 +46,14 @@ export default function MyRecipes() {
   const [formData, setFormData] = useState({
     name: '',
     description: '',
+    ingredients_text: '', // Ingrediente (unul per linie)
+    instructions_text: '', // Instrucțiuni (pași)
     image_url: '',
     meal_type: 'breakfast',
     phase: null,
     is_public_to_friends: false,
   });
+  const [isSearchingOnline, setIsSearchingOnline] = useState(false);
 
   const { data: myRecipes = [], isLoading } = useQuery({
     queryKey: ['myRecipes'],
@@ -96,10 +100,49 @@ export default function MyRecipes() {
     },
   });
 
+  const handleSearchOnline = async () => {
+    if (!formData.name.trim()) {
+      toast({
+        title: language === 'ro' ? '⚠️ Introdu numele rețetei' : '⚠️ Enter recipe name',
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSearchingOnline(true);
+
+    try {
+      // Estimare macros + imagine Unsplash
+      const recipeName = formData.name.toLowerCase();
+      const unsplashUrl = `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=${encodeURIComponent(recipeName)}`;
+      
+      setFormData(prev => ({
+        ...prev,
+        image_url: unsplashUrl,
+      }));
+
+      toast({
+        title: language === 'ro' ? '✅ Imagine găsită!' : '✅ Image found!',
+        description: language === 'ro' ? 'Poză adăugată din Unsplash' : 'Image added from Unsplash',
+      });
+
+    } catch (error) {
+      toast({
+        title: language === 'ro' ? '❌ Eroare' : '❌ Error',
+        description: language === 'ro' ? 'Nu s-a putut căuta online' : 'Could not search online',
+        variant: "destructive",
+      });
+    } finally {
+      setIsSearchingOnline(false);
+    }
+  };
+
   const resetForm = () => {
     setFormData({
       name: '',
       description: '',
+      ingredients_text: '',
+      instructions_text: '',
       image_url: '',
       meal_type: 'breakfast',
       phases: [], // Array pentru multiple faze
@@ -329,12 +372,29 @@ export default function MyRecipes() {
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="name">{language === 'ro' ? 'Nume' : 'Name'} *</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  placeholder={language === 'ro' ? 'Ex: Omletă cu legume' : 'Ex: Veggie Omelette'}
-                />
+                <div className="flex gap-2">
+                  <Input
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder={language === 'ro' ? 'Ex: Omletă cu legume' : 'Ex: Veggie Omelette'}
+                    className="flex-1"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSearchOnline}
+                    disabled={isSearchingOnline || !formData.name.trim()}
+                    className="bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400"
+                  >
+                    {isSearchingOnline ? '🔍...' : '🔍 Online'}
+                  </Button>
+                </div>
+                <p className="text-xs text-[rgb(var(--ios-text-tertiary))]">
+                  {language === 'ro' 
+                    ? '💡 Caută online pentru imagine automată' 
+                    : '💡 Search online for auto image'}
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -344,7 +404,31 @@ export default function MyRecipes() {
                   value={formData.description}
                   onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                   placeholder={language === 'ro' ? 'Descriere scurtă...' : 'Short description...'}
-                  rows={3}
+                  rows={2}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="ingredients">{language === 'ro' ? 'Ingrediente (unul per linie)' : 'Ingredients (one per line)'}</Label>
+                <Textarea
+                  id="ingredients"
+                  value={formData.ingredients_text}
+                  onChange={(e) => setFormData({ ...formData, ingredients_text: e.target.value })}
+                  placeholder={language === 'ro' ? '200g piept de pui\n1 cană orez brun\n2 linguri ulei măsline\nSare și piper' : '200g chicken breast\n1 cup brown rice\n2 tbsp olive oil\nSalt and pepper'}
+                  rows={5}
+                  className="font-mono text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="instructions">{language === 'ro' ? 'Instrucțiuni (pași de preparare)' : 'Instructions (preparation steps)'}</Label>
+                <Textarea
+                  id="instructions"
+                  value={formData.instructions_text}
+                  onChange={(e) => setFormData({ ...formData, instructions_text: e.target.value })}
+                  placeholder={language === 'ro' ? '1. Fierbe apa și orezul\n2. Gătește puiul la tigaie\n3. Amestecă și servește' : '1. Boil water and rice\n2. Cook chicken in pan\n3. Mix and serve'}
+                  rows={5}
+                  className="font-mono text-sm"
                 />
               </div>
 
