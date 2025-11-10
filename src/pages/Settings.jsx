@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import localApi from "@/api/localClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Settings as SettingsIcon, ArrowLeft } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useLanguage } from "../components/LanguageContext";
 import DietaryPreferencesModal from "../components/DietaryPreferencesModal";
 
 export default function Settings() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const [user, setUser] = useState(null);
+  const [showModal, setShowModal] = useState(true);
 
   useEffect(() => {
     localApi.auth.me().then(setUser).catch(() => {});
@@ -18,17 +22,27 @@ export default function Settings() {
   return (
     <div className="p-4 md:p-8 min-h-screen max-w-full overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-[rgb(var(--ios-text-primary))] flex items-center gap-3">
-            <SettingsIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
-            {language === 'ro' ? 'Setări Alimentare' : 'Dietary Settings'}
-          </h1>
-          <p className="text-[rgb(var(--ios-text-secondary))] mt-1">
-            {language === 'ro' 
-              ? 'Configurează preferințele tale alimentare, alergii și restricții' 
-              : 'Configure your dietary preferences, allergies and restrictions'}
-          </p>
+        {/* Header cu BACK button */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate(-1)}
+            className="flex-shrink-0"
+          >
+            <ArrowLeft className="w-6 h-6" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-bold text-[rgb(var(--ios-text-primary))] flex items-center gap-3">
+              <SettingsIcon className="w-8 h-8 text-blue-600 dark:text-blue-400" />
+              {language === 'ro' ? 'Setări Alimentare' : 'Dietary Settings'}
+            </h1>
+            <p className="text-[rgb(var(--ios-text-secondary))] mt-1">
+              {language === 'ro' 
+                ? 'Configurează preferințele tale alimentare, alergii și restricții' 
+                : 'Configure your dietary preferences, allergies and restrictions'}
+            </p>
+          </div>
         </div>
 
         {/* Info Card */}
@@ -50,12 +64,17 @@ export default function Settings() {
           </CardContent>
         </Card>
 
-        {/* Dietary Preferences Modal - Always Visible */}
+        {/* Dietary Preferences Modal - cu CLOSE funcțional! */}
         <DietaryPreferencesModal
-          isOpen={true}
-          onClose={() => {}}
+          isOpen={showModal}
+          onClose={() => {
+            console.log('🔙 Settings: Closing modal, navigating back');
+            setShowModal(false);
+            setTimeout(() => navigate(-1), 100); // Delay pentru animație smooth
+          }}
           user={user}
           onSave={() => {
+            console.log('✅ Settings: Preferences saved!');
             localApi.auth.me().then(setUser);
           }}
         />
