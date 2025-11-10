@@ -230,44 +230,40 @@ export default function WeightTracking() {
           </CardContent>
         </Card>
 
-        {/* Card Combinat: Total Pierdut + Până la Țintă */}
-        <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-emerald-50 via-teal-50 to-purple-50 dark:from-emerald-900/30 dark:via-teal-900/30 dark:to-purple-900/30 border-[rgb(var(--ios-border))]">
-          <CardContent className="p-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              {/* Total Pierdut */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">📉 Total pierdut</span>
-                  <TrendingDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                </div>
-                <div className="text-4xl font-bold text-emerald-900 dark:text-emerald-100 mb-2">
-                  {totalWeightLost} kg
-                </div>
-                <div className="text-sm text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
-                  <span>Felicitări pentru progres!</span>
-                  <span className="text-xl">🎉</span>
-                </div>
+        {/* Carduri Separate: Total Pierdut + Până la Țintă */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {/* Total Pierdut */}
+          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 border-[rgb(var(--ios-border))]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Total pierdut</span>
+                <TrendingDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
               </div>
-
-              {/* Separator vertical */}
-              <div className="hidden md:block absolute left-1/2 top-6 bottom-6 w-px bg-gradient-to-b from-transparent via-gray-300 dark:via-gray-700 to-transparent"></div>
-
-              {/* Până la Țintă */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-purple-700 dark:text-purple-300">🎯 Până la țintă</span>
-                  <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
-                </div>
-                <div className="text-4xl font-bold text-purple-900 dark:text-purple-100 mb-2">
-                  {remainingWeight > 0 ? remainingWeight : '0'} kg
-                </div>
-                <div className="text-sm text-purple-600 dark:text-purple-400">
-                  Țintă: <strong>{user?.target_weight ? `${parseFloat(user.target_weight).toFixed(1)} kg` : '-'}</strong>
-                </div>
+              <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
+                {totalWeightLost} kg
               </div>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">
+                Felicitări pentru progres! 🎉
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Până la Țintă */}
+          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-[rgb(var(--ios-border))]">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Până la țintă</span>
+                <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              </div>
+              <div className="text-3xl font-bold text-purple-900 dark:text-purple-100">
+                {remainingWeight > 0 ? remainingWeight : '0'} kg
+              </div>
+              <div className="text-sm text-purple-600 dark:text-purple-400 mt-2">
+                Țintă: {user?.target_weight ? parseFloat(user.target_weight).toFixed(1) : '-'} kg
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Smart Weight Widget - iOS Style */}
         <Card className="ios-card ios-shadow-lg rounded-[24px] border-[rgb(var(--ios-border))] overflow-hidden bg-gradient-to-br from-blue-50/50 to-purple-50/50 dark:from-blue-950/20 dark:to-purple-950/20">
