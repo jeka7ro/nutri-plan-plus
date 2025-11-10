@@ -71,7 +71,7 @@ export default async function handler(req, res) {
           $15, $16, $17, $18, $19,
           $20, $21, $22, $23, $24,
           $25, $26, $27, $28, $29,
-          $30, $31, $32, $33, $34, $35, $36, CURRENT_TIMESTAMP
+          $30, $31, $32, $33, $34, $35, $36, $37, CURRENT_TIMESTAMP
         )
         ON CONFLICT (user_id, date) DO UPDATE SET
           day_number = EXCLUDED.day_number,
