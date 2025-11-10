@@ -78,6 +78,32 @@ export default function NotificationBell() {
     },
   });
 
+  // Friend request mutations - Accept/Decline direct din NotificationBell!
+  const acceptRequestMutation = useMutation({
+    mutationFn: async ({ requestId, notificationId }) => {
+      await localApi.friends.acceptRequest(requestId);
+      await localApi.notifications.markAsRead(notificationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friendRequests']);
+      queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries(['notifications']);
+      queryClient.invalidateQueries(['notificationsUnread']);
+    },
+  });
+
+  const rejectRequestMutation = useMutation({
+    mutationFn: async ({ requestId, notificationId }) => {
+      await localApi.friends.rejectRequest(requestId);
+      await localApi.notifications.markAsRead(notificationId);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friendRequests']);
+      queryClient.invalidateQueries(['notifications']);
+      queryClient.invalidateQueries(['notificationsUnread']);
+    },
+  });
+
   const getNotificationIcon = (type) => {
     switch (type) {
       case 'friend_request':
@@ -102,6 +128,11 @@ export default function NotificationBell() {
     }
   };
 
+  const handleBellClick = () => {
+    console.log('🔔 Bell clicked! Current state:', { isOpen, unreadCount: unreadCount.count, user: user?.email });
+    setIsOpen(!isOpen);
+  };
+
   return (
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
@@ -109,11 +140,12 @@ export default function NotificationBell() {
           variant="ghost" 
           size="icon" 
           className="relative"
+          onClick={handleBellClick}
         >
           <Bell className="w-5 h-5 text-[rgb(var(--ios-text-primary))]" />
           {unreadCount.count > 0 && (
             <Badge 
-              className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs"
+              className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs font-bold"
             >
               {unreadCount.count > 9 ? '9+' : unreadCount.count}
             </Badge>
@@ -142,31 +174,70 @@ export default function NotificationBell() {
 
         {notifications.length > 0 ? (
           notifications.map((notification) => (
-            <DropdownMenuItem
-              key={notification.id}
-              className={`p-3 cursor-pointer ${!notification.is_read ? 'bg-blue-50 dark:bg-blue-950/30' : ''}`}
-              onClick={() => handleNotificationClick(notification)}
-            >
-              <div className="flex gap-3 w-full">
-                <div className="flex-shrink-0 mt-1">
-                  {getNotificationIcon(notification.type)}
+            <div key={notification.id}>
+              <DropdownMenuItem
+                className={`p-3 ${!notification.is_read ? 'bg-blue-50 dark:bg-blue-950/30' : ''} ${notification.type === 'friend_request' ? 'cursor-default' : 'cursor-pointer'}`}
+                onClick={() => notification.type !== 'friend_request' && handleNotificationClick(notification)}
+              >
+                <div className="flex gap-3 w-full">
+                  <div className="flex-shrink-0 mt-1">
+                    {getNotificationIcon(notification.type)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-[rgb(var(--ios-text-primary))] mb-1 font-medium">
+                      {notification.message}
+                    </p>
+                    <p className="text-xs text-[rgb(var(--ios-text-tertiary))]">
+                      {formatDistanceToNow(new Date(notification.created_at), { 
+                        addSuffix: true, 
+                        locale: language === 'ro' ? ro : enUS 
+                      })}
+                    </p>
+                    
+                    {/* FRIEND REQUEST - Accept/Decline buttons */}
+                    {notification.type === 'friend_request' && notification.related_recipe_id && (
+                      <div className="flex gap-2 mt-3">
+                        <Button
+                          size="sm"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            acceptRequestMutation.mutate({ 
+                              requestId: notification.related_recipe_id, 
+                              notificationId: notification.id 
+                            });
+                          }}
+                          disabled={acceptRequestMutation.isPending || rejectRequestMutation.isPending}
+                          className="bg-emerald-600 hover:bg-emerald-700 text-white h-8 text-xs"
+                        >
+                          <Check className="w-3 h-3 mr-1" />
+                          {language === 'ro' ? 'Acceptă' : 'Accept'}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            rejectRequestMutation.mutate({ 
+                              requestId: notification.related_recipe_id, 
+                              notificationId: notification.id 
+                            });
+                          }}
+                          disabled={acceptRequestMutation.isPending || rejectRequestMutation.isPending}
+                          className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400 h-8 text-xs"
+                        >
+                          <X className="w-3 h-3 mr-1" />
+                          {language === 'ro' ? 'Refuză' : 'Decline'}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                  {!notification.is_read && (
+                    <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+                  )}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-[rgb(var(--ios-text-primary))] mb-1">
-                    {notification.message}
-                  </p>
-                  <p className="text-xs text-[rgb(var(--ios-text-tertiary))]">
-                    {formatDistanceToNow(new Date(notification.created_at), { 
-                      addSuffix: true, 
-                      locale: language === 'ro' ? ro : enUS 
-                    })}
-                  </p>
-                </div>
-                {!notification.is_read && (
-                  <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
-                )}
-              </div>
-            </DropdownMenuItem>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </div>
           ))
         ) : (
           <div className="p-8 text-center text-[rgb(var(--ios-text-tertiary))]">

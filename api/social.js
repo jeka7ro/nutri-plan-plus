@@ -396,10 +396,11 @@ async function handleFriends(req, res, pool, userId) {
         ? `${senderData.rows[0].first_name} ${senderData.rows[0].last_name}` 
         : 'Cineva';
       
+      // Adaugă related_recipe_id ca related_request_id (hack pentru friend request ID)
       await pool.query(`
-        INSERT INTO notifications (user_id, type, related_user_id, message, action_url)
-        VALUES ($1, $2, $3, $4, $5)
-      `, [friendId, 'friend_request', userId, `${senderName} ți-a trimis o cerere de prietenie`, '/friends']);
+        INSERT INTO notifications (user_id, type, related_user_id, related_recipe_id, message, action_url)
+        VALUES ($1, $2, $3, $4, $5, $6)
+      `, [friendId, 'friend_request', userId, result.rows[0].id, `${senderName} ți-a trimis o cerere de prietenie`, '/friends']);
       
       return res.status(200).json(result.rows[0]);
     } catch (error) {
