@@ -135,21 +135,18 @@ export const localApi = {
     getCurrentUser: () => storage.getUser(),
   },
   
-  // Weight tracking
+  // Weight tracking - DOAR PostgreSQL!
   weight: {
     list: async () => {
-      const stored = readStored(WEIGHT_STORAGE_KEY);
-      if (stored.length) return stored;
       try {
         const result = await request('/weight');
-        writeStored(WEIGHT_STORAGE_KEY, result);
         return result;
       } catch (error) {
-        console.warn('weight.list fell back to localStorage:', error.message);
-        return stored;
+        console.error('❌ weight.list FAILED:', error.message);
+        throw new Error(`PostgreSQL error: ${error.message}`);
       }
     },
-    add: (payload, maybeDate, maybeNotes) => {
+    add: async (payload, maybeDate, maybeNotes) => {
       let body;
       if (typeof payload === 'object' && payload !== null && !Array.isArray(payload)) {
         body = payload;
@@ -161,36 +158,26 @@ export const localApi = {
         };
       }
 
-      const stored = readStored(WEIGHT_STORAGE_KEY);
-      const entry = {
-        id: Date.now(),
-        weight: body.weight,
-        date: body.date,
-        notes: body.notes || '',
-        mood: body.mood || 'normal',
-      };
-
-      return request('/weight', {
-        method: 'POST',
-        body: JSON.stringify(body),
-      }).then((result) => {
-        const updated = [result, ...stored];
-        writeStored(WEIGHT_STORAGE_KEY, updated);
+      try {
+        const result = await request('/weight', {
+          method: 'POST',
+          body: JSON.stringify(body),
+        });
+        console.log('✅ weight.add SUCCESS în PostgreSQL:', result);
         return result;
-      }).catch((error) => {
-        console.warn('weight.add fell back to localStorage:', error.message);
-        const updated = [entry, ...stored];
-        writeStored(WEIGHT_STORAGE_KEY, updated);
-        return entry;
-      });
+      } catch (error) {
+        console.error('❌ weight.add FAILED:', error.message);
+        throw new Error(`PostgreSQL save FAILED: ${error.message}`);
+      }
     },
-    delete: (id) => {
-      const stored = readStored(WEIGHT_STORAGE_KEY);
-      const filtered = stored.filter((entry) => String(entry.id) !== String(id));
-      writeStored(WEIGHT_STORAGE_KEY, filtered);
-      return request(`/weight/${id}`, { method: 'DELETE' }).catch((error) => {
-        console.warn('weight.delete fell back to localStorage:', error.message);
-      });
+    delete: async (id) => {
+      try {
+        await request(`/weight/${id}`, { method: 'DELETE' });
+        console.log('✅ weight.delete SUCCESS în PostgreSQL');
+      } catch (error) {
+        console.error('❌ weight.delete FAILED:', error.message);
+        throw new Error(`PostgreSQL delete FAILED: ${error.message}`);
+      }
     },
   },
   
@@ -276,56 +263,48 @@ export const localApi = {
     },
   },
   
-  // Daily Check-ins
+  // Daily Check-ins - DOAR PostgreSQL, ZERO localStorage!
   checkins: {
     list: async () => {
-      const stored = readStored(CHECKINS_STORAGE_KEY);
-      if (stored.length) {
-        return stored;
-      }
+      // STRICT: DOAR PostgreSQL, NU localStorage fallback!
       try {
         const result = await request('/checkins');
-        writeStored(CHECKINS_STORAGE_KEY, result);
         return result;
       } catch (error) {
-        console.warn('checkins.list fell back to localStorage:', error.message);
-        return stored;
+        console.error('❌ checkins.list FAILED:', error.message);
+        // NU fallback la localStorage - throw error pentru debugging
+        throw new Error(`PostgreSQL error: ${error.message}`);
       }
     },
     get: async (date) => {
-      const stored = readStored(CHECKINS_STORAGE_KEY);
-      const match = stored.find((entry) => entry?.date?.startsWith?.(date));
-      if (match) return match;
+      // STRICT: DOAR PostgreSQL!
       try {
         const result = await request(`/checkins/${date}`);
-        if (result) {
-          const updated = [result, ...stored.filter((entry) => entry?.date?.startsWith?.(date) === false)];
-          writeStored(CHECKINS_STORAGE_KEY, updated);
-        }
         return result || null;
       } catch (error) {
-        console.warn('checkins.get fell back to localStorage:', error.message);
-        return match || null;
+        console.error(`❌ checkins.get(${date}) FAILED:`, error.message);
+        // NU fallback - returnează null dacă nu există
+        return null;
       }
     },
-    listByUser: async () => readStored(CHECKINS_STORAGE_KEY),
+    listByUser: async () => {
+      // Alias pentru list() - DOAR PostgreSQL
+      return await this.list();
+    },
     upsert: async (payload) => {
-      const stored = readStored(CHECKINS_STORAGE_KEY);
-      const dateKey = payload.date;
-      let result = payload;
+      // STRICT: DOAR PostgreSQL, ZERO localStorage!
       try {
-        result = await request('/checkins', {
+        const result = await request('/checkins', {
           method: 'POST',
           body: JSON.stringify(payload),
         });
+        console.log('✅ checkins.upsert SUCCESS în PostgreSQL:', result);
+        return result;
       } catch (error) {
-        console.warn('checkins.upsert fell back to localStorage:', error.message);
+        console.error('❌ checkins.upsert FAILED:', error.message);
+        // NU salvăm în localStorage - THROW error pentru debugging
+        throw new Error(`PostgreSQL save FAILED: ${error.message}`);
       }
-
-      const filtered = stored.filter((entry) => entry?.date?.startsWith?.(dateKey) === false);
-      const merged = [result, ...filtered];
-      writeStored(CHECKINS_STORAGE_KEY, merged);
-      return result;
     },
   },
 
