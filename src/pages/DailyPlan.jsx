@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 const phaseInfo = {
@@ -140,6 +141,17 @@ export default function DailyPlan() {
   const [expandedMeals, setExpandedMeals] = useState({}); // Track which meals show all options
   const [exercises, setExercises] = useState([]); // Array de exerciții: [{type, duration, calories}, ...]
   const [activeRecipeTab, setActiveRecipeTab] = useState({}); // Track active tab for each meal: { breakfast: 'standard', lunch: 'mine', ... }
+  const [showAddRecipeDialog, setShowAddRecipeDialog] = useState(false);
+  const [newRecipeForMealType, setNewRecipeForMealType] = useState(null);
+  const [newRecipeData, setNewRecipeData] = useState({
+    name: '',
+    description: '',
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
+    phases: [],
+  });
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -199,6 +211,60 @@ export default function DailyPlan() {
     queryFn: () => localApi.userRecipes.friendsRecipes(),
     enabled: !!user,
   });
+
+  // CREATE NEW RECIPE mutation
+  const createRecipeMutation = useMutation({
+    mutationFn: async (recipeData) => {
+      return await localApi.userRecipes.create(recipeData);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['myRecipes']);
+      setShowAddRecipeDialog(false);
+      setNewRecipeData({ name: '', description: '', calories: 0, protein: 0, carbs: 0, fat: 0, phases: [] });
+      setNewRecipeForMealType(null);
+      alert(language === 'ro' ? '✅ Rețeta a fost adăugată!' : '✅ Recipe added!');
+    },
+    onError: (error) => {
+      alert(language === 'ro' ? `❌ Eroare: ${error.message}` : `❌ Error: ${error.message}`);
+    }
+  });
+
+  const handleOpenAddRecipeDialog = (mealType) => {
+    const currentPhase = getCurrentPhase(getCurrentDay());
+    setNewRecipeForMealType(mealType);
+    setNewRecipeData({
+      name: '',
+      description: '',
+      meal_type: mealType,
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
+      phases: [currentPhase], // Pre-select current phase
+    });
+    setShowAddRecipeDialog(true);
+  };
+
+  const handleSaveNewRecipe = () => {
+    if (!newRecipeData.name.trim()) {
+      alert(language === 'ro' ? '⚠️ Numele rețetei este obligatoriu!' : '⚠️ Recipe name is required!');
+      return;
+    }
+    if (newRecipeData.phases.length === 0) {
+      alert(language === 'ro' ? '⚠️ Selectează cel puțin o fază!' : '⚠️ Select at least one phase!');
+      return;
+    }
+    createRecipeMutation.mutate(newRecipeData);
+  };
+
+  const togglePhaseForNewRecipe = (phase) => {
+    setNewRecipeData(prev => ({
+      ...prev,
+      phases: prev.phases.includes(phase)
+        ? prev.phases.filter(p => p !== phase)
+        : [...prev.phases, phase]
+    }));
+  };
 
   useEffect(() => {
     if (checkIn) {
@@ -1324,8 +1390,8 @@ export default function DailyPlan() {
 
                   {/* Meal Options Grid - FROM DATABASE */}
                   <div className="space-y-3">
-                    {/* 3 TAB-URI: Standard / Ale Mele / De la Prieteni (doar Premium pentru Ale Mele și Prieteni) */}
-                    <div className="flex gap-2 mb-3">
+                    {/* 3 TAB-URI + BUTON ADAUGĂ */}
+                    <div className="flex flex-wrap gap-2 mb-3">
                       <Button
                         size="sm"
                         variant={currentTab === 'standard' ? 'default' : 'outline'}
@@ -1365,6 +1431,15 @@ export default function DailyPlan() {
                       >
                         👥 {language === 'ro' ? 'Prieteni' : 'Friends'} ({friendsFilteredRecipes.length})
                         {user?.subscription_plan === 'free' && ' 🔒'}
+                      </Button>
+                      {/* BUTON ADAUGĂ REȚETĂ DIRECT */}
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleOpenAddRecipeDialog(meal.mealType)}
+                        className="ml-auto bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20"
+                      >
+                        ➕ {language === 'ro' ? 'Adaugă' : 'Add'}
                       </Button>
                     </div>
                     <div className="grid md:grid-cols-3 gap-3 relative">
@@ -1994,6 +2069,146 @@ export default function DailyPlan() {
               </div>
             </>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* ADD NEW RECIPE DIALOG - DIRECT DIN DAILY PLAN */}
+      <Dialog open={showAddRecipeDialog} onOpenChange={setShowAddRecipeDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              ➕ {language === 'ro' ? 'Adaugă Rețetă Nouă' : 'Add New Recipe'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'ro' 
+                ? `Pentru: ${newRecipeForMealType === 'breakfast' ? 'Mic Dejun' : newRecipeForMealType === 'lunch' ? 'Prânz' : newRecipeForMealType === 'dinner' ? 'Cină' : newRecipeForMealType === 'snack1' ? 'Gustare Dimineață' : 'Gustare După-Amiază'}`
+                : `For: ${newRecipeForMealType}`}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            {/* Nume */}
+            <div>
+              <Label>{language === 'ro' ? 'Nume Rețetă *' : 'Recipe Name *'}</Label>
+              <Input
+                value={newRecipeData.name}
+                onChange={(e) => setNewRecipeData({ ...newRecipeData, name: e.target.value })}
+                placeholder={language === 'ro' ? 'Ex: Salată cu pui' : 'Ex: Chicken Salad'}
+              />
+            </div>
+
+            {/* Descriere */}
+            <div>
+              <Label>{language === 'ro' ? 'Descriere' : 'Description'}</Label>
+              <Textarea
+                value={newRecipeData.description}
+                onChange={(e) => setNewRecipeData({ ...newRecipeData, description: e.target.value })}
+                placeholder={language === 'ro' ? 'Ingrediente și pași...' : 'Ingredients and steps...'}
+                rows={4}
+              />
+            </div>
+
+            {/* Macronutrienți */}
+            <div className="grid grid-cols-4 gap-3">
+              <div>
+                <Label>{language === 'ro' ? 'Calorii' : 'Calories'}</Label>
+                <Input
+                  type="number"
+                  value={newRecipeData.calories}
+                  onChange={(e) => setNewRecipeData({ ...newRecipeData, calories: parseInt(e.target.value) || 0 })}
+                  placeholder="300"
+                />
+              </div>
+              <div>
+                <Label>{language === 'ro' ? 'Proteine (g)' : 'Protein (g)'}</Label>
+                <Input
+                  type="number"
+                  value={newRecipeData.protein}
+                  onChange={(e) => setNewRecipeData({ ...newRecipeData, protein: parseInt(e.target.value) || 0 })}
+                  placeholder="20"
+                />
+              </div>
+              <div>
+                <Label>{language === 'ro' ? 'Carbohidrați (g)' : 'Carbs (g)'}</Label>
+                <Input
+                  type="number"
+                  value={newRecipeData.carbs}
+                  onChange={(e) => setNewRecipeData({ ...newRecipeData, carbs: parseInt(e.target.value) || 0 })}
+                  placeholder="40"
+                />
+              </div>
+              <div>
+                <Label>{language === 'ro' ? 'Grăsimi (g)' : 'Fat (g)'}</Label>
+                <Input
+                  type="number"
+                  value={newRecipeData.fat}
+                  onChange={(e) => setNewRecipeData({ ...newRecipeData, fat: parseInt(e.target.value) || 0 })}
+                  placeholder="10"
+                />
+              </div>
+            </div>
+
+            {/* Faze compatibile */}
+            <div>
+              <Label>{language === 'ro' ? 'Faze compatibile *' : 'Compatible Phases *'}</Label>
+              <div className="flex gap-4 mt-2">
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="phase1"
+                    checked={newRecipeData.phases.includes(1)}
+                    onCheckedChange={() => togglePhaseForNewRecipe(1)}
+                  />
+                  <label htmlFor="phase1" className="text-sm cursor-pointer">
+                    {language === 'ro' ? 'Faza 1' : 'Phase 1'}
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="phase2"
+                    checked={newRecipeData.phases.includes(2)}
+                    onCheckedChange={() => togglePhaseForNewRecipe(2)}
+                  />
+                  <label htmlFor="phase2" className="text-sm cursor-pointer">
+                    {language === 'ro' ? 'Faza 2' : 'Phase 2'}
+                  </label>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Checkbox
+                    id="phase3"
+                    checked={newRecipeData.phases.includes(3)}
+                    onCheckedChange={() => togglePhaseForNewRecipe(3)}
+                  />
+                  <label htmlFor="phase3" className="text-sm cursor-pointer">
+                    {language === 'ro' ? 'Faza 3' : 'Phase 3'}
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Save Button */}
+            <div className="flex gap-3 pt-4">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowAddRecipeDialog(false);
+                  setNewRecipeData({ name: '', description: '', calories: 0, protein: 0, carbs: 0, fat: 0, phases: [] });
+                  setNewRecipeForMealType(null);
+                }}
+                className="flex-1"
+              >
+                {language === 'ro' ? 'Anulează' : 'Cancel'}
+              </Button>
+              <Button
+                onClick={handleSaveNewRecipe}
+                disabled={createRecipeMutation.isPending}
+                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
+              >
+                {createRecipeMutation.isPending 
+                  ? (language === 'ro' ? 'Se salvează...' : 'Saving...') 
+                  : (language === 'ro' ? '✅ Salvează' : '✅ Save')}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>
