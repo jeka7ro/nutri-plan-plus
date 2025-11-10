@@ -26,7 +26,7 @@ export default function AdminCRM() {
   const queryClient = useQueryClient();
   const [selectedLead, setSelectedLead] = useState(null);
   const [showAddLead, setShowAddLead] = useState(false);
-  const [filters, setFilters] = useState({ stage: '', source: '', search: '' });
+  const [filters, setFilters] = useState({ stage: 'all', source: 'all', search: '' });
   const [newLead, setNewLead] = useState({
     email: '',
     first_name: '',
@@ -41,8 +41,8 @@ export default function AdminCRM() {
     queryKey: ['crmLeads', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.stage) params.append('stage', filters.stage);
-      if (filters.source) params.append('source', filters.source);
+      if (filters.stage && filters.stage !== 'all') params.append('stage', filters.stage);
+      if (filters.source && filters.source !== 'all') params.append('source', filters.source);
       if (filters.search) params.append('search', filters.search);
       
       const response = await fetch(`/api/admin/users?type=crm&${params}`, {
@@ -205,7 +205,7 @@ export default function AdminCRM() {
                 <SelectValue placeholder="Toate stages" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toate</SelectItem>
+                <SelectItem value="all">Toate</SelectItem>
                 <SelectItem value="new">Nou</SelectItem>
                 <SelectItem value="contacted">Contactat</SelectItem>
                 <SelectItem value="qualified">Calificat</SelectItem>
@@ -218,7 +218,7 @@ export default function AdminCRM() {
                 <SelectValue placeholder="Toate surse" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">Toate</SelectItem>
+                <SelectItem value="all">Toate</SelectItem>
                 <SelectItem value="website">Website</SelectItem>
                 <SelectItem value="facebook">Facebook</SelectItem>
                 <SelectItem value="google">Google</SelectItem>
