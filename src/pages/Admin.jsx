@@ -10,8 +10,15 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Users, MessageSquare, TrendingUp, TrendingDown, Activity, Shield, Crown, Calendar,
-  CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings, Info
+  CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings, Info, Menu
 } from "lucide-react";
 import AdminCRM from "@/components/AdminCRM";
 import AdminSales from "@/components/AdminSales";
@@ -451,7 +458,32 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="flex flex-wrap w-full bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] p-1 gap-1">
+          {/* MOBILE: Hamburger Dropdown Menu */}
+          <div className="md:hidden mb-6">
+            <Select value={activeTab} onValueChange={setActiveTab}>
+              <SelectTrigger className="w-full bg-[rgb(var(--ios-bg-tertiary))] border-[rgb(var(--ios-border))] h-14 text-lg">
+                <div className="flex items-center gap-3">
+                  <Menu className="w-5 h-5 text-emerald-500" />
+                  <SelectValue placeholder="Selectează secțiune" />
+                </div>
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="crm">🎯 CRM</SelectItem>
+                <SelectItem value="sales">💰 Sales</SelectItem>
+                <SelectItem value="promos">🎁 Promoții</SelectItem>
+                <SelectItem value="email">📧 Email</SelectItem>
+                <SelectItem value="users">👥 Users</SelectItem>
+                <SelectItem value="recipes">🍽️ Rețete</SelectItem>
+                <SelectItem value="support">💬 Suport</SelectItem>
+                <SelectItem value="logs">📋 Logs</SelectItem>
+                <SelectItem value="backups">💾 Backup</SelectItem>
+                <SelectItem value="settings">⚙️ Setări</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* DESKTOP: Normal Tabs */}
+          <TabsList className="hidden md:flex flex-wrap w-full bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] p-1 gap-1">
             <TabsTrigger value="crm" className="flex-1 min-w-[100px]">🎯 CRM</TabsTrigger>
             <TabsTrigger value="sales" className="flex-1 min-w-[100px]">💰 Sales</TabsTrigger>
             <TabsTrigger value="promos" className="flex-1 min-w-[100px]">🎁 Promoții</TabsTrigger>
