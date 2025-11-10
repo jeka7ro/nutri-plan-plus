@@ -451,8 +451,8 @@ export default function Admin() {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* MOBILE: Hamburger Dropdown Menu */}
-          <div className="md:hidden mb-6">
+          {/* HAMBURGER MENU - MOBIL ȘI DESKTOP */}
+          <div className="mb-6">
             <Select value={activeTab} onValueChange={setActiveTab}>
               <SelectTrigger className="w-full bg-[rgb(var(--ios-bg-tertiary))] border-[rgb(var(--ios-border))] h-14 text-lg">
                 <div className="flex items-center gap-3">
@@ -474,20 +474,6 @@ export default function Admin() {
               </SelectContent>
             </Select>
           </div>
-
-          {/* DESKTOP: Normal Tabs */}
-          <TabsList className="hidden md:flex flex-wrap w-full bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] p-1 gap-1">
-            <TabsTrigger value="crm" className="flex-1 min-w-[100px]">🎯 CRM</TabsTrigger>
-            <TabsTrigger value="sales" className="flex-1 min-w-[100px]">💰 Sales</TabsTrigger>
-            <TabsTrigger value="promos" className="flex-1 min-w-[100px]">🎁 Promoții</TabsTrigger>
-            <TabsTrigger value="email" className="flex-1 min-w-[100px]">📧 Email</TabsTrigger>
-            <TabsTrigger value="users" className="flex-1 min-w-[100px]">👥 Users</TabsTrigger>
-            <TabsTrigger value="recipes" className="flex-1 min-w-[100px]">🍽️ Rețete</TabsTrigger>
-            <TabsTrigger value="support" className="flex-1 min-w-[100px]">💬 Suport</TabsTrigger>
-            <TabsTrigger value="logs" className="flex-1 min-w-[100px]">📋 Logs</TabsTrigger>
-            <TabsTrigger value="backups" className="flex-1 min-w-[100px]">💾 Backup</TabsTrigger>
-            <TabsTrigger value="settings" className="flex-1 min-w-[100px]">⚙️ Setări</TabsTrigger>
-          </TabsList>
 
           {/* ==================== TAB CRM ==================== */}
           <TabsContent value="crm" className="mt-6">
