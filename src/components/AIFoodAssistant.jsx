@@ -753,57 +753,32 @@ export default function AIFoodAssistant() {
               </Button>
             </div>
 
-            {/* CHAT HISTORY (scroll) */}
+            {/* CHAT HISTORY (scroll) - iOS STYLE SUBTIL */}
             {chatHistory.length > 0 && (
-              <div className="max-h-96 overflow-y-auto space-y-3 border-t border-b border-[rgb(var(--ios-border))] py-4">
+              <div className="max-h-96 overflow-y-auto space-y-3 py-4">
                 <div className="text-xs font-semibold text-[rgb(var(--ios-text-secondary))] mb-2 px-2">
-                  {language === 'ro' ? '💬 Istoric Chat:' : '💬 Chat History:'}
+                  {language === 'ro' ? '💬 Istoric:' : '💬 History:'}
                 </div>
                 {chatHistory.map((chat, idx) => (
                   <div key={idx} className="space-y-2 px-2">
-                    {/* User Question */}
+                    {/* User Question - iOS Blue */}
                     <div className="flex justify-end">
-                      <div className="bg-emerald-500 text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[80%]">
+                      <div className="bg-blue-500 dark:bg-blue-600 text-white px-4 py-2 rounded-2xl rounded-tr-sm max-w-[80%] shadow-sm">
                         <div className="text-sm">{chat.question}</div>
                         <div className="text-[10px] opacity-70 mt-1">
                           {format(chat.timestamp, 'HH:mm')}
                         </div>
                       </div>
                     </div>
-                    {/* AI Response */}
+                    {/* AI Response - iOS Gray Bubble */}
                     <div className="flex justify-start">
-                      <div className="bg-purple-100 dark:bg-purple-900/30 text-gray-900 dark:text-gray-100 px-4 py-2 rounded-2xl rounded-tl-sm max-w-[85%]">
+                      <div className="bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] text-[rgb(var(--ios-text-primary))] px-4 py-2 rounded-2xl rounded-tl-sm max-w-[85%] shadow-sm">
                         <div className="text-sm whitespace-pre-wrap leading-relaxed">{chat.response}</div>
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-            )}
-
-            {/* CURRENT RESPONSE - SCROLLABLE! */}
-            {response && (
-              <Card className="border-2 border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20">
-                <CardHeader className="pb-3 flex flex-row items-center justify-between">
-                  <CardTitle className="text-base flex items-center gap-2">
-                    <Sparkles className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-                    {language === 'ro' ? 'Răspuns' : 'Response'}
-                  </CardTitle>
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    onClick={() => setResponse("")}
-                    className="h-8 w-8 p-0 hover:bg-red-100 dark:hover:bg-red-900/30"
-                  >
-                    <X className="w-4 h-4 text-red-600 dark:text-red-400" />
-                  </Button>
-                </CardHeader>
-                <CardContent className="max-h-[400px] overflow-y-auto">
-                  <div className="text-sm text-gray-900 dark:text-gray-100 whitespace-pre-wrap leading-relaxed">
-                    {response}
-                  </div>
-                </CardContent>
-              </Card>
             )}
 
             <div className="text-xs text-center text-gray-500">
