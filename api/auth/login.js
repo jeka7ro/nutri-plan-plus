@@ -104,11 +104,11 @@ export default async function handler(req, res) {
       // Update last_login
       await pool.query('UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = $1', [user.id]);
 
-      // Generate JWT
+      // Generate JWT (90 zile)
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-        { expiresIn: '7d' }
+        { expiresIn: '90d' }
       );
 
       delete user.password;
@@ -162,11 +162,11 @@ export default async function handler(req, res) {
       
       const user = result.rows[0];
       
-      // Generate token
+      // Generate token (90 zile pentru "Remember me")
       const token = jwt.sign(
         { id: user.id, email: user.email, role: user.role },
         process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-        { expiresIn: '7d' }
+        { expiresIn: '90d' }
       );
       
       return res.status(200).json({
@@ -208,11 +208,11 @@ export default async function handler(req, res) {
     );
     console.log('✅ Last login updated for user:', user.id, user.email);
     
-    // Generate token
+    // Generate token (90 zile pentru persistență)
     const token = jwt.sign(
       { id: user.id, email: user.email, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key-change-in-production',
-      { expiresIn: '7d' }
+      { expiresIn: '90d' }
     );
     
     // Return user data
