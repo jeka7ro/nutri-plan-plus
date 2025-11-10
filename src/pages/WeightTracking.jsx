@@ -27,6 +27,7 @@ export default function WeightTracking() {
   const [mood, setMood] = useState("normal");
   const [notes, setNotes] = useState("");
   const [flashColor, setFlashColor] = useState(null); // 'red', 'green', null pentru animație
+  const [particles, setParticles] = useState([]); // Particule magice! ✨
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -98,20 +99,37 @@ export default function WeightTracking() {
     },
   });
 
+  // ✨ MAGIE: Generează particule care zboară!
+  const createMagicParticles = (color) => {
+    const newParticles = [];
+    for (let i = 0; i < 12; i++) {
+      newParticles.push({
+        id: Date.now() + i,
+        color: color,
+        left: Math.random() * 100, // 0-100%
+        delay: Math.random() * 200, // 0-200ms
+      });
+    }
+    setParticles(newParticles);
+    setTimeout(() => setParticles([]), 1000); // Clear după 1s
+  };
+
   const handleDecrement = () => {
     const newWeight = Math.max(0, (parseFloat(weight) || 0) - 0.5).toFixed(1);
     setWeight(newWeight);
     setFlashColor('green'); // VERDE = scade = BUN
+    createMagicParticles('green'); // ✨ MAGIE VERDE!
     setTimeout(() => setFlashColor(null), 500);
-    console.log('🟢 MINUS: Greutate scade (bun!)');
+    console.log('🟢 MINUS: Greutate scade (bun!) + ✨ MAGIE');
   };
 
   const handleIncrement = () => {
     const newWeight = ((parseFloat(weight) || 0) + 0.5).toFixed(1);
     setWeight(newWeight);
     setFlashColor('red'); // ROȘU = crește = RĂU
+    createMagicParticles('red'); // ✨ MAGIE ROȘIE!
     setTimeout(() => setFlashColor(null), 500);
-    console.log('🔴 PLUS: Greutate crește (rău!)');
+    console.log('🔴 PLUS: Greutate crește (rău!) + ✨ MAGIE');
   };
 
   const handleSubmit = (e) => {
@@ -289,19 +307,38 @@ export default function WeightTracking() {
                   Greutatea de astăzi
                 </Label>
                   
-                {/* Mobile & Desktop: iOS-style increment/decrement cu ANIMAȚIE CULOARE */}
-                <div className="flex items-center justify-center gap-4">
+                {/* Mobile & Desktop: iOS-style increment/decrement cu ANIMAȚIE CULOARE + MAGIE ✨ */}
+                <div className="flex items-center justify-center gap-4 md:gap-6">
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
-                    className="h-14 w-14 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
+                    className="h-14 w-14 md:h-16 md:w-16 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
                         onClick={handleDecrement}
                       >
-                    <span className="text-3xl font-light text-blue-600 dark:text-blue-400">−</span>
+                    <span className="text-3xl md:text-4xl font-light text-blue-600 dark:text-blue-400">−</span>
                       </Button>
                       
-                  <div className="text-center">
+                  <div className="text-center relative">
+                    {/* ✨ PARTICULE MAGICE! */}
+                    {particles.map((particle) => (
+                      <div
+                        key={particle.id}
+                        className={`absolute pointer-events-none ${
+                          particle.color === 'green' ? 'text-green-500' : 'text-red-500'
+                        }`}
+                        style={{
+                          left: `${particle.left}%`,
+                          bottom: '50%',
+                          animation: `floatUp 1s ease-out forwards`,
+                          animationDelay: `${particle.delay}ms`,
+                          fontSize: '1.5rem',
+                        }}
+                      >
+                        ✨
+                      </div>
+                    ))}
+                    
                         <Input
                       id="weight"
                           name="weight"
@@ -310,7 +347,7 @@ export default function WeightTracking() {
                           value={weight}
                           onChange={(e) => setWeight(e.target.value)}
                           placeholder="75.5"
-                      className={`text-center text-4xl font-bold h-20 w-32 border-2 bg-white dark:bg-gray-900 rounded-[16px] shadow-lg transition-all duration-500 ${
+                      className={`text-center text-4xl md:text-7xl font-bold h-20 md:h-28 w-32 md:w-56 border-2 bg-white dark:bg-gray-900 rounded-[16px] shadow-lg transition-all duration-500 ${
                         flashColor === 'red' 
                           ? 'ring-4 ring-red-500 border-red-500 text-red-600 dark:text-red-400 animate-pulse' 
                           : flashColor === 'green'
@@ -318,19 +355,33 @@ export default function WeightTracking() {
                           : 'border-blue-300 dark:border-blue-700 text-[rgb(var(--ios-text-primary))]'
                       }`}
                         />
-                    <p className="text-sm text-[rgb(var(--ios-text-tertiary))] mt-2 font-medium">kilogramе</p>
+                    <p className="text-sm md:text-base text-[rgb(var(--ios-text-tertiary))] mt-2 font-medium">kilogramе</p>
                       </div>
                       
                       <Button
                         type="button"
                         variant="outline"
                         size="icon"
-                    className="h-14 w-14 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
+                    className="h-14 w-14 md:h-16 md:w-16 rounded-full border-2 border-blue-300 dark:border-blue-700 bg-[rgb(var(--ios-bg-tertiary))] hover:bg-blue-50 dark:hover:bg-blue-900/50 active:scale-95 transition-all"
                         onClick={handleIncrement}
                       >
-                    <span className="text-3xl font-light text-blue-600 dark:text-blue-400">+</span>
+                    <span className="text-3xl md:text-4xl font-light text-blue-600 dark:text-blue-400">+</span>
                       </Button>
                 </div>
+                
+                {/* CSS ANIMATION pentru particule */}
+                <style>{`
+                  @keyframes floatUp {
+                    0% {
+                      transform: translateY(0) scale(1);
+                      opacity: 1;
+                    }
+                    100% {
+                      transform: translateY(-80px) scale(0.3);
+                      opacity: 0;
+                    }
+                  }
+                `}</style>
               </div>
 
               {/* Notes - Compact */}
