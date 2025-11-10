@@ -26,8 +26,7 @@ export default function WeightTracking() {
   const [weight, setWeight] = useState("");
   const [mood, setMood] = useState("normal");
   const [notes, setNotes] = useState("");
-  const [flashColor, setFlashColor] = useState(null); // 'red', 'green', null pentru animație
-  const [particles, setParticles] = useState([]); // Particule magice! ✨
+  const [flashColor, setFlashColor] = useState(null); // 'red', 'green', null pentru animație subtilă
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
@@ -99,40 +98,20 @@ export default function WeightTracking() {
     },
   });
 
-  // ✨ MAGIE TARE: Generează MULTE particule care EXPLODEAZĂ!
-  const createMagicParticles = (color) => {
-    const newParticles = [];
-    for (let i = 0; i < 25; i++) { // 25 particule (vs 12)!
-      const angle = (Math.PI * 2 * i) / 25; // Circle explosion
-      newParticles.push({
-        id: Date.now() + i,
-        color: color,
-        left: 50 + Math.cos(angle) * 40, // Explodează în cerc!
-        top: 50 + Math.sin(angle) * 40,
-        delay: Math.random() * 100, // 0-100ms (mai rapid!)
-        size: Math.random() * 1.5 + 1, // 1-2.5rem
-      });
-    }
-    setParticles(newParticles);
-    setTimeout(() => setParticles([]), 1200); // Clear după 1.2s
-  };
-
   const handleDecrement = () => {
     const newWeight = Math.max(0, (parseFloat(weight) || 0) - 0.1).toFixed(1); // 0.1 increment!
     setWeight(newWeight);
     setFlashColor('green'); // VERDE = scade = BUN
-    createMagicParticles('green'); // ✨ MAGIE VERDE EXPLOZIVĂ!
-    setTimeout(() => setFlashColor(null), 600);
-    console.log('🟢 MINUS: Greutate scade cu 0.1 kg + ✨ EXPLOZIE VERDE');
+    setTimeout(() => setFlashColor(null), 800);
+    console.log('🟢 MINUS: Greutate scade cu 0.1 kg');
   };
 
   const handleIncrement = () => {
     const newWeight = ((parseFloat(weight) || 0) + 0.1).toFixed(1); // 0.1 increment!
     setWeight(newWeight);
     setFlashColor('red'); // ROȘU = crește = RĂU
-    createMagicParticles('red'); // ✨ MAGIE ROȘIE EXPLOZIVĂ!
-    setTimeout(() => setFlashColor(null), 600);
-    console.log('🔴 PLUS: Greutate crește cu 0.1 kg + ✨ EXPLOZIE ROȘIE');
+    setTimeout(() => setFlashColor(null), 800);
+    console.log('🔴 PLUS: Greutate crește cu 0.1 kg');
   };
 
   const handleSubmit = (e) => {
@@ -374,47 +353,25 @@ export default function WeightTracking() {
                     <span className="text-3xl md:text-4xl font-light text-blue-600 dark:text-blue-400">−</span>
                       </Button>
                       
-                  <div className="text-center relative overflow-visible">
-                    {/* ✨ PARTICULE MAGICE EXPLOZIVE! */}
-                    {particles.map((particle) => (
-                      <div
-                        key={particle.id}
-                        className={`absolute pointer-events-none z-50 ${
-                          particle.color === 'green' 
-                            ? 'text-green-400 drop-shadow-[0_0_8px_rgba(34,197,94,0.8)]' 
-                            : 'text-red-400 drop-shadow-[0_0_8px_rgba(239,68,68,0.8)]'
-                        }`}
-                        style={{
-                          left: `${particle.left}%`,
-                          top: `${particle.top}%`,
-                          animation: `explodeOut 1.2s ease-out forwards`,
-                          animationDelay: `${particle.delay}ms`,
-                          fontSize: `${particle.size}rem`,
-                          transform: 'translate(-50%, -50%)',
-                        }}
-                      >
-                        ✨
-                      </div>
-                    ))}
-                    
-                        <Input
+                  <div className="text-center relative">
+                    <Input
                       id="weight"
-                          name="weight"
-                          type="number"
-                          step="0.1"
-                          value={weight}
-                          onChange={(e) => setWeight(e.target.value)}
-                          placeholder="75.5"
-                      className={`text-center text-4xl md:text-7xl font-bold h-20 md:h-28 w-32 md:w-56 border-2 bg-white dark:bg-gray-900 rounded-[16px] shadow-lg transition-all duration-500 ${
+                      name="weight"
+                      type="number"
+                      step="0.1"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      placeholder="75.5"
+                      className={`text-center text-4xl md:text-7xl font-bold h-20 md:h-28 w-32 md:w-56 border-2 bg-white dark:bg-gray-900 rounded-[16px] transition-all duration-800 ${
                         flashColor === 'red' 
-                          ? 'ring-4 ring-red-500 border-red-500 text-red-600 dark:text-red-400 animate-pulse' 
+                          ? 'ring-8 ring-red-500/50 border-red-500 text-red-600 dark:text-red-400 shadow-[0_0_40px_rgba(239,68,68,0.6)] scale-105' 
                           : flashColor === 'green'
-                          ? 'ring-4 ring-green-500 border-green-500 text-green-600 dark:text-green-400 animate-pulse'
-                          : 'border-blue-300 dark:border-blue-700 text-[rgb(var(--ios-text-primary))]'
+                          ? 'ring-8 ring-green-500/50 border-green-500 text-green-600 dark:text-green-400 shadow-[0_0_40px_rgba(34,197,94,0.6)] scale-105'
+                          : 'border-blue-300 dark:border-blue-700 text-[rgb(var(--ios-text-primary))] shadow-lg scale-100'
                       }`}
-                        />
+                    />
                     <p className="text-sm md:text-base text-[rgb(var(--ios-text-tertiary))] mt-2 font-medium">kilogramе</p>
-                      </div>
+                  </div>
                       
                       <Button
                         type="button"
@@ -426,24 +383,6 @@ export default function WeightTracking() {
                     <span className="text-3xl md:text-4xl font-light text-blue-600 dark:text-blue-400">+</span>
                       </Button>
                 </div>
-                
-                {/* CSS ANIMATION pentru EXPLOZIE RADIALĂ! */}
-                <style>{`
-                  @keyframes explodeOut {
-                    0% {
-                      transform: translate(-50%, -50%) scale(0) rotate(0deg);
-                      opacity: 1;
-                    }
-                    50% {
-                      transform: translate(-50%, -50%) scale(1.5) rotate(180deg);
-                      opacity: 1;
-                    }
-                    100% {
-                      transform: translate(-50%, -50%) scale(0.2) rotate(360deg);
-                      opacity: 0;
-                    }
-                  }
-                `}</style>
               </div>
 
               {/* Notes - Compact */}
