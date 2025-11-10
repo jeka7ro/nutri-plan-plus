@@ -33,6 +33,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import FoodIngredientPicker from "@/components/FoodIngredientPicker";
 
 
 const phaseInfo = {
@@ -152,6 +153,7 @@ export default function DailyPlan() {
     fat: 0,
     phases: [],
   });
+  const [recipeIngredients, setRecipeIngredients] = useState([]); // Array de {id, name, quantity, calories, protein, carbs, fat}
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -242,7 +244,46 @@ export default function DailyPlan() {
       fat: 0,
       phases: [currentPhase], // Pre-select current phase
     });
+    setRecipeIngredients([]); // Reset ingredients
     setShowAddRecipeDialog(true);
+  };
+
+  const handleAddIngredient = (ingredient) => {
+    setRecipeIngredients(prev => [...prev, ingredient]);
+    
+    // Auto-calculate macros din toate ingredientele
+    const totalCalories = recipeIngredients.reduce((sum, ing) => sum + ing.calories, 0) + ingredient.calories;
+    const totalProtein = recipeIngredients.reduce((sum, ing) => sum + ing.protein, 0) + ingredient.protein;
+    const totalCarbs = recipeIngredients.reduce((sum, ing) => sum + ing.carbs, 0) + ingredient.carbs;
+    const totalFat = recipeIngredients.reduce((sum, ing) => sum + ing.fat, 0) + ingredient.fat;
+    
+    setNewRecipeData(prev => ({
+      ...prev,
+      calories: Math.round(totalCalories),
+      protein: Math.round(totalProtein),
+      carbs: Math.round(totalCarbs),
+      fat: Math.round(totalFat),
+    }));
+  };
+
+  const handleRemoveIngredient = (index) => {
+    const removed = recipeIngredients[index];
+    const updatedIngredients = recipeIngredients.filter((_, i) => i !== index);
+    setRecipeIngredients(updatedIngredients);
+    
+    // Recalculează macros fără ingredient-ul șters
+    const totalCalories = updatedIngredients.reduce((sum, ing) => sum + ing.calories, 0);
+    const totalProtein = updatedIngredients.reduce((sum, ing) => sum + ing.protein, 0);
+    const totalCarbs = updatedIngredients.reduce((sum, ing) => sum + ing.carbs, 0);
+    const totalFat = updatedIngredients.reduce((sum, ing) => sum + ing.fat, 0);
+    
+    setNewRecipeData(prev => ({
+      ...prev,
+      calories: Math.round(totalCalories),
+      protein: Math.round(totalProtein),
+      carbs: Math.round(totalCarbs),
+      fat: Math.round(totalFat),
+    }));
   };
 
   const handleSaveNewRecipe = () => {
@@ -254,7 +295,17 @@ export default function DailyPlan() {
       alert(language === 'ro' ? '⚠️ Selectează cel puțin o fază!' : '⚠️ Select at least one phase!');
       return;
     }
-    createRecipeMutation.mutate(newRecipeData);
+    
+    // Include ingredients în description automat
+    const ingredientsText = recipeIngredients.map(ing => `${ing.name} - ${ing.quantity}${ing.unit}`).join(', ');
+    const finalDescription = ingredientsText 
+      ? `${ingredientsText}\n\n${newRecipeData.description}`
+      : newRecipeData.description;
+    
+    createRecipeMutation.mutate({
+      ...newRecipeData,
+      description: finalDescription,
+    });
   };
 
   const togglePhaseForNewRecipe = (phase) => {
@@ -2097,55 +2148,69 @@ export default function DailyPlan() {
               />
             </div>
 
-            {/* Descriere */}
+            {/* FOOD INGREDIENT PICKER - 200 ALIMENTE ROMÂNEȘTI */}
+            <div className="border border-[rgb(var(--ios-border))] rounded-lg p-4 bg-[rgb(var(--ios-bg-tertiary))]">
+              <h3 className="font-semibold mb-3 text-[rgb(var(--ios-text-primary))]">
+                {language === 'ro' ? '🍎 Adaugă Ingrediente (200+ alimente)' : '🍎 Add Ingredients (200+ foods)'}
+              </h3>
+              <FoodIngredientPicker onAddIngredient={handleAddIngredient} />
+              
+              {/* Lista ingrediente adăugate */}
+              {recipeIngredients.length > 0 && (
+                <div className="mt-4 space-y-2">
+                  <p className="text-sm font-semibold text-[rgb(var(--ios-text-primary))]">
+                    {language === 'ro' ? 'Ingrediente adăugate:' : 'Added ingredients:'}
+                  </p>
+                  {recipeIngredients.map((ing, idx) => (
+                    <div key={idx} className="flex items-center justify-between bg-[rgb(var(--ios-bg-secondary))] p-2 rounded-lg">
+                      <span className="text-sm text-[rgb(var(--ios-text-primary))]">
+                        {ing.name} - {ing.quantity}{ing.unit} ({ing.calories} kcal)
+                      </span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => handleRemoveIngredient(idx)}
+                      >
+                        <X className="w-4 h-4 text-red-500" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Macronutrienți - AUTO-CALCULATE */}
             <div>
-              <Label>{language === 'ro' ? 'Descriere' : 'Description'}</Label>
+              <Label>{language === 'ro' ? 'Macronutrienți (Auto-calculate din ingrediente)' : 'Macros (Auto-calculated from ingredients)'}</Label>
+              <div className="grid grid-cols-4 gap-3 mt-2">
+                <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-orange-600 dark:text-orange-400">{newRecipeData.calories}</div>
+                  <div className="text-xs text-[rgb(var(--ios-text-secondary))]">Calorii</div>
+                </div>
+                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">{newRecipeData.protein}g</div>
+                  <div className="text-xs text-[rgb(var(--ios-text-secondary))]">Proteine</div>
+                </div>
+                <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{newRecipeData.carbs}g</div>
+                  <div className="text-xs text-[rgb(var(--ios-text-secondary))]">Carbohidrați</div>
+                </div>
+                <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-center">
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">{newRecipeData.fat}g</div>
+                  <div className="text-xs text-[rgb(var(--ios-text-secondary))]">Grăsimi</div>
+                </div>
+              </div>
+            </div>
+
+            {/* Descriere (opțional - instrucțiuni) */}
+            <div>
+              <Label>{language === 'ro' ? 'Instrucțiuni (opțional)' : 'Instructions (optional)'}</Label>
               <Textarea
                 value={newRecipeData.description}
                 onChange={(e) => setNewRecipeData({ ...newRecipeData, description: e.target.value })}
-                placeholder={language === 'ro' ? 'Ingrediente și pași...' : 'Ingredients and steps...'}
-                rows={4}
+                placeholder={language === 'ro' ? 'Pași de preparare...' : 'Preparation steps...'}
+                rows={3}
               />
-            </div>
-
-            {/* Macronutrienți */}
-            <div className="grid grid-cols-4 gap-3">
-              <div>
-                <Label>{language === 'ro' ? 'Calorii' : 'Calories'}</Label>
-                <Input
-                  type="number"
-                  value={newRecipeData.calories}
-                  onChange={(e) => setNewRecipeData({ ...newRecipeData, calories: parseInt(e.target.value) || 0 })}
-                  placeholder="300"
-                />
-              </div>
-              <div>
-                <Label>{language === 'ro' ? 'Proteine (g)' : 'Protein (g)'}</Label>
-                <Input
-                  type="number"
-                  value={newRecipeData.protein}
-                  onChange={(e) => setNewRecipeData({ ...newRecipeData, protein: parseInt(e.target.value) || 0 })}
-                  placeholder="20"
-                />
-              </div>
-              <div>
-                <Label>{language === 'ro' ? 'Carbohidrați (g)' : 'Carbs (g)'}</Label>
-                <Input
-                  type="number"
-                  value={newRecipeData.carbs}
-                  onChange={(e) => setNewRecipeData({ ...newRecipeData, carbs: parseInt(e.target.value) || 0 })}
-                  placeholder="40"
-                />
-              </div>
-              <div>
-                <Label>{language === 'ro' ? 'Grăsimi (g)' : 'Fat (g)'}</Label>
-                <Input
-                  type="number"
-                  value={newRecipeData.fat}
-                  onChange={(e) => setNewRecipeData({ ...newRecipeData, fat: parseInt(e.target.value) || 0 })}
-                  placeholder="10"
-                />
-              </div>
             </div>
 
             {/* Faze compatibile */}
