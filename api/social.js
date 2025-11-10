@@ -163,6 +163,105 @@ async function handleFriends(req, res, pool, userId) {
     }
   }
   
+  // GET ?progress=true - Friends progress (PRIVACY: doar % weight loss!)
+  if (req.method === 'GET' && req.query.progress === 'true') {
+    try {
+      // Get friends list with profile pictures
+      const friendsResult = await pool.query(`
+        SELECT 
+          CASE WHEN f.user_id_1 = $1 THEN f.user_id_2 ELSE f.user_id_1 END as friend_id,
+          CASE WHEN f.user_id_1 = $1 THEN u2.first_name ELSE u1.first_name END as first_name,
+          CASE WHEN f.user_id_1 = $1 THEN u2.last_name ELSE u1.last_name END as last_name,
+          CASE WHEN f.user_id_1 = $1 THEN u2.email ELSE u1.email END as email,
+          CASE WHEN f.user_id_1 = $1 THEN u2.profile_picture ELSE u1.profile_picture END as profile_picture
+        FROM friends f
+        LEFT JOIN users u1 ON f.user_id_1 = u1.id
+        LEFT JOIN users u2 ON f.user_id_2 = u2.id
+        WHERE f.user_id_1 = $1 OR f.user_id_2 = $1
+      `, [userId]);
+      
+      const friendsProgress = await Promise.all(friendsResult.rows.map(async (friend) => {
+        // Calculate weight loss % (PRIVACY: doar %, NU kg absolute!)
+        const weightResult = await pool.query(`
+          SELECT weight FROM weight_entries 
+          WHERE user_id = $1 
+          ORDER BY date DESC 
+          LIMIT 7
+        `, [friend.friend_id]);
+        
+        let weight_loss_percent = null;
+        if (weightResult.rows.length >= 2) {
+          const latest = parseFloat(weightResult.rows[0].weight);
+          const oldest = parseFloat(weightResult.rows[weightResult.rows.length - 1].weight);
+          weight_loss_percent = ((oldest - latest) / oldest) * 100; // Pozitiv = pierdere
+        }
+        
+        // Count meals completed (last 7 days)
+        const mealsResult = await pool.query(`
+          SELECT 
+            COALESCE(SUM(
+              CAST(breakfast_completed AS INTEGER) +
+              CAST(snack1_completed AS INTEGER) +
+              CAST(lunch_completed AS INTEGER) +
+              CAST(snack2_completed AS INTEGER) +
+              CAST(dinner_completed AS INTEGER)
+            ), 0) as meals_completed
+          FROM daily_checkins
+          WHERE user_id = $1 AND date >= CURRENT_DATE - INTERVAL '7 days'
+        `, [friend.friend_id]);
+        
+        // Sum calories burned (last 7 days)
+        const caloriesResult = await pool.query(`
+          SELECT COALESCE(SUM(exercise_calories_burned), 0) as calories_burned
+          FROM daily_checkins
+          WHERE user_id = $1 AND date >= CURRENT_DATE - INTERVAL '7 days'
+        `, [friend.friend_id]);
+        
+        // Get recent recipes (last 3)
+        const recipesResult = await pool.query(`
+          SELECT DISTINCT 
+            COALESCE(breakfast_option, snack1_option, lunch_option, snack2_option, dinner_option) as recipe_id
+          FROM daily_checkins
+          WHERE user_id = $1 
+            AND (breakfast_option IS NOT NULL OR snack1_option IS NOT NULL OR lunch_option IS NOT NULL OR snack2_option IS NOT NULL OR dinner_option IS NOT NULL)
+          ORDER BY date DESC
+          LIMIT 3
+        `, [friend.friend_id]);
+        
+        // Fetch recipe details (from user_recipes or standard recipes)
+        const recentRecipes = [];
+        for (const row of recipesResult.rows) {
+          if (row.recipe_id) {
+            const userRecipe = await pool.query(`
+              SELECT name, name_ro FROM user_recipes WHERE id = $1
+            `, [row.recipe_id]);
+            
+            if (userRecipe.rows.length > 0) {
+              recentRecipes.push(userRecipe.rows[0]);
+            }
+          }
+        }
+        
+        return {
+          id: friend.friend_id,
+          first_name: friend.first_name,
+          last_name: friend.last_name,
+          email: friend.email,
+          profile_picture: friend.profile_picture,
+          weight_loss_percent: weight_loss_percent,
+          meals_completed: mealsResult.rows[0]?.meals_completed || 0,
+          calories_burned: caloriesResult.rows[0]?.calories_burned || 0,
+          recent_recipes: recentRecipes,
+        };
+      }));
+      
+      return res.status(200).json(friendsProgress);
+    } catch (error) {
+      console.error('❌ Friends progress GET error:', error);
+      return res.status(500).json({ error: error.message });
+    }
+  }
+  
   // GET - List friends
   if (req.method === 'GET') {
     try {

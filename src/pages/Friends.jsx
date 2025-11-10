@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Users, 
   UserPlus, 
@@ -12,7 +13,11 @@ import {
   X, 
   Search,
   Trash2,
-  Clock
+  Clock,
+  TrendingDown,
+  TrendingUp,
+  Flame,
+  Award
 } from "lucide-react";
 import { useLanguage } from "../components/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -55,6 +60,13 @@ export default function FriendsNew() {
   const { data: requests = { received: [], sent: [] }, isLoading: loadingRequests } = useQuery({
     queryKey: ['friendRequests'],
     queryFn: () => localApi.friends.getRequests(),
+  });
+
+  // Fetch friends progress (PRIVACY: doar % weight loss, NU kg absolute!)
+  const { data: friendsProgress = [], isLoading: loadingProgress } = useQuery({
+    queryKey: ['friendsProgress'],
+    queryFn: () => localApi.friends.getProgress(),
+    enabled: !!user && user.subscription_plan !== 'free',
   });
 
   // Search users mutation
@@ -408,6 +420,110 @@ export default function FriendsNew() {
             )}
           </CardContent>
         </Card>
+
+        {/* FRIEND PROGRESS - Progresul Prietenilor (PRIVACY: doar % weight loss!) */}
+        {friends.length > 0 && (
+          <Card className="ios-card ios-shadow-lg rounded-[20px] border-emerald-500/50 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/20 dark:to-teal-950/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-emerald-900 dark:text-emerald-100">
+                <Flame className="w-5 h-5 text-orange-500" />
+                📊 {language === 'ro' ? 'Progresul Prietenilor' : 'Friends Progress'}
+              </CardTitle>
+              <p className="text-sm text-[rgb(var(--ios-text-secondary))] mt-2">
+                {language === 'ro' 
+                  ? '🔒 Privat: Vezi doar procentul de pierdere, nu kilograme absolute.' 
+                  : '🔒 Private: See only % loss, not absolute weight.'}
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {loadingProgress ? (
+                <div className="text-center py-8 text-[rgb(var(--ios-text-tertiary))]">
+                  {language === 'ro' ? 'Se încarcă progres...' : 'Loading progress...'}
+                </div>
+              ) : friendsProgress.length > 0 ? (
+                friendsProgress.map((friend) => (
+                  <div key={friend.id} className="p-4 bg-white dark:bg-gray-800 rounded-[16px] border border-emerald-300 dark:border-emerald-700 shadow-md">
+                    <div className="flex items-start justify-between">
+                      <div className="flex items-center gap-3">
+                        {friend.profile_picture ? (
+                          <img 
+                            src={friend.profile_picture} 
+                            alt={friend.first_name}
+                            className="w-14 h-14 rounded-full object-cover border-2 border-emerald-500"
+                          />
+                        ) : (
+                          <div className="w-14 h-14 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center shadow-md">
+                            <span className="text-white font-bold text-lg">
+                              {friend.first_name?.[0]?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-bold text-[rgb(var(--ios-text-primary))]">
+                            {friend.first_name && friend.last_name ? `${friend.first_name} ${friend.last_name}` : friend.email}
+                          </div>
+                          <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-0.5">
+                            {language === 'ro' ? 'Progres ultimele 7 zile' : 'Last 7 days progress'}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-2">
+                        {friend.weight_loss_percent !== null && friend.weight_loss_percent !== undefined ? (
+                          <Badge className={`${friend.weight_loss_percent > 0 ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300' : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'} text-lg font-bold px-3 py-1`}>
+                            {friend.weight_loss_percent > 0 ? <TrendingDown className="w-4 h-4 mr-1 inline" /> : <TrendingUp className="w-4 h-4 mr-1 inline" />}
+                            {Math.abs(friend.weight_loss_percent).toFixed(1)}%
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 text-sm">
+                            {language === 'ro' ? 'Fără date' : 'No data'}
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    <div className="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-800 grid grid-cols-2 gap-2 text-sm">
+                      <div className="flex items-center gap-2 text-[rgb(var(--ios-text-secondary))]">
+                        <Award className="w-4 h-4 text-blue-500" />
+                        <span>
+                          {language === 'ro' ? 'Mese' : 'Meals'}: <strong>{friend.meals_completed || 0}</strong>/35
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 text-[rgb(var(--ios-text-secondary))]">
+                        <Flame className="w-4 h-4 text-orange-500" />
+                        <span>
+                          {language === 'ro' ? 'Calorii' : 'Calories'}: <strong>{friend.calories_burned || 0}</strong>
+                        </span>
+                      </div>
+                    </div>
+                    {friend.recent_recipes && friend.recent_recipes.length > 0 && (
+                      <div className="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-800">
+                        <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mb-2">
+                          {language === 'ro' ? '🍽️ Rețete recente:' : '🍽️ Recent recipes:'}
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                          {friend.recent_recipes.slice(0, 3).map((recipe, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {recipe.name_ro && language === 'ro' ? recipe.name_ro : recipe.name}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-12 text-[rgb(var(--ios-text-tertiary))]">
+                  <Flame className="w-16 h-16 mx-auto mb-4 opacity-30 text-orange-500" />
+                  <p className="font-medium text-[rgb(var(--ios-text-secondary))]">
+                    {language === 'ro' ? 'Progresul prietenilor va apărea aici' : 'Friends progress will appear here'}
+                  </p>
+                  <p className="text-sm mt-2">
+                    {language === 'ro' ? 'Prietenii tăi încă nu au progres înregistrat.' : 'Your friends don\'t have recorded progress yet.'}
+                  </p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

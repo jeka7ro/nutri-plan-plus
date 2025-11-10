@@ -413,6 +413,7 @@ export const localApi = {
       body: JSON.stringify({ requestId, action: 'reject' }),
     }),
     remove: (friendshipId) => request(`/social?type=friends&id=${friendshipId}`, { method: 'DELETE' }),
+    getProgress: () => request('/social?type=friends&progress=true'),
   },
 
   // User Recipes (combined in /api/social.js)
