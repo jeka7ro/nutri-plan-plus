@@ -147,8 +147,23 @@ export default function WeightTracking() {
       return;
     }
 
+    // FIX: Convertește virgula în punct pentru parseFloat!
+    const weightValue = parseFloat(String(weight).replace(',', '.'));
+    
+    console.log('💾 Saving weight:', weight, '→', weightValue);
+    
+    if (isNaN(weightValue) || weightValue <= 0) {
+      toast({
+        title: "Greutate invalidă",
+        description: "Te rog introdu o greutate validă.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
     addWeightMutation.mutate({
-      weight: parseFloat(weight),
+      weight: weightValue,
       date: format(new Date(), 'yyyy-MM-dd'),
       mood,
       notes
