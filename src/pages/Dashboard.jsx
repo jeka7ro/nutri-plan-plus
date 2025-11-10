@@ -502,7 +502,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           {weightChartData.length > 0 && (
             <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
               <CardHeader>
@@ -544,8 +544,8 @@ export default function Dashboard() {
             </Card>
           )}
 
-        {/* 2 GRAFICE PE 1 RÂND - CA AI CERUT TU! */}
-        <div className="grid md:grid-cols-2 gap-4">
+        {/* 3 GRAFICE VERTICAL - unul sub altul */}
+        <div className="grid grid-cols-1 gap-4">
           {/* Grafic 1: Mese completate */}
           <Card 
             className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))] cursor-pointer hover:shadow-2xl transition-shadow"
