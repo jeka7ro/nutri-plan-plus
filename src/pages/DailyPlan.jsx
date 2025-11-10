@@ -327,7 +327,7 @@ export default function DailyPlan() {
       } else if (/smoothie|shake/i.test(recipeName)) {
         estimatedCalories = 280;
         estimatedProtein = 25;
-        estimatedCarbs: 45,
+        estimatedCarbs = 45;
         estimatedFat = 2;
       } else if (/omletă|omleta|omelette|ouă|oua|eggs/i.test(recipeName)) {
         estimatedCalories = 220;
