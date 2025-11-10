@@ -148,29 +148,32 @@ export default function NotificationBell() {
     }
   };
 
-  const handleBellClick = () => {
-    console.log('🔔 Bell clicked! Current state:', { isOpen, unreadCount: unreadCount.count, user: user?.email });
-    setIsOpen(!isOpen);
+  const handleBellClick = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const newState = !isOpen;
+    console.log('🔔 Bell clicked! Opening:', newState, 'Unread:', unreadCount.count, 'User:', user?.email);
+    setIsOpen(newState);
   };
 
   return (
-    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+    <DropdownMenu open={isOpen} onOpenChange={(open) => {
+      console.log('🔔 Dropdown state change:', open);
+      setIsOpen(open);
+    }}>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
-          size="icon" 
-          className="relative"
+        <button
+          className="relative inline-flex items-center justify-center p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           onClick={handleBellClick}
+          aria-label="Notifications"
         >
           <Bell className="w-5 h-5 text-[rgb(var(--ios-text-primary))]" />
           {unreadCount.count > 0 && (
-            <Badge 
-              className="absolute -top-1 -right-1 h-5 w-5 p-0 flex items-center justify-center bg-red-500 text-white text-xs font-bold"
-            >
+            <span className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center bg-red-500 text-white text-xs font-bold rounded-full">
               {unreadCount.count > 9 ? '9+' : unreadCount.count}
-            </Badge>
+            </span>
           )}
-        </Button>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80 max-h-[500px] overflow-y-auto">
         <div className="p-3 border-b">
