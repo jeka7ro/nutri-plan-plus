@@ -188,60 +188,117 @@ export default function WeightTracking() {
           <p className="text-[rgb(var(--ios-text-secondary))] mt-1">Urmărește-ți progresul zilnic</p>
         </div>
 
-        {/* Stats Card - Greutate Curentă */}
-        <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-[rgb(var(--ios-border))]">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Greutate curentă</span>
-              <Scale className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-            </div>
-            <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-              {latestWeight?.weight || user?.current_weight || '-'} kg
-            </div>
-            {weightChange !== 0 && (
-              <div className={`flex items-center gap-1 mt-2 text-sm ${
-                weightChange < 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
-              }`}>
-                {weightChange < 0 ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
-                {Math.abs(weightChange)} kg față de ultima înregistrare
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Carduri Separate: Total Pierdut + Până la Țintă */}
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Total Pierdut */}
-          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/30 dark:to-emerald-800/30 border-[rgb(var(--ios-border))]">
+        {/* 3 Carduri de Aceeași Dimensiune */}
+        <div className="grid md:grid-cols-3 gap-6">
+          {/* Card 1: Greutate Curentă */}
+          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 border-[rgb(var(--ios-border))]">
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-emerald-700 dark:text-emerald-300">Total pierdut</span>
-                <TrendingDown className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                <span className="text-sm font-medium text-blue-700 dark:text-blue-300">Greutate curentă</span>
+                <Scale className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
-              <div className="text-3xl font-bold text-emerald-900 dark:text-emerald-100">
-                {totalWeightLost} kg
+              <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
+                {latestWeight?.weight || user?.current_weight || '-'} kg
               </div>
-              <div className="text-sm text-emerald-600 dark:text-emerald-400 mt-2">
-                Felicitări pentru progres! 🎉
-              </div>
+              {weightChange !== 0 && (
+                <div className={`flex items-center gap-1 mt-2 text-sm ${
+                  weightChange < 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                }`}>
+                  {weightChange < 0 ? <TrendingDown className="w-4 h-4" /> : <TrendingUp className="w-4 h-4" />}
+                  {Math.abs(weightChange)} kg față de ultima înregistrare
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Până la Țintă */}
-          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 border-[rgb(var(--ios-border))]">
+          {/* Card 2: Total Pierdut + Până la Țintă COMBINAT */}
+          <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-emerald-50 via-teal-50 to-purple-50 dark:from-emerald-900/30 dark:via-teal-900/30 dark:to-purple-900/30 border-[rgb(var(--ios-border))]">
             <CardContent className="p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-purple-700 dark:text-purple-300">Până la țintă</span>
-                <Target className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+              <div className="space-y-3">
+                {/* Total Pierdut */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">📉 Total pierdut</span>
+                  <span className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{totalWeightLost} kg</span>
+                </div>
+                {/* Separator */}
+                <div className="h-px bg-gradient-to-r from-emerald-300 via-teal-300 to-purple-300 dark:from-emerald-700 dark:via-teal-700 dark:to-purple-700"></div>
+                {/* Până la Țintă */}
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-purple-700 dark:text-purple-300">🎯 Până la țintă</span>
+                  <span className="text-2xl font-bold text-purple-900 dark:text-purple-100">{remainingWeight > 0 ? remainingWeight : '0'} kg</span>
+                </div>
               </div>
-              <div className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                {remainingWeight > 0 ? remainingWeight : '0'} kg
-              </div>
-              <div className="text-sm text-purple-600 dark:text-purple-400 mt-2">
+              <div className="text-xs text-center text-gray-600 dark:text-gray-400 mt-3">
                 Țintă: {user?.target_weight ? parseFloat(user.target_weight).toFixed(1) : '-'} kg
               </div>
             </CardContent>
           </Card>
+
+          {/* Card 3: IMC */}
+          {(() => {
+            const height = user?.height ? parseFloat(user.height) / 100 : null;
+            const currentWeight = latestWeight?.weight || user?.current_weight || null;
+            const bmi = height && currentWeight ? (currentWeight / (height * height)) : null;
+            
+            let bmiCategory = '';
+            let bmiColor = '';
+            let bmiGradient = '';
+            
+            if (bmi) {
+              if (bmi < 18.5) {
+                bmiCategory = 'Subponderal';
+                bmiColor = 'text-orange-700 dark:text-orange-300';
+                bmiGradient = 'from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30';
+              } else if (bmi >= 18.5 && bmi < 25) {
+                bmiCategory = 'Normal';
+                bmiColor = 'text-green-700 dark:text-green-300';
+                bmiGradient = 'from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30';
+              } else if (bmi >= 25 && bmi < 30) {
+                bmiCategory = 'Supraponderal';
+                bmiColor = 'text-yellow-700 dark:text-yellow-300';
+                bmiGradient = 'from-yellow-50 to-yellow-100 dark:from-yellow-900/30 dark:to-yellow-800/30';
+              } else {
+                bmiCategory = 'Obezitate';
+                bmiColor = 'text-red-700 dark:text-red-300';
+                bmiGradient = 'from-red-50 to-red-100 dark:from-red-900/30 dark:to-red-800/30';
+              }
+            }
+            
+            return bmi ? (
+              <Card className={`ios-card ios-shadow-lg bg-gradient-to-br ${bmiGradient} border-[rgb(var(--ios-border))]`}>
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium ${bmiColor}">IMC</span>
+                    <Target className="w-5 h-5 ${bmiColor}" />
+                  </div>
+                  <div className={`text-3xl font-bold ${bmiColor}`}>
+                    {bmi.toFixed(1)}
+                  </div>
+                  <div className={`text-sm ${bmiColor} mt-2`}>
+                    {bmiCategory}
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                    {height && `${(height * 100).toFixed(0)} cm`}
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              <Card className="ios-card ios-shadow-lg bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900/30 dark:to-gray-800/30 border-[rgb(var(--ios-border))]">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">IMC</span>
+                    <Target className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                    -
+                  </div>
+                  <div className="text-xs text-gray-600 dark:text-gray-400 mt-2">
+                    Completează înălțimea în profil
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })()}
         </div>
 
         {/* Smart Weight Widget - iOS Style */}
