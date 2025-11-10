@@ -10,6 +10,18 @@ const pool = new Pool({
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
+// Email service helper (inline)
+async function sendEmail({ to, subject, html }) {
+  console.log(`📧 [EMAIL] To: ${to}, Subject: ${subject}`);
+  // DEV MODE - doar log
+  return { success: true, dev_mode: true };
+  
+  // TODO: Activează în production
+  // const sgMail = require('@sendgrid/mail');
+  // sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  // await sgMail.send({ to, from: 'noreply@eatnfit.app', subject, html });
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
@@ -333,6 +345,34 @@ async function handleFriends(req, res, pool, userId) {
           VALUES ($1, $2, $3, $4, $5)
         `, [request.sender_id, 'friend_accepted', userId, `${receiverName} a acceptat cererea ta de prietenie`, '/friends']);
         
+        // ✅ TRIMITE EMAIL la sender (cel care a trimis cererea)
+        const senderEmailData = await pool.query('SELECT email FROM users WHERE id = $1', [request.sender_id]);
+        const senderEmail = senderEmailData.rows[0]?.email;
+        if (senderEmail) {
+          await sendEmail({
+            to: senderEmail,
+            subject: '✅ Cerere de prietenie acceptată - EatnFit',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9;">
+                <h2 style="color: #10b981;">✅ Cerere Acceptată!</h2>
+                <p style="font-size: 16px; color: #333;">
+                  <strong>${receiverName}</strong> a acceptat cererea ta de prietenie!
+                </p>
+                <p style="font-size: 14px; color: #666; margin-top: 10px;">
+                  Acum puteți partaja rețete și urmări progresul împreună! 🎉
+                </p>
+                <p style="margin-top: 20px;">
+                  <a href="https://www.eatnfit.app/friends" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
+                    👥 Vezi Prieteni
+                  </a>
+                </p>
+                <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+                <p style="font-size: 12px; color: #999;">EatnFit - Eat Smart. Stay Fit</p>
+              </div>
+            `
+          });
+        }
+        
         return res.status(200).json({ success: true, action: 'accepted' });
         
       } else if (action === 'reject') {
@@ -340,6 +380,24 @@ async function handleFriends(req, res, pool, userId) {
           'UPDATE friend_requests SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
           ['rejected', requestId]
         );
+        
+        // ✅ TRIMITE EMAIL la sender (opțional - unii preferă să nu știe când sunt refuzați)
+        // Comentat pentru UX mai bun - refuzul e silent
+        /*
+        const senderEmailData = await pool.query('SELECT email FROM users WHERE id = $1', [request.sender_id]);
+        const senderEmail = senderEmailData.rows[0]?.email;
+        if (senderEmail) {
+          await sendEmail({
+            to: senderEmail,
+            subject: 'Cerere de prietenie - EatnFit',
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9;">
+                <p>Cererea ta de prietenie nu a fost acceptată.</p>
+              </div>
+            `
+          });
+        }
+        */
         
         return res.status(200).json({ success: true, action: 'rejected' });
       }
@@ -401,6 +459,28 @@ async function handleFriends(req, res, pool, userId) {
         INSERT INTO notifications (user_id, type, related_user_id, related_recipe_id, message, action_url)
         VALUES ($1, $2, $3, $4, $5, $6)
       `, [friendId, 'friend_request', userId, result.rows[0].id, `${senderName} ți-a trimis o cerere de prietenie`, '/friends']);
+      
+      // ✅ TRIMITE EMAIL la receiver (RO default, EN fallback)
+      const receiverEmail = friendResult.rows[0].email;
+      await sendEmail({
+        to: receiverEmail,
+        subject: '👥 Cerere nouă de prietenie - EatnFit',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background: #f9f9f9;">
+            <h2 style="color: #10b981;">👥 Cerere Nouă de Prietenie!</h2>
+            <p style="font-size: 16px; color: #333;">
+              <strong>${senderName}</strong> ți-a trimis o cerere de prietenie pe EatnFit!
+            </p>
+            <p style="margin-top: 20px;">
+              <a href="https://www.eatnfit.app/friends" style="background: #10b981; color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; display: inline-block;">
+                👀 Vezi Cererea
+              </a>
+            </p>
+            <hr style="margin: 30px 0; border: none; border-top: 1px solid #ddd;">
+            <p style="font-size: 12px; color: #999;">EatnFit - Eat Smart. Stay Fit</p>
+          </div>
+        `
+      });
       
       return res.status(200).json(result.rows[0]);
     } catch (error) {

@@ -23,12 +23,26 @@ export default function NotificationBell() {
 
   // Get user subscription plan
   React.useEffect(() => {
-    localApi.auth.me().then(setUser).catch(() => {});
+    localApi.auth.me()
+      .then(userData => {
+        console.log('🔔 NotificationBell user:', userData);
+        setUser(userData);
+      })
+      .catch((error) => {
+        console.error('❌ NotificationBell user error:', error);
+      });
   }, []);
 
   // Hide for FREE users
   if (user && user.subscription_plan === 'free') {
+    console.log('🔔 Hidden for FREE user');
     return null;
+  }
+  
+  // Show loading state sau show bell chiar dacă user e null (după refresh)
+  if (!user) {
+    console.log('🔔 User not loaded yet, showing bell anyway');
+    // return null; // NU ascunde, așteaptă să se încarce
   }
 
   const { data: unreadCount = { count: 0 } } = useQuery({
@@ -81,26 +95,32 @@ export default function NotificationBell() {
   // Friend request mutations - Accept/Decline direct din NotificationBell!
   const acceptRequestMutation = useMutation({
     mutationFn: async ({ requestId, notificationId }) => {
+      console.log('✅ ACCEPT request:', { requestId, notificationId });
       await localApi.friends.acceptRequest(requestId);
       await localApi.notifications.markAsRead(notificationId);
     },
     onSuccess: () => {
+      console.log('✅ Friend request ACCEPTED! Refreshing...');
       queryClient.invalidateQueries(['friendRequests']);
       queryClient.invalidateQueries(['friends']);
       queryClient.invalidateQueries(['notifications']);
       queryClient.invalidateQueries(['notificationsUnread']);
+      setIsOpen(false); // AUTO-CLOSE dropdown după accept!
     },
   });
 
   const rejectRequestMutation = useMutation({
     mutationFn: async ({ requestId, notificationId }) => {
+      console.log('❌ REJECT request:', { requestId, notificationId });
       await localApi.friends.rejectRequest(requestId);
       await localApi.notifications.markAsRead(notificationId);
     },
     onSuccess: () => {
+      console.log('❌ Friend request REJECTED! Refreshing...');
       queryClient.invalidateQueries(['friendRequests']);
       queryClient.invalidateQueries(['notifications']);
       queryClient.invalidateQueries(['notificationsUnread']);
+      setIsOpen(false); // AUTO-CLOSE dropdown după refuză!
     },
   });
 
