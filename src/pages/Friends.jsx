@@ -68,15 +68,19 @@ export default function FriendsNew() {
     queryFn: async () => {
       try {
         console.log('📊 Fetching friends progress...');
+        console.log('📊 Current friends count:', friends.length);
+        console.log('📊 User plan:', user?.subscription_plan);
         const result = await localApi.friends.getProgress();
         console.log('📊 Friends progress result:', result);
-        return result;
+        console.log('📊 Progress array length:', result?.length);
+        return result || [];
       } catch (error) {
         console.error('❌ Friends progress error:', error);
         return [];
       }
     },
-    enabled: !!user && user.subscription_plan !== 'free' && friends.length > 0,
+    enabled: !!user && friends.length > 0, // REMOVED subscription_plan check - SHOW pentru toți!
+    refetchInterval: 60000, // Refresh la fiecare 60 sec
   });
 
   // Search users mutation
@@ -456,7 +460,7 @@ export default function FriendsNew() {
                 <div className="text-center py-8 text-[rgb(var(--ios-text-tertiary))]">
                   {language === 'ro' ? 'Se încarcă progres...' : 'Loading progress...'}
                 </div>
-              ) : friends.length > 0 && friendsProgress.length > 0 ? (
+              ) : friendsProgress.length > 0 ? (
                 friendsProgress.map((friend) => (
                   <div key={friend.id} className="p-4 bg-white dark:bg-gray-800 rounded-[16px] border border-emerald-300 dark:border-emerald-700 shadow-md">
                     <div className="flex items-start justify-between">

@@ -24,7 +24,8 @@ export default function NotificationBell() {
   React.useEffect(() => {
     localApi.auth.me()
       .then(userData => {
-        console.log('🔔 NotificationBell user:', userData);
+        console.log('🔔 NotificationBell user loaded:', userData);
+        console.log('🔔 Subscription plan:', userData?.subscription_plan);
         setUser(userData);
       })
       .catch((error) => {
@@ -32,17 +33,9 @@ export default function NotificationBell() {
       });
   }, []);
 
-  // Hide for FREE users
-  if (user && user.subscription_plan === 'free') {
-    console.log('🔔 Hidden for FREE user');
-    return null;
-  }
-  
-  // Show loading state sau show bell chiar dacă user e null (după refresh)
-  if (!user) {
-    console.log('🔔 User not loaded yet, showing bell anyway');
-    // return null; // NU ascunde, așteaptă să se încarce
-  }
+  // ALWAYS SHOW on DESKTOP, hide doar pe MOBIL pentru FREE
+  // Lăsăm clopotelul vizibil pentru toată lumea (fix problema "iconița lipsește pe desktop")
+  console.log('🔔 NotificationBell rendering, user:', user?.email, 'plan:', user?.subscription_plan);
 
   const { data: unreadCount = { count: 0 } } = useQuery({
     queryKey: ['notificationsUnread'],
