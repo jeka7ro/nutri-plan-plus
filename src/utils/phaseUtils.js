@@ -117,24 +117,26 @@ export const getPhaseInfo = (phase, language = 'en') => {
         en: [
           "Healthy fats and balanced meals",
           "Include all macronutrients",
+          "Limited healthy carbs allowed",
           "Drink 8 glasses of water",
           "Exercise: stress-reducing activities (yoga, massage) - 30 min"
         ],
         ro: [
           "Grăsimi sănătoase și mese echilibrate",
           "Include toate macronutrienții",
+          "Carbohidrați sănătoși limitați permisi",
           "Bea 8 pahare de apă",
           "Exercițiu: activități de reducere a stresului (yoga, masaj) - 30 min"
         ]
       },
       allowedFoods: {
         en: {
-          yes: ["Healthy fats (avocado, nuts, seeds, olive oil)", "Lean proteins", "Vegetables", "Some fruits", "Whole grains (limited)"],
-          no: ["Refined sugar", "Processed foods", "Trans fats", "Excessive carbs"]
+          yes: ["Healthy fats (avocado, nuts, seeds, olive oil)", "Lean proteins", "Vegetables", "Limited berries", "Small amounts of quinoa/brown rice"],
+          no: ["Refined sugar", "Processed foods", "Trans fats", "Most fruits (except berries)", "White grains"]
         },
         ro: {
-          yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei de măsline)", "Proteine slabe", "Legume", "Unele fructe", "Cereale integrale (limitat)"],
-          no: ["Zahăr rafinat", "Alimente procesate", "Grăsimi trans", "Carbohidrați excesivi"]
+          yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei de măsline)", "Proteine slabe", "Legume", "Fructe de pădure limitate", "Cantități mici de quinoa/orez brun"],
+          no: ["Zahăr rafinat", "Alimente procesate", "Grăsimi trans", "Majoritatea fructelor (exceptând fructele de pădure)", "Cereale albe"]
         }
       }
     }

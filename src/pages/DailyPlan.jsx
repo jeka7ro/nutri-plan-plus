@@ -105,25 +105,27 @@ const phaseInfo = {
     guidelines: {
       en: [
         "Add plenty of healthy fats",
-        "Moderate proteins and vegetables",
+        "Moderate proteins and vegetables", 
+        "Limited healthy carbs allowed",
         "Drink 8 glasses of water",
         "Exercise: yoga or relaxing activity - 30 min"
       ],
       ro: [
         "Adaugă grăsimi sănătoase din abundență",
         "Proteine moderate și legume",
+        "Carbohidrați sănătoși limitați permisi", 
         "Bea 8 pahare de apă",
         "Exercițiu: yoga sau activitate relaxantă - 30 min"
       ]
     },
     allowedFoods: {
       en: {
-        yes: ["Healthy fats (avocado, nuts, seeds, olive oil, coconut oil)", "Fatty fish (salmon, mackerel)", "Full-fat dairy", "Eggs (whole)", "All vegetables", "Moderate proteins"],
-        no: ["All fruits", "All grains and cereals", "Refined carbs", "Sugar"]
+        yes: ["Healthy fats (avocado, nuts, seeds, olive oil, coconut oil)", "Fatty fish (salmon, mackerel)", "Full-fat dairy", "Eggs (whole)", "All vegetables", "Moderate proteins", "Limited berries", "Small amounts of quinoa/brown rice"],
+        no: ["Refined carbs", "Sugar", "Processed foods", "Most fruits (except berries)", "White grains"]
       },
       ro: {
-        yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei măsline, ulei cocos)", "Pește gras (somon, macrou)", "Lactate întregi", "Ouă întregi", "Toate legumele", "Proteine moderate"],
-        no: ["Toate fructele", "Toate cerealele", "Carbohidrați rafinați", "Zahăr"]
+        yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei măsline, ulei cocos)", "Pește gras (somon, macrou)", "Lactate întregi", "Ouă întregi", "Toate legumele", "Proteine moderate", "Fructe de pădure limitate", "Cantități mici de quinoa/orez brun"],
+        no: ["Carbohidrați rafinați", "Zahăr", "Alimente procesate", "Majoritatea fructelor (exceptând fructele de pădure)", "Cereale albe"]
       }
     }
   }
