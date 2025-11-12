@@ -123,7 +123,7 @@ export const getPhaseInfo = (phase, language = 'en') => {
         ],
         ro: [
           "Grăsimi sănătoase și mese echilibrate",
-          "Toate macronutrienții în cantități normale, quinoa/orez brun permise",
+          "Toți macronutrienții în cantități normale, quinoa/orez brun permise",
           "Carbohidrați sănătoși limitați permisi",
           "Bea 8 pahare de apă",
           "Exercițiu: activități de reducere a stresului (yoga, masaj) - 30 min"
