@@ -468,7 +468,10 @@ export const localApi = {
   // Notifications (combined in /api/social.js)
   notifications: {
     list: () => request('/social?type=notifications'),
-    getUnreadCount: () => request('/social?type=notifications&unread=true'),
+    getUnreadCount: async () => {
+      console.log('🔔 Getting unread count, token:', !!storage.getToken());
+      return await request('/social?type=notifications&unread=true');
+    },
     markAsRead: (id) => request(`/social?type=notifications&id=${id}`, { method: 'PUT' }),
     markAllAsRead: () => request('/social?type=notifications&readAll=true', { method: 'PUT' }),
   },

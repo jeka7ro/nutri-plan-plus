@@ -579,14 +579,26 @@ export default async function handler(req, res) {
     
     // POST ?subscription=grant - Admin grants premium (combined)
     if (req.method === 'POST' && req.query.subscription === 'grant') {
+      console.log('👑 [PREMIUM GRANT] Request body:', req.body);
       const { targetUserId, durationMonths } = req.body;
       
+      if (!targetUserId) {
+        console.log('❌ Missing targetUserId');
+        return res.status(400).json({ error: 'targetUserId required' });
+      }
+      
+      console.log('👑 Granting premium to user:', targetUserId, 'duration:', durationMonths);
+      
       // Check if admin
-      const adminCheck = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.id]);
+      const adminCheck = await pool.query('SELECT id, email, role FROM users WHERE id = $1', [decoded.id]);
+      console.log('👤 Admin check result:', adminCheck.rows);
       
       if (adminCheck.rows[0]?.role !== 'admin') {
+        console.log('❌ User is not admin');
         return res.status(403).json({ error: 'Admin only' });
       }
+      
+      console.log('✅ Admin verification passed for premium grant');
       
       // Grant Premium
       const expiresAt = durationMonths === 'lifetime' 

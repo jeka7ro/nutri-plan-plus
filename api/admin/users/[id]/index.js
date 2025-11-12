@@ -38,15 +38,25 @@ export default async function handler(req, res) {
     );
     
     // Get current user to check if admin
-    const currentUserResult = await pool.query('SELECT role FROM users WHERE id = $1', [decoded.id]);
+    console.log('🔍 Checking admin status for user ID:', decoded.id);
+    const currentUserResult = await pool.query('SELECT id, email, role FROM users WHERE id = $1', [decoded.id]);
+    
+    console.log('👤 Current user query result:', currentUserResult.rows);
     
     if (currentUserResult.rows.length === 0) {
+      console.log('❌ User not found in database');
       return res.status(403).json({ error: 'User not found' });
     }
     
-    if (currentUserResult.rows[0].role !== 'admin') {
+    const currentUser = currentUserResult.rows[0];
+    console.log('👤 Current user:', currentUser);
+    
+    if (currentUser.role !== 'admin') {
+      console.log('❌ User is not admin, role:', currentUser.role);
       return res.status(403).json({ error: 'Admin access required' });
     }
+    
+    console.log('✅ Admin verification passed');
     
     // Get user ID from URL
     const { id: userId } = req.query;
