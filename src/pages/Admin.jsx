@@ -20,11 +20,7 @@ import {
   Users, MessageSquare, TrendingUp, TrendingDown, Activity, Shield, Crown, Calendar,
   CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings, Info, Menu
 } from "lucide-react";
-import AdminCRM from "@/components/AdminCRM";
-import AdminSales from "@/components/AdminSales";
-import AdminPromos from "@/components/AdminPromos";
-import AdminEmail from "@/components/AdminEmail";
-import AdminPayments from "@/components/AdminPayments";
+// Removed CRM and other unused admin components to fix undefined list error
 import { format, subDays, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -569,27 +565,62 @@ export default function Admin() {
 
           {/* ==================== TAB CRM ==================== */}
           <TabsContent value="crm" className="mt-6">
-            <AdminCRM />
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">CRM - În dezvoltare</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[rgb(var(--ios-text-secondary))]">Funcționalitatea CRM va fi disponibilă în curând.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* ==================== TAB SALES ==================== */}
           <TabsContent value="sales" className="mt-6">
-            <AdminSales />
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📊 Vânzări - În dezvoltare</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[rgb(var(--ios-text-secondary))]">Modulul de vânzări va fi disponibil în curând.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* ==================== TAB PROMOȚII ==================== */}
           <TabsContent value="promos" className="mt-6">
-            <AdminPromos />
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">🎯 Promoții - În dezvoltare</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[rgb(var(--ios-text-secondary))]">Modulul de promoții va fi disponibil în curând.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* ==================== TAB EMAIL ==================== */}
           <TabsContent value="email" className="mt-6">
-            <AdminEmail />
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📧 Email - În dezvoltare</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[rgb(var(--ios-text-secondary))]">Modulul de email va fi disponibil în curând.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* ==================== TAB PLĂȚI ==================== */}
           <TabsContent value="payments" className="mt-6">
-            <AdminPayments />
+            <Card className="ios-card border-none ios-shadow-lg">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">💳 Plăți - În dezvoltare</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-[rgb(var(--ios-text-secondary))]">Modulul de plăți va fi disponibil în curând.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           {/* TAB RECOMANDĂRI - EDITARE */}
