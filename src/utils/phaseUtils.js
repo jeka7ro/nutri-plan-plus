@@ -131,8 +131,8 @@ export const getPhaseInfo = (phase, language = 'en') => {
       },
       allowedFoods: {
         en: {
-          yes: ["Healthy fats (avocado, nuts, seeds, olive oil)", "Lean proteins", "Vegetables", "Limited berries", "Small amounts of quinoa/brown rice"],
-          no: ["Refined sugar", "Processed foods", "Trans fats", "Most fruits (except berries)", "White grains"]
+          yes: ["Healthy fats (avocado, nuts, seeds, olive oil)", "Lean proteins", "Vegetables", "Plant-based milk (almond, coconut, oat)", "Berries (small amounts)", "Quinoa/brown rice (very small amounts)"],
+          no: ["Refined sugar", "Processed foods", "Trans fats", "Sweet fruits (apples, bananas, etc.)", "Processed grains", "Cow dairy products"]
         },
         ro: {
           yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei de măsline)", "Proteine slabe", "Legume", "Lapte vegetal (migdale, cocos, ovăz)", "Fructe de pădure (cantități mici)", "Quinoa/orez brun (cantități foarte mici)"],

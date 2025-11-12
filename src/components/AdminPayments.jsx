@@ -7,25 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// Switch component inline since it might not exist
-const Switch = ({ id, checked, onCheckedChange, ...props }) => (
-  <button
-    type="button"
-    role="switch"
-    aria-checked={checked}
-    onClick={() => onCheckedChange?.(!checked)}
-    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
-      checked ? 'bg-emerald-600' : 'bg-gray-200'
-    }`}
-    {...props}
-  >
-    <span
-      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-        checked ? 'translate-x-6' : 'translate-x-1'
-      }`}
-    />
-  </button>
-);
 import {
   Select,
   SelectContent,
@@ -53,6 +34,26 @@ import {
   Eye, Edit, Trash2, Plus, RefreshCw, DollarSign, Euro, Banknote,
   Globe, Shield, Zap, Clock, BarChart3
 } from "lucide-react";
+
+// Switch component inline since it might not exist
+const Switch = ({ id, checked, onCheckedChange, ...props }) => (
+  <button
+    type="button"
+    role="switch"
+    aria-checked={checked}
+    onClick={() => onCheckedChange?.(!checked)}
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
+      checked ? 'bg-emerald-600' : 'bg-gray-200'
+    }`}
+    {...props}
+  >
+    <span
+      className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+        checked ? 'translate-x-6' : 'translate-x-1'
+      }`}
+    />
+  </button>
+);
 
 const AdminPayments = () => {
   const [activeProcessor, setActiveProcessor] = useState(null);
@@ -112,7 +113,7 @@ const AdminPayments = () => {
     {
       id: 'viva_ro',
       name: 'VIVA Wallet',
-      region: 'România',
+      region: 'Romania',
       status: 'active',
       apiKey: 'viva_****_****',
       secretKey: '****',
@@ -124,60 +125,9 @@ const AdminPayments = () => {
       monthlyTransactions: 89,
       lastTransaction: '2024-11-12T14:30:00Z',
       testMode: false,
-      logo: '🇷🇴'
-    },
-    {
-      id: 'revolut_eu',
-      name: 'Revolut Business',
-      region: 'Europa',
-      status: 'active',
-      apiKey: 'rev_****_****',
-      secretKey: '****',
-      webhookUrl: 'https://eatnfit.app/webhooks/revolut',
-      commission: 1.2,
-      currency: 'EUR',
-      methods: ['card', 'transfer', 'revolut_pay'],
-      monthlyVolume: 8750.00,
-      monthlyTransactions: 45,
-      lastTransaction: '2024-11-12T12:15:00Z',
-      testMode: false,
-      logo: '💳'
-    },
-    {
-      id: 'stripe_global',
-      name: 'Stripe',
-      region: 'Global',
-      status: 'active',
-      apiKey: 'sk_live_****',
-      secretKey: '****',
-      webhookUrl: 'https://eatnfit.app/webhooks/stripe',
-      commission: 2.9,
-      currency: 'USD',
-      methods: ['card', 'apple_pay', 'google_pay', 'sepa'],
-      monthlyVolume: 12300.00,
-      monthlyTransactions: 67,
-      lastTransaction: '2024-11-12T13:45:00Z',
-      testMode: false,
-      logo: '🌍'
-    },
-    {
-      id: 'paypal_global',
-      name: 'PayPal',
-      region: 'Global',
-      status: 'inactive',
-      apiKey: 'paypal_****',
-      secretKey: '****',
-      webhookUrl: 'https://eatnfit.app/webhooks/paypal',
-      commission: 3.4,
-      currency: 'USD',
-      methods: ['paypal', 'card'],
-      monthlyVolume: 0,
-      monthlyTransactions: 0,
-      lastTransaction: null,
-      testMode: true,
-      logo: '💙'
+      logo: 'RO'
     }
-  ]);
+  ];
 
   // Mock transactions data
   const mockTransactions = [

@@ -16,6 +16,7 @@ import {
 import { format, addDays, differenceInDays } from "date-fns";
 import { ro } from "date-fns/locale";
 import { useLanguage } from "../components/LanguageContext";
+import { getCurrentPhase } from "../utils/phaseUtils";
 
 export default function Calendar() {
   const { t, language } = useLanguage();
@@ -58,12 +59,7 @@ export default function Calendar() {
     },
   });
 
-  const getCurrentPhase = (dayNumber) => {
-    const cycle = ((dayNumber - 1) % 7) + 1;
-    if (cycle <= 2) return 1; // Zile 1-2
-    if (cycle <= 4) return 2; // Zile 3-4
-    return 3; // Zile 5-7
-  };
+  // Using centralized getCurrentPhase from utils
 
   const getDateForDay = (dayNumber) => {
     if (!user?.start_date) return new Date();

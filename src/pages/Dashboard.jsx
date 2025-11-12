@@ -31,6 +31,7 @@ import { format, differenceInDays, subDays } from "date-fns";
 import { ro, enUS } from "date-fns/locale";
 import { Progress } from "@/components/ui/progress";
 import { useLanguage } from "../components/LanguageContext";
+import { getPhaseInfo, getCurrentPhase } from "../utils/phaseUtils";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 export default function Dashboard() {
@@ -91,12 +92,7 @@ export default function Dashboard() {
     return Math.min(Math.max(daysPassed, 1), 28);
   };
 
-  const getCurrentPhase = (day) => {
-    const cycle = ((day - 1) % 7) + 1;
-    if (cycle <= 2) return 1;
-    if (cycle <= 4) return 2;
-    return 3;
-  };
+  // Using centralized getCurrentPhase from utils
 
   const currentDay = getCurrentDay();
   const currentPhase = getCurrentPhase(currentDay);
@@ -181,27 +177,25 @@ export default function Dashboard() {
   const tdee = calculateTDEE();
   const caloriesRemaining = tdee - netCalories;
 
+  // Use centralized phase info
   const phaseInfo = {
     1: {
-      name: t('phase1Name'),
+      ...getPhaseInfo(1, language),
       color: "from-red-400 to-orange-500",
       bgColor: "bg-orange-50 dark:bg-orange-900/10",
-      textColor: "text-orange-700 dark:text-orange-400",
-      description: t('phase1Desc')
+      textColor: "text-orange-700 dark:text-orange-400"
     },
     2: {
-      name: t('phase2Name'),
+      ...getPhaseInfo(2, language),
       color: "from-emerald-400 to-green-600",
       bgColor: "bg-emerald-50 dark:bg-emerald-900/10",
-      textColor: "text-emerald-700 dark:text-emerald-400",
-      description: t('phase2Desc')
+      textColor: "text-emerald-700 dark:text-emerald-400"
     },
     3: {
-      name: t('phase3Name'),
+      ...getPhaseInfo(3, language),
       color: "from-purple-400 to-pink-500",
       bgColor: "bg-purple-50 dark:bg-purple-900/10",
-      textColor: "text-purple-700 dark:text-purple-400",
-      description: t('phase3Desc')
+      textColor: "text-purple-700 dark:text-purple-400"
     }
   };
 

@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Sparkles, Send, Loader2, Apple, X } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
+import { getPhaseInfo, getCurrentPhase } from "../utils/phaseUtils";
 import { differenceInDays, format } from "date-fns";
 import {
   Dialog,
@@ -52,12 +53,7 @@ export default function AIFoodAssistant() {
     return Math.min(Math.max(daysPassed, 1), 28);
   };
 
-  const getCurrentPhase = (day) => {
-    const cycle = ((day - 1) % 7) + 1;
-    if (cycle <= 2) return 1;
-    if (cycle <= 4) return 2;
-    return 3;
-  };
+  // Using centralized getCurrentPhase from utils
 
   // ========== AI ANALYZER: Scor 0-10 pentru mese ==========
   const analyzeMeal = (meal, phase) => {
@@ -432,31 +428,14 @@ export default function AIFoodAssistant() {
     const currentHour = new Date().getHours();
     const nextMeal = getNextMeal();
 
-    const phaseInfo = language === 'ro' ? {
-      1: {
-        allowed: "carbohidrați sănătoși, fructe (NU banane, struguri, porumb), cereale integrale (orez brun/sălbatic, ovăz, quinoa, secară, hrișcă, mei), leguminoase (linte, fasole, mazărea), proteine slabe (pui, curcan, pește), legume",
-        avoid: "grăsimi, uleiuri, nuci, semințe, avocado, lactate, banane, struguri, porumb, cartofi albi, soia, grâu"
-      },
-      2: {
-        allowed: "proteine slabe (pui, curcan, pește, albuș), legume verzi (broccoli, spanac, varză kale, castraveți), legume alcaline",
-        avoid: "carbohidrați, fructe, grăsimi, uleiuri, cereale"
-      },
-      3: {
-        allowed: "grăsimi sănătoase (avocado, nuci, semințe, ulei măsline, ulei cocos), proteine, legume, unele fructe",
-        avoid: "cereale, alimente bogate în carbohidrați"
-      }
-    } : {
-      1: {
-        allowed: "carbohydrates, fruits, grains (brown rice, oats, quinoa), lean proteins (chicken, turkey, fish), vegetables",
-        avoid: "fats, oils, nuts, seeds, avocado, dairy"
-      },
-      2: {
-        allowed: "lean proteins (chicken, turkey, fish, egg whites), green vegetables (broccoli, spinach, kale, cucumber), alkaline vegetables",
-        avoid: "carbohydrates, fruits, fats, oils, grains"
-      },
-      3: {
-        allowed: "healthy fats (avocado, nuts, seeds, olive oil, coconut oil), proteins, vegetables, some fruits",
-        avoid: "grains, high-carb foods"
+    // Get centralized phase info
+    const currentPhaseInfo = getPhaseInfo(currentPhase, language);
+    const allowedFoods = currentPhaseInfo.allowedFoods[language];
+    
+    const phaseInfo = {
+      [currentPhase]: {
+        allowed: allowedFoods.yes.join(', '),
+        avoid: allowedFoods.no.join(', ')
       }
     };
 

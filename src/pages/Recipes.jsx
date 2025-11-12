@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { ChefHat, Clock, Users, Flame, Search, Leaf, Wheat, Zap, Heart, UtensilsCrossed, Star } from "lucide-react";
 import { useLanguage } from "../components/LanguageContext";
+import { getPhaseInfo } from "../utils/phaseUtils";
 import {
   Dialog,
   DialogContent,
@@ -42,33 +43,25 @@ export default function Recipes() {
     retry: false,
   });
 
+  // Use centralized phase info
   const phaseInfo = {
     1: {
-      name: language === 'ro' ? "Faza 1: Destresare" : "Phase 1: Unwind",
+      ...getPhaseInfo(1, language),
       color: "from-red-400 to-orange-500",
       bgColor: "bg-orange-50 dark:bg-orange-900/20",
-      textColor: "text-orange-700 dark:text-orange-300",
-      description: language === 'ro' 
-        ? "Carbohidrați și fructe - Calmează glandele suprarenale"
-        : "Carbs and fruits - Calm the adrenal glands"
+      textColor: "text-orange-700 dark:text-orange-300"
     },
     2: {
-      name: language === 'ro' ? "Faza 2: Deblocare" : "Phase 2: Unlock",
+      ...getPhaseInfo(2, language),
       color: "from-emerald-400 to-green-600",
       bgColor: "bg-emerald-50 dark:bg-emerald-900/20",
-      textColor: "text-emerald-700 dark:text-emerald-300",
-      description: language === 'ro'
-        ? "Proteine și legume - Deblochează grăsimea stocată"
-        : "Proteins and veggies - Unlock stored fat"
+      textColor: "text-emerald-700 dark:text-emerald-300"
     },
     3: {
-      name: language === 'ro' ? "Faza 3: Ardere" : "Phase 3: Unleash",
+      ...getPhaseInfo(3, language),
       color: "from-purple-400 to-pink-500",
       bgColor: "bg-purple-50 dark:bg-purple-900/20",
-      textColor: "text-purple-700 dark:text-purple-300",
-      description: language === 'ro'
-        ? "Grăsimi sănătoase - Transformă în energie"
-        : "Healthy fats - Transform into energy"
+      textColor: "text-purple-700 dark:text-purple-300"
     }
   };
 

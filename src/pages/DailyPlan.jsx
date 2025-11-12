@@ -34,101 +34,18 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import FoodIngredientPicker from "@/components/FoodIngredientPicker";
+import { getPhaseInfo, getCurrentPhase } from "../utils/phaseUtils";
 
 
-const phaseInfo = {
-  1: {
-    name: { en: "Phase 1: Unwind", ro: "Faza 1: Destresare" },
-    color: "from-red-400 to-orange-500",
-    bgColor: "bg-orange-50",
-    textColor: "text-orange-700",
-    guidelines: {
-      en: [
-        "Focus on healthy carbs and fruits",
-        "Avoid fats in this phase",
-        "Drink 8 glasses of water",
-        "Exercise: light cardio (running, cycling) - 30 min"
-      ],
-      ro: [
-        "Concentrează-te pe carbohidrați sănătoși și fructe",
-        "Evită grăsimile în această fază",
-        "Bea 8 pahare de apă",
-        "Exercițiu: cardio ușor (alergare, ciclism) - 30 min"
-      ]
-    },
-    allowedFoods: {
-      en: {
-        yes: ["Whole grains (oats, brown rice, quinoa)", "Fruits (all kinds)", "Lean proteins (chicken, turkey, white fish)", "Vegetables (except high-fat ones)", "Legumes"],
-        no: ["All fats and oils", "Dairy products", "Refined sugar", "Avocados", "Nuts and seeds"]
-      },
-      ro: {
-        yes: ["Cereale integrale (ovăz, orez brun, quinoa)", "Fructe (toate tipurile)", "Proteine slabe (pui, curcan, pește alb)", "Legume (exceptând cele grase)", "Leguminoase"],
-        no: ["Toate grăsimile și uleiurile", "Produse lactate", "Zahăr rafinat", "Avocado", "Nuci și semințe"]
-      }
-    }
-  },
-  2: {
-    name: { en: "Phase 2: Unlock", ro: "Faza 2: Deblocare" },
-    color: "from-emerald-400 to-green-600",
-    bgColor: "bg-emerald-50",
-    textColor: "text-emerald-700",
-    guidelines: {
-      en: [
-        "Focus on lean proteins and green veggies",
-        "No carbs and fats",
-        "Drink 8-10 glasses of water",
-        "Exercise: strength training - 30 min"
-      ],
-      ro: [
-        "Accent pe proteine slabe și legume verzi",
-        "Zero carbohidrați și grăsimi",
-        "Bea 8-10 pahare de apă",
-        "Exercițiu: antrenament de forță - 30 min"
-      ]
-    },
-    allowedFoods: {
-      en: {
-        yes: ["Lean proteins (chicken breast, turkey, white fish, egg whites)", "All vegetables (especially leafy greens)", "Lemons and limes only", "Herbs and spices"],
-        no: ["All fruits", "All grains and carbs", "All fats and oils", "Dairy products", "Nuts and seeds"]
-      },
-      ro: {
-        yes: ["Proteine slabe (piept de pui, curcan, pește alb, albuș)", "Toate legumele (în special cele verzi)", "Doar lămâi verzi și galbene", "Ierburi și condimente"],
-        no: ["Toate fructele", "Toate cerealele și carbohidrații", "Toate grăsimile și uleiurile", "Produse lactate", "Nuci și semințe"]
-      }
-    }
-  },
-  3: {
-    name: { en: "Phase 3: Unleash", ro: "Faza 3: Ardere" },
-    color: "from-purple-400 to-pink-500",
-    bgColor: "bg-purple-50",
-    textColor: "text-purple-700",
-    guidelines: {
-      en: [
-        "Add plenty of healthy fats",
-        "Moderate proteins and vegetables", 
-        "Limited healthy carbs allowed",
-        "Drink 8 glasses of water",
-        "Exercise: yoga or relaxing activity - 30 min"
-      ],
-      ro: [
-        "Adaugă grăsimi sănătoase din abundență",
-        "Proteine moderate și legume",
-        "Carbohidrați sănătoși limitați permisi", 
-        "Bea 8 pahare de apă",
-        "Exercițiu: yoga sau activitate relaxantă - 30 min"
-      ]
-    },
-    allowedFoods: {
-      en: {
-        yes: ["Healthy fats (avocado, nuts, seeds, olive oil, coconut oil)", "Fatty fish (salmon, mackerel)", "Full-fat dairy", "Eggs (whole)", "All vegetables", "Moderate proteins", "Limited berries", "Small amounts of quinoa/brown rice"],
-        no: ["Refined carbs", "Sugar", "Processed foods", "Most fruits (except berries)", "White grains"]
-      },
-      ro: {
-        yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei măsline, ulei cocos)", "Pește gras (somon, macrou)", "Lapte vegetal (migdale, cocos, ovăz)", "Ouă întregi", "Toate legumele", "Proteine moderate", "Fructe de pădure (cantități mici)", "Quinoa/orez brun (cantități foarte mici)"],
-        no: ["Carbohidrați rafinați", "Zahăr", "Alimente procesate", "Fructe dulci (mere, banane, etc.)", "Cereale procesate", "Lactate de vacă"]
-      }
-    }
-  }
+// Use centralized phase info from utils
+const getPhaseInfoWithColors = (phase, language) => {
+  const baseInfo = getPhaseInfo(phase, language);
+  const colorMap = {
+    1: { color: "from-red-400 to-orange-500", bgColor: "bg-orange-50", textColor: "text-orange-700" },
+    2: { color: "from-emerald-400 to-green-600", bgColor: "bg-emerald-50", textColor: "text-emerald-700" },
+    3: { color: "from-purple-400 to-pink-500", bgColor: "bg-purple-50", textColor: "text-purple-700" }
+  };
+  return { ...baseInfo, ...colorMap[phase] };
 };
 
 export default function DailyPlan() {
@@ -478,12 +395,7 @@ export default function DailyPlan() {
     return Math.min(Math.max(daysPassed, 1), 28);
   }, [user?.start_date, selectedDate]);
 
-  const getCurrentPhase = useCallback((day) => {
-    const cycle = ((day - 1) % 7) + 1;
-    if (cycle <= 2) return 1;
-    if (cycle <= 4) return 2;
-    return 3;
-  }, []);
+  // Using centralized getCurrentPhase from utils
 
   // MEMOIZE expensive filtering operations
   const filterMealOptions = useCallback((options) => {
@@ -560,7 +472,7 @@ export default function DailyPlan() {
 
   const currentDay = getCurrentDay();
   const currentPhase = getCurrentPhase(currentDay);
-  const phase = phaseInfo[currentPhase];
+  const phase = getPhaseInfoWithColors(currentPhase, language);
 
   // Define meals FIRST (used in callbacks)
   const meals = useMemo(() => [
