@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import localApi from "@/api/localClient";
-const base44 = localApi; // Pentru compatibilitate
+import { api as base44 } from "@/api/apiAdapter"; // Pentru compatibilitate
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

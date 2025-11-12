@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import localApi from "@/api/localClient";
-const base44 = localApi;
+import { api as base44 } from "@/api/apiAdapter";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
