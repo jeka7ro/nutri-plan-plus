@@ -1,14 +1,13 @@
 {
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "@vercel/node"
+    }
+  },
   "rewrites": [
     {
-      "source": "/((?!api).*)",
+      "source": "/(.*)",
       "destination": "/index.html"
-    }
-  ],
-  "crons": [
-    {
-      "path": "/api/admin/backups?cron=true",
-      "schedule": "0 3 * * *"
     }
   ]
 }
