@@ -116,14 +116,14 @@ export const getPhaseInfo = (phase, language = 'en') => {
       guidelines: {
         en: [
           "Healthy fats and balanced meals",
-          "Include all macronutrients",
+          "All macronutrients and quinoa/brown rice in normal amounts",
           "Limited healthy carbs allowed",
           "Drink 8 glasses of water",
           "Exercise: stress-reducing activities (yoga, massage) - 30 min"
         ],
         ro: [
           "Grăsimi sănătoase și mese echilibrate",
-          "Include toate macronutrienții",
+          "Toate macronutrienții și quinoa/orez brun în cantități normale",
           "Carbohidrați sănătoși limitați permisi",
           "Bea 8 pahare de apă",
           "Exercițiu: activități de reducere a stresului (yoga, masaj) - 30 min"
@@ -131,11 +131,11 @@ export const getPhaseInfo = (phase, language = 'en') => {
       },
       allowedFoods: {
         en: {
-          yes: ["Healthy fats (avocado, nuts, seeds, olive oil)", "Lean proteins", "Vegetables", "Plant-based milk (almond, coconut, oat)", "Berries (small amounts)", "Quinoa/brown rice (very small amounts)"],
+          yes: ["Healthy fats (avocado, nuts, seeds, olive oil)", "Lean proteins", "Vegetables", "Plant-based milk (almond, coconut, oat)", "Berries (small amounts)", "Quinoa/brown rice (normal amounts)"],
           no: ["Refined sugar", "Processed foods", "Trans fats", "Sweet fruits (apples, bananas, etc.)", "Processed grains", "Cow dairy products"]
         },
         ro: {
-          yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei de măsline)", "Proteine slabe", "Legume", "Lapte vegetal (migdale, cocos, ovăz)", "Fructe de pădure (cantități mici)", "Quinoa/orez brun (cantități foarte mici)"],
+          yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei de măsline)", "Proteine slabe", "Legume", "Lapte vegetal (migdale, cocos, ovăz)", "Fructe de pădure (cantități mici)", "Quinoa/orez brun (cantități normale)"],
           no: ["Zahăr rafinat", "Alimente procesate", "Grăsimi trans", "Fructe dulci (mere, banane, etc.)", "Cereale procesate", "Lactate de vacă"]
         }
       }
