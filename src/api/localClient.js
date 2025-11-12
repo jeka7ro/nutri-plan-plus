@@ -251,7 +251,7 @@ export const localApi = {
   // Admin
   admin: {
     users: () => request('/admin/users'),
-    weightEntries: () => request('/admin/weight-entries'),
+    weightEntries: () => request('/weight?admin=true'),
     updateRole: (userId, role) => request(`/admin/users/${userId}/role`, {
       method: 'PUT',
       body: JSON.stringify({ role }),
@@ -404,14 +404,14 @@ export const localApi = {
     AdminChat: {
       list: async (sort = '-created_date') => {
         try {
-          return await request('/admin/support');
+          return await request('/admin/backups?type=support');
         } catch (error) {
           console.error('Error fetching admin chats:', error);
           return [];
         }
       },
       update: async (id, data) => {
-        return await request(`/admin/support/${id}`, {
+        return await request(`/admin/backups?type=support&id=${id}`, {
           method: 'PUT',
           body: JSON.stringify(data),
         });

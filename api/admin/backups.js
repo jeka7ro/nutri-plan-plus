@@ -17,6 +17,12 @@ export default async function handler(req, res) {
     return res.status(200).end();
   }
 
+  // ========== SUPPORT MESSAGES HANDLER ==========
+  if (req.query.type === 'support') {
+    // Mock endpoint pentru mesajele de suport (nu există încă tabelul în DB)
+    return res.status(200).json([]);
+  }
+
   try {
     // ========== VERCEL CRON REQUEST ==========
     // Rulează la 3 AM zilnic, fără autentificare (verifică Vercel header)

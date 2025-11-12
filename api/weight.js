@@ -13,6 +13,15 @@ export default function handler(req, res) {
     return res.status(200).end();
   }
 
+  // ========== ADMIN WEIGHT ENTRIES HANDLER ==========
+  if (req.query.admin === 'true') {
+    if (req.method !== 'GET') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+    // Returnează toate weight entries (pentru admin)
+    return res.status(200).json(weightEntries);
+  }
+
   if (req.method === 'GET') {
     return res.status(200).json(weightEntries);
   }
