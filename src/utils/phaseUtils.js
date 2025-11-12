@@ -135,8 +135,8 @@ export const getPhaseInfo = (phase, language = 'en') => {
           no: ["Refined sugar", "Processed foods", "Trans fats", "Most fruits (except berries)", "White grains"]
         },
         ro: {
-          yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei de măsline)", "Proteine slabe", "Legume", "Fructe de pădure limitate", "Cantități mici de quinoa/orez brun"],
-          no: ["Zahăr rafinat", "Alimente procesate", "Grăsimi trans", "Majoritatea fructelor (exceptând fructele de pădure)", "Cereale albe"]
+          yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei de măsline)", "Proteine slabe", "Legume", "Lapte vegetal (migdale, cocos, ovăz)", "Fructe de pădure (cantități mici)", "Quinoa/orez brun (cantități foarte mici)"],
+          no: ["Zahăr rafinat", "Alimente procesate", "Grăsimi trans", "Fructe dulci (mere, banane, etc.)", "Cereale procesate", "Lactate de vacă"]
         }
       }
     }

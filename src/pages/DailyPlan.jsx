@@ -124,8 +124,8 @@ const phaseInfo = {
         no: ["Refined carbs", "Sugar", "Processed foods", "Most fruits (except berries)", "White grains"]
       },
       ro: {
-        yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei măsline, ulei cocos)", "Pește gras (somon, macrou)", "Lactate întregi", "Ouă întregi", "Toate legumele", "Proteine moderate", "Fructe de pădure limitate", "Cantități mici de quinoa/orez brun"],
-        no: ["Carbohidrați rafinați", "Zahăr", "Alimente procesate", "Majoritatea fructelor (exceptând fructele de pădure)", "Cereale albe"]
+        yes: ["Grăsimi sănătoase (avocado, nuci, semințe, ulei măsline, ulei cocos)", "Pește gras (somon, macrou)", "Lapte vegetal (migdale, cocos, ovăz)", "Ouă întregi", "Toate legumele", "Proteine moderate", "Fructe de pădure (cantități mici)", "Quinoa/orez brun (cantități foarte mici)"],
+        no: ["Carbohidrați rafinați", "Zahăr", "Alimente procesate", "Fructe dulci (mere, banane, etc.)", "Cereale procesate", "Lactate de vacă"]
       }
     }
   }
