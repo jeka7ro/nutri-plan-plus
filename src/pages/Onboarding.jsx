@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
-import api from "@/api/apiAdapter";
-const localApi = api;
+import localApi from "@/api/localClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
