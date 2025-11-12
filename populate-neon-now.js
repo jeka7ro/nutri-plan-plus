@@ -39,7 +39,7 @@ const recipes = [
   
   { name: "Salmon & Veggies", name_ro: "Somon cu Legume", phase: 3, meal_type: "lunch", calories: 480, protein: 40, carbs: 25, fats: 25, ingredients_en: ["200g salmon", "Mixed vegetables", "Olive oil"], ingredients_ro: ["200g somon", "Legume mixte", "Ulei măsline"], instructions_en: ["Season salmon", "Roast vegetables", "Bake together"], instructions_ro: ["Condimentează somonul", "Coace legumele", "Gătește împreună"], image_url: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800", is_vegetarian: false },
   
-  { name: "Almonds & Chocolate", name_ro: "Migdale și Ciocolată", phase: 3, meal_type: "snack1", calories: 200, protein: 6, carbs: 15, fats: 14, ingredients_en: ["20 almonds", "2 squares dark chocolate"], ingredients_ro: ["20 migdale", "2 pătrățele ciocolată"], instructions_en: ["Portion and enjoy"], instructions_ro: ["Porționează și savurează"], image_url: "https://images.unsplash.com/photo-1569288063643-5d29ad64df09?w=800", is_vegetarian: true }
+  { name: "Mixed Nuts", name_ro: "Mix de Nuci", phase: 3, meal_type: "snack1", calories: 200, protein: 6, carbs: 8, fats: 18, ingredients_en: ["20 almonds", "10 walnuts", "15 cashews"], ingredients_ro: ["20 migdale", "10 nuci", "15 caju"], instructions_en: ["Portion and enjoy"], instructions_ro: ["Porționează și savurează"], image_url: "https://images.unsplash.com/photo-1569288063643-5d29ad64df09?w=800", is_vegetarian: true }
 ];
 
 async function populateDatabase() {

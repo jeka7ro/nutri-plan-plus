@@ -116,14 +116,14 @@ export const getPhaseInfo = (phase, language = 'en') => {
       guidelines: {
         en: [
           "Healthy fats and balanced meals",
-          "All macronutrients and quinoa/brown rice in normal amounts",
+          "All macronutrients in normal amounts, quinoa/brown rice allowed",
           "Limited healthy carbs allowed",
           "Drink 8 glasses of water",
           "Exercise: stress-reducing activities (yoga, massage) - 30 min"
         ],
         ro: [
           "Grăsimi sănătoase și mese echilibrate",
-          "Toate macronutrienții și quinoa/orez brun în cantități normale",
+          "Toate macronutrienții în cantități normale, quinoa/orez brun permise",
           "Carbohidrați sănătoși limitați permisi",
           "Bea 8 pahare de apă",
           "Exercițiu: activități de reducere a stresului (yoga, masaj) - 30 min"
