@@ -11,7 +11,8 @@ import {
   Circle, 
   Shuffle,
   Save,
-  X
+  X,
+  Loader2
 } from "lucide-react";
 import { format, addDays, differenceInDays } from "date-fns";
 import { ro } from "date-fns/locale";
@@ -308,7 +309,23 @@ export default function Calendar() {
     { key: 'dinner_completed', optionKey: 'dinner_option', type: 'dinner', label: language === 'ro' ? 'Cină' : 'Dinner' },
   ];
 
-  if (!user) return null;
+  if (!user) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-900 dark:to-emerald-900/20">
+        <div className="text-center">
+          <div className="w-20 h-20 bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-6 shadow-xl">
+            <Loader2 className="w-10 h-10 text-white animate-spin" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
+            Se încarcă...
+          </h1>
+          <p className="text-gray-600 dark:text-gray-300">
+            Verificăm datele tale...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-8 min-h-screen max-w-full overflow-x-hidden">

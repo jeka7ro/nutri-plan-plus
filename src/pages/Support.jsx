@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import localApi from "@/api/localClient";
-const base44 = localApi;
+import { api as base44 } from "@/api/apiAdapter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,21 +34,23 @@ export default function Support() {
     queryKey: ['adminChats'],
     queryFn: async () => {
       if (!user) return [];
-      return await base44.entities.AdminChat.filter({
-        user_email: user.email
-      }, '-created_date');
+      // TODO: Implement admin chat functionality
+      return [];
     },
-    enabled: !!user,
+    enabled: false, // Disabled until implemented
   });
 
   const submitRequestMutation = useMutation({
     mutationFn: async (data) => {
-      return await base44.entities.AdminChat.create(data);
+      // TODO: Implement admin chat functionality
+      console.log('Admin chat not implemented yet:', data);
+      return { success: true };
     },
     onSuccess: () => {
       queryClient.invalidateQueries(['adminChats']);
       setMessage("");
       setMessageType("question");
+      alert('Support request functionality not implemented yet');
     },
   });
 

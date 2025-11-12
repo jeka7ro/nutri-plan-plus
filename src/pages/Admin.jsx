@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import localApi from "@/api/localClient";
-const base44 = localApi;
+import { api as base44 } from "@/api/apiAdapter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -56,7 +56,7 @@ export default function Admin() {
   const [bookUrl, setBookUrl] = useState("");
   const [recipeSearchQuery, setRecipeSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState(null); // Pentru dialog detalii user
-  const [activeTab, setActiveTab] = useState("crm"); // Control tab-uri - CRM primul
+  const [activeTab, setActiveTab] = useState("users"); // Control tab-uri - Users primul pentru management
   const [showCreateUser, setShowCreateUser] = useState(false); // Dialog creare utilizator
   const [newUserData, setNewUserData] = useState({
     email: '',
@@ -72,6 +72,14 @@ export default function Admin() {
     cleanup: 48, // ore
     autoEnabled: true
   });
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetPasswordUser, setResetPasswordUser] = useState(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [showDeleteUser, setShowDeleteUser] = useState(false);
+  const [deleteUserData, setDeleteUserData] = useState(null);
+  const [showGrantPremium, setShowGrantPremium] = useState(false);
+  const [grantPremiumUser, setGrantPremiumUser] = useState(null);
+  const [premiumDuration, setPremiumDuration] = useState('lifetime');
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -97,7 +105,7 @@ export default function Admin() {
       console.log('🔍 Fetching users from API...');
       console.log('🔑 Using token:', localStorage.getItem('auth_token')?.substring(0, 20) + '...');
       try {
-        const users = await base44.entities.User.list('-created_date');
+        const users = await localApi.admin.users();
         console.log('✅ Users received:', users);
         console.log('📊 Total users:', users.length);
         return users;
@@ -121,19 +129,19 @@ export default function Admin() {
 
   const { data: adminChats = [] } = useQuery({
     queryKey: ['adminChats'],
-    queryFn: () => base44.entities.AdminChat.list('-created_date'),
-    enabled: user?.role === 'admin',
+    queryFn: () => [], // TODO: Implement admin chat functionality
+    enabled: false, // Disabled until implemented
   });
 
   const { data: recipes = [] } = useQuery({
     queryKey: ['recipes'],
-    queryFn: () => base44.entities.Recipe.list('-created_date'),
+    queryFn: () => localApi.recipes.list(),
     enabled: user?.role === 'admin',
   });
 
   const { data: allCheckIns = [] } = useQuery({
     queryKey: ['allCheckIns'],
-    queryFn: () => base44.entities.DailyCheckIn.list('-date'),
+    queryFn: () => localApi.checkins.list(),
     enabled: user?.role === 'admin',
   });
 
@@ -179,7 +187,7 @@ export default function Admin() {
   });
 
   const createRecipeMutation = useMutation({
-    mutationFn: (data) => base44.entities.Recipe.create(data),
+    mutationFn: (data) => localApi.recipes.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['recipes']);
       setEditingRecipe(null);
@@ -187,7 +195,7 @@ export default function Admin() {
   });
 
   const updateRecipeMutation = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Recipe.update(id, data),
+    mutationFn: ({ id, data }) => localApi.recipes.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['recipes']);
       setEditingRecipe(null);
@@ -195,9 +203,53 @@ export default function Admin() {
   });
 
   const deleteRecipeMutation = useMutation({
-    mutationFn: (id) => base44.entities.Recipe.delete(id),
+    mutationFn: (id) => localApi.recipes.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries(['recipes']);
+    },
+  });
+
+  // Reset Password Mutation
+  const resetPasswordMutation = useMutation({
+    mutationFn: ({ userId, newPassword }) => localApi.admin.resetPassword(userId, newPassword),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['allUsers']);
+      setShowResetPassword(false);
+      setResetPasswordUser(null);
+      setNewPassword('');
+      alert('✅ Parola a fost resetată cu succes!');
+    },
+    onError: (error) => {
+      alert(`❌ Eroare la resetarea parolei: ${error.message}`);
+    },
+  });
+
+  // Delete User Mutation
+  const deleteUserMutation = useMutation({
+    mutationFn: (userId) => localApi.admin.deleteUser(userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['allUsers']);
+      setShowDeleteUser(false);
+      setDeleteUserData(null);
+      alert('✅ Utilizatorul a fost șters cu succes!');
+    },
+    onError: (error) => {
+      alert(`❌ Eroare la ștergerea utilizatorului: ${error.message}`);
+    },
+  });
+
+  // Grant Premium Mutation
+  const grantPremiumMutation = useMutation({
+    mutationFn: ({ userId, duration }) => localApi.admin.grantPremium(userId, duration),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['allUsers']);
+      setShowGrantPremium(false);
+      setGrantPremiumUser(null);
+      setPremiumDuration('lifetime');
+      alert('✅ Premium acordat cu succes!');
+    },
+    onError: (error) => {
+      alert(`❌ Eroare la acordarea premium: ${error.message}`);
     },
   });
 
@@ -207,8 +259,9 @@ export default function Admin() {
 
     setUploadingImage(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setEditingRecipe({ ...editingRecipe, image_url: file_url });
+      // TODO: Implement file upload functionality
+      console.log('File upload not implemented yet:', file);
+      alert('File upload functionality not implemented yet');
     } catch (error) {
       console.error('Error uploading image:', error);
     } finally {
@@ -222,9 +275,9 @@ export default function Admin() {
 
     setUploadingBook(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
-      setBookUrl(file_url);
-      alert('Document încărcat cu succes! URL: ' + file_url);
+      // TODO: Implement file upload functionality
+      console.log('File upload not implemented yet:', file);
+      alert('File upload functionality not implemented yet');
     } catch (error) {
       console.error('Error uploading book:', error);
       alert('Eroare la încărcarea documentului');
@@ -316,14 +369,51 @@ export default function Admin() {
   const handleRespondToRequest = async (request) => {
     if (!response.trim()) return;
     
-    await base44.entities.AdminChat.update(request.id, {
-      admin_response: response,
-      status: 'responded'
-    });
+    // TODO: Implement admin chat response functionality
+    console.log('Admin chat response not implemented yet:', { request, response });
     
     setResponse("");
     setSelectedRequest(null);
     queryClient.invalidateQueries(['adminChats']);
+  };
+
+  const handleResetPassword = (user) => {
+    setResetPasswordUser(user);
+    setNewPassword('');
+    setShowResetPassword(true);
+  };
+
+  const handleDeleteUser = (user) => {
+    setDeleteUserData(user);
+    setShowDeleteUser(true);
+  };
+
+  const confirmResetPassword = () => {
+    if (!newPassword.trim() || newPassword.length < 6) {
+      alert('Parola trebuie să aibă minim 6 caractere');
+      return;
+    }
+    resetPasswordMutation.mutate({ 
+      userId: resetPasswordUser.id, 
+      newPassword: newPassword.trim() 
+    });
+  };
+
+  const confirmDeleteUser = () => {
+    deleteUserMutation.mutate(deleteUserData.id);
+  };
+
+  const handleGrantPremium = (user) => {
+    setGrantPremiumUser(user);
+    setPremiumDuration('lifetime');
+    setShowGrantPremium(true);
+  };
+
+  const confirmGrantPremium = () => {
+    grantPremiumMutation.mutate({ 
+      userId: grantPremiumUser.id, 
+      duration: premiumDuration 
+    });
   };
 
   if (!user || user.role !== 'admin') {
@@ -912,7 +1002,7 @@ export default function Admin() {
                         <TableHead>Date Fizice</TableHead>
                         <TableHead>Dietă</TableHead>
                         <TableHead>Progres</TableHead>
-                        <TableHead>Acțiuni</TableHead>
+                        <TableHead className="min-w-[120px]">Acțiuni</TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1065,28 +1155,47 @@ export default function Admin() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  if (confirm(`Sigur ștergi utilizatorul ${u.name} (${u.email})?\\n\\nACEASTA VA ȘTERGE:\\n- Toate datele personale\\n- Toate check-ins\\n- Toate înregistrările de greutate\\n- Toate mesajele\\n\\nAceastă acțiune NU poate fi anulată!`)) {
-                                    // Implementare ștergere
-                                    fetch(`http://localhost:3001/api/admin/users/${u.id}`, {
-                                      method: 'DELETE',
-                                      headers: {
-                                        'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-                                      }
-                                    }).then(() => {
-                                      queryClient.invalidateQueries(['allUsers']);
-                                      queryClient.invalidateQueries(['allCheckIns']);
-                                    });
-                                  }
-                                }}
-                                disabled={u.id === user?.id} // Nu poate șterge pe el însuși
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
+                              <div className="flex flex-wrap gap-1 min-w-[120px]">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleResetPassword(u);
+                                  }}
+                                  disabled={u.id === user?.id}
+                                  title="Resetează parola"
+                                  className="text-xs px-2 py-1"
+                                >
+                                  🔑
+                                </Button>
+                                <Button
+                                  variant={u.subscription_plan === 'premium' ? "secondary" : "default"}
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleGrantPremium(u);
+                                  }}
+                                  disabled={u.id === user?.id}
+                                  title={u.subscription_plan === 'premium' ? 'Deja Premium' : 'Acordă Premium'}
+                                  className="text-xs px-2 py-1"
+                                >
+                                  👑
+                                </Button>
+                                <Button
+                                  variant="destructive"
+                                  size="sm"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteUser(u);
+                                  }}
+                                  disabled={u.id === user?.id} // Nu poate șterge pe el însuși
+                                  title="Șterge utilizatorul"
+                                  className="text-xs px-2 py-1"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </Button>
+                              </div>
                             </TableCell>
                           </TableRow>
                         );
@@ -2229,6 +2338,162 @@ export default function Admin() {
               </div>
             );
           })()}
+        </DialogContent>
+      </Dialog>
+
+      {/* Reset Password Dialog */}
+      <Dialog open={showResetPassword} onOpenChange={setShowResetPassword}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>🔑 Resetează Parola</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Resetezi parola pentru utilizatorul:
+              </p>
+              <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                {resetPasswordUser?.first_name && resetPasswordUser?.last_name 
+                  ? `${resetPasswordUser.first_name} ${resetPasswordUser.last_name}` 
+                  : resetPasswordUser?.name} ({resetPasswordUser?.email})
+              </p>
+            </div>
+            <div>
+              <Label htmlFor="newPassword">Parola Nouă (minim 6 caractere)</Label>
+              <Input
+                id="newPassword"
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                placeholder="Introdu parola nouă..."
+                className="mt-1"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowResetPassword(false)}>
+                Anulează
+              </Button>
+              <Button 
+                onClick={confirmResetPassword}
+                disabled={resetPasswordMutation.isPending || !newPassword.trim() || newPassword.length < 6}
+              >
+                {resetPasswordMutation.isPending ? 'Se resetează...' : 'Resetează Parola'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete User Dialog */}
+      <Dialog open={showDeleteUser} onOpenChange={setShowDeleteUser}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>🗑️ Șterge Utilizatorul</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
+              <p className="text-red-800 dark:text-red-200 font-semibold mb-2">
+                ⚠️ ATENȚIE: Această acțiune NU poate fi anulată!
+              </p>
+              <p className="text-sm text-red-700 dark:text-red-300">
+                Vei șterge PERMANENT utilizatorul:
+              </p>
+              <p className="font-bold text-red-900 dark:text-red-100 mt-1">
+                {deleteUserData?.first_name && deleteUserData?.last_name 
+                  ? `${deleteUserData.first_name} ${deleteUserData.last_name}` 
+                  : deleteUserData?.name} ({deleteUserData?.email})
+              </p>
+            </div>
+            <div className="text-sm text-gray-600 dark:text-gray-400">
+              <p className="font-semibold mb-2">Se vor șterge:</p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Toate datele personale</li>
+                <li>Toate check-ins-urile</li>
+                <li>Toate înregistrările de greutate</li>
+                <li>Toate mesajele și prieteniile</li>
+                <li>Toate rețetele personale</li>
+              </ul>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowDeleteUser(false)}>
+                Anulează
+              </Button>
+              <Button 
+                variant="destructive"
+                onClick={confirmDeleteUser}
+                disabled={deleteUserMutation.isPending}
+              >
+                {deleteUserMutation.isPending ? 'Se șterge...' : 'DA, Șterge Definitiv'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Grant Premium Dialog */}
+      <Dialog open={showGrantPremium} onOpenChange={setShowGrantPremium}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>👑 Acordă Premium</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
+                Acordă abonament Premium pentru utilizatorul:
+              </p>
+              <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                {grantPremiumUser?.first_name && grantPremiumUser?.last_name 
+                  ? `${grantPremiumUser.first_name} ${grantPremiumUser.last_name}` 
+                  : grantPremiumUser?.name} ({grantPremiumUser?.email})
+              </p>
+              {grantPremiumUser?.subscription_plan === 'premium' && (
+                <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    ⚠️ Utilizatorul are deja Premium activ
+                  </p>
+                </div>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="premiumDuration">Durata Premium</Label>
+              <Select value={premiumDuration} onValueChange={setPremiumDuration}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Selectează durata..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">1 lună</SelectItem>
+                  <SelectItem value="3">3 luni</SelectItem>
+                  <SelectItem value="6">6 luni</SelectItem>
+                  <SelectItem value="12">12 luni (1 an)</SelectItem>
+                  <SelectItem value="lifetime">Lifetime (permanent)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
+              <p className="text-sm text-emerald-800 dark:text-emerald-200">
+                <strong>✨ Premium include:</strong>
+              </p>
+              <ul className="text-xs text-emerald-700 dark:text-emerald-300 mt-1 list-disc list-inside">
+                <li>Rețete nelimitate</li>
+                <li>Funcționalitate prieteni</li>
+                <li>Baza de date alimente</li>
+                <li>Suport prioritar</li>
+                <li>Fără reclame</li>
+              </ul>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowGrantPremium(false)}>
+                Anulează
+              </Button>
+              <Button 
+                onClick={confirmGrantPremium}
+                disabled={grantPremiumMutation.isPending}
+                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
+              >
+                {grantPremiumMutation.isPending ? 'Se acordă...' : '👑 Acordă Premium'}
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

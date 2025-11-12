@@ -84,7 +84,7 @@ export const getPhaseInfo = (phase, language = 'en') => {
           "Exercise: strength training - 30 min"
         ],
         ro: [
-          "Proteine și legume",
+          "Accent pe proteine și legume",
           "Fără carbohidrați sau grăsimi",
           "Bea 8 pahare de apă",
           "Exercițiu: antrenament de forță - 30 min"

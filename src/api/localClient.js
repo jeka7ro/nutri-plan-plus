@@ -256,6 +256,17 @@ export const localApi = {
       method: 'PUT',
       body: JSON.stringify({ role }),
     }),
+    resetPassword: (userId, newPassword) => request(`/admin/users/${userId}/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify({ newPassword }),
+    }),
+    deleteUser: (userId) => request(`/admin/users/${userId}`, {
+      method: 'DELETE',
+    }),
+    grantPremium: (userId, durationMonths = 'lifetime') => request('/auth/me?subscription=grant', {
+      method: 'POST',
+      body: JSON.stringify({ targetUserId: userId, durationMonths }),
+    }),
     backups: {
       list: () => request('/admin/backups'),
       create: () => request('/admin/backup', { method: 'POST' }),
