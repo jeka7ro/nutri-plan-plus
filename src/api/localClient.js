@@ -261,6 +261,29 @@ export const localApi = {
       create: () => request('/admin/backup', { method: 'POST' }),
       delete: (id) => request(`/admin/backup/${id}`, { method: 'DELETE' }),
     },
+    // Payment Processors Management
+    paymentProcessors: {
+      list: () => request('/admin/payment-processors'),
+      get: (id) => request(`/admin/payment-processors/${id}`),
+      create: (processorData) => request('/admin/payment-processors', {
+        method: 'POST',
+        body: JSON.stringify(processorData),
+      }),
+      update: (id, updates) => request(`/admin/payment-processors/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(updates),
+      }),
+      delete: (id) => request(`/admin/payment-processors/${id}`, { method: 'DELETE' }),
+      test: (id) => request(`/admin/payment-processors/${id}/test`, { method: 'POST' }),
+    },
+    // Payment Transactions
+    paymentTransactions: {
+      list: (params = {}) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/admin/payment-transactions${query ? '?' + query : ''}`);
+      },
+      get: (id) => request(`/admin/payment-transactions/${id}`),
+    },
   },
   
   // Daily Check-ins - DOAR PostgreSQL, ZERO localStorage!

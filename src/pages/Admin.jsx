@@ -24,6 +24,7 @@ import AdminCRM from "@/components/AdminCRM";
 import AdminSales from "@/components/AdminSales";
 import AdminPromos from "@/components/AdminPromos";
 import AdminEmail from "@/components/AdminEmail";
+import AdminPayments from "@/components/AdminPayments";
 import { format, subDays, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
@@ -465,6 +466,7 @@ export default function Admin() {
                 <SelectItem value="sales">💰 Sales</SelectItem>
                 <SelectItem value="promos">🎁 Promoții</SelectItem>
                 <SelectItem value="email">📧 Email</SelectItem>
+                <SelectItem value="payments">💳 Plăți</SelectItem>
                 <SelectItem value="users">👥 Users</SelectItem>
                 <SelectItem value="recipes">🍽️ Rețete</SelectItem>
                 <SelectItem value="support">💬 Suport</SelectItem>
@@ -493,6 +495,11 @@ export default function Admin() {
           {/* ==================== TAB EMAIL ==================== */}
           <TabsContent value="email" className="mt-6">
             <AdminEmail />
+          </TabsContent>
+
+          {/* ==================== TAB PLĂȚI ==================== */}
+          <TabsContent value="payments" className="mt-6">
+            <AdminPayments />
           </TabsContent>
 
           {/* TAB RECOMANDĂRI - EDITARE */}

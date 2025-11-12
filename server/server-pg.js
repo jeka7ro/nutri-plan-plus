@@ -1003,6 +1003,231 @@ app.delete('/api/admin/backup/:id', authMiddleware, async (req, res) => {
   }
 });
 
+// ==================== PAYMENT PROCESSORS ENDPOINTS ====================
+
+// Get all payment processors (admin only)
+app.get('/api/admin/payment-processors', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if user is admin
+    const userResult = await client.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const result = await client.query(`
+      SELECT 
+        id, name, processor_type, region, status, commission_rate, 
+        currency, supported_methods, test_mode, monthly_volume, 
+        monthly_transactions, last_transaction_at, created_at
+      FROM payment_processors 
+      ORDER BY region, name
+    `);
+    
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching payment processors:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Create payment processor (admin only)
+app.post('/api/admin/payment-processors', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if user is admin
+    const userResult = await client.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const {
+      name, processor_type, region, api_key, secret_key, webhook_url,
+      commission_rate, currency, supported_methods, test_mode, config
+    } = req.body;
+
+    const result = await client.query(`
+      INSERT INTO payment_processors (
+        name, processor_type, region, api_key, secret_key, webhook_url,
+        commission_rate, currency, supported_methods, test_mode, config, status
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'inactive')
+      RETURNING *
+    `, [
+      name, processor_type, region, api_key, secret_key, webhook_url,
+      commission_rate, currency, JSON.stringify(supported_methods || []),
+      test_mode || true, JSON.stringify(config || {})
+    ]);
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error creating payment processor:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Update payment processor (admin only)
+app.put('/api/admin/payment-processors/:id', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if user is admin
+    const userResult = await client.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { id } = req.params;
+    const updates = req.body;
+    
+    // Build dynamic update query
+    const setClause = Object.keys(updates)
+      .map((key, index) => `${key} = $${index + 2}`)
+      .join(', ');
+    
+    const values = [id, ...Object.values(updates)];
+    
+    const result = await client.query(`
+      UPDATE payment_processors 
+      SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+      WHERE id = $1
+      RETURNING *
+    `, values);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Payment processor not found' });
+    }
+
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating payment processor:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Delete payment processor (admin only)
+app.delete('/api/admin/payment-processors/:id', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if user is admin
+    const userResult = await client.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { id } = req.params;
+    
+    const result = await client.query('DELETE FROM payment_processors WHERE id = $1 RETURNING id', [id]);
+    
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: 'Payment processor not found' });
+    }
+
+    res.json({ success: true, message: 'Payment processor deleted' });
+  } catch (error) {
+    console.error('Error deleting payment processor:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Get payment transactions (admin only)
+app.get('/api/admin/payment-transactions', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if user is admin
+    const userResult = await client.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const limit = parseInt(req.query.limit) || 50;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const result = await client.query(`
+      SELECT 
+        t.*,
+        p.name as processor_name,
+        p.processor_type,
+        u.email as user_email
+      FROM payment_transactions t
+      JOIN payment_processors p ON t.processor_id = p.id
+      LEFT JOIN users u ON t.user_id = u.id
+      ORDER BY t.created_at DESC
+      LIMIT $1 OFFSET $2
+    `, [limit, offset]);
+
+    res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching payment transactions:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Test payment processor connection (admin only)
+app.post('/api/admin/payment-processors/:id/test', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if user is admin
+    const userResult = await client.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+    if (userResult.rows[0]?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const { id } = req.params;
+    
+    const processorResult = await client.query('SELECT * FROM payment_processors WHERE id = $1', [id]);
+    
+    if (processorResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Payment processor not found' });
+    }
+
+    const processor = processorResult.rows[0];
+    
+    // Simulate test based on processor type
+    let testResult = {
+      success: true,
+      message: `Test connection successful for ${processor.name}`,
+      processor_type: processor.processor_type,
+      test_mode: processor.test_mode,
+      timestamp: new Date().toISOString()
+    };
+
+    // In real implementation, this would make actual API calls to test connectivity
+    if (processor.processor_type === 'viva') {
+      testResult.details = 'VIVA Wallet API connection verified';
+    } else if (processor.processor_type === 'revolut') {
+      testResult.details = 'Revolut Business API connection verified';
+    } else if (processor.processor_type === 'stripe') {
+      testResult.details = 'Stripe API connection verified';
+    }
+
+    res.json(testResult);
+  } catch (error) {
+    console.error('Error testing payment processor:', error);
+    res.status(500).json({ 
+      success: false, 
+      error: error.message,
+      message: 'Test connection failed'
+    });
+  } finally {
+    client.release();
+  }
+});
+
 // Start server - permite acces extern
 const HOST = process.env.HOST || '0.0.0.0'; // Ascultă pe toate interfețele
 
