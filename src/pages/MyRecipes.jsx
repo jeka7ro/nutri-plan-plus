@@ -91,6 +91,7 @@ export default function MyRecipes() {
     onSuccess: () => {
       queryClient.invalidateQueries(['myRecipes']);
       setEditingRecipe(null);
+      setShowAddDialog(false);
       resetForm();
       toast({
         title: language === 'ro' ? "Rețetă actualizată!" : "Recipe updated!",
