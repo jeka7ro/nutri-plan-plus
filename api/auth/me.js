@@ -475,8 +475,14 @@ export default async function handler(req, res) {
       return res.status(200).json(updatedUserData);
     }
     
-    // POST - change password
-    if (req.method === 'POST') {
+    // POST - change password (only when no special query parameter is provided)
+    if (
+      req.method === 'POST' &&
+      !req.query.subscription &&
+      !req.query.verify &&
+      !req.query.reset &&
+      !req.query.gdpr
+    ) {
       const { currentPassword, newPassword } = req.body;
       
       if (!currentPassword || !newPassword) {
