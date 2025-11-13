@@ -22,6 +22,9 @@ async function ensureTable() {
       created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP
     )
   `);
+  await pool.query(`ALTER TABLE weight_entries ADD COLUMN IF NOT EXISTS notes TEXT`);
+  await pool.query(`ALTER TABLE weight_entries ADD COLUMN IF NOT EXISTS mood VARCHAR(50)`);
+  await pool.query(`ALTER TABLE weight_entries ADD COLUMN IF NOT EXISTS created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT CURRENT_TIMESTAMP`);
   await pool.query(`CREATE INDEX IF NOT EXISTS idx_weight_entries_user_date ON weight_entries(user_id, date DESC, created_at DESC)`);
   tableEnsured = true;
 }
