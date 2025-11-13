@@ -172,7 +172,7 @@ export const localApi = {
     },
     delete: async (id) => {
       try {
-        await request(`/weight/${id}`, { method: 'DELETE' });
+        await request(`/weight?id=${encodeURIComponent(id)}`, { method: 'DELETE' });
         console.log('✅ weight.delete SUCCESS în PostgreSQL');
       } catch (error) {
         console.error('❌ weight.delete FAILED:', error.message);
