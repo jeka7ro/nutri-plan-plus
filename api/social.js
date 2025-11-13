@@ -583,6 +583,8 @@ async function handleUserRecipes(req, res, pool, userId) {
         name VARCHAR(255) NOT NULL,
         name_ro VARCHAR(255),
         description TEXT,
+        ingredients_text TEXT,
+        instructions_text TEXT,
         image_url TEXT,
         meal_type VARCHAR(50) NOT NULL,
         phase INTEGER,
@@ -609,6 +611,8 @@ async function handleUserRecipes(req, res, pool, userId) {
     } catch (error) {
       console.log('⚠️ Phases column might already exist or migration already done');
     }
+    await pool.query(`ALTER TABLE user_recipes ADD COLUMN IF NOT EXISTS ingredients_text TEXT DEFAULT ''`);
+    await pool.query(`ALTER TABLE user_recipes ADD COLUMN IF NOT EXISTS instructions_text TEXT DEFAULT ''`);
     
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_user_recipes_user ON user_recipes(user_id)`);
   } catch (error) {
@@ -655,7 +659,7 @@ async function handleUserRecipes(req, res, pool, userId) {
   
   // POST - Create recipe
   if (req.method === 'POST') {
-    const { name, name_ro, description, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends } = req.body;
+    const { name, name_ro, description, ingredients_text, instructions_text, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends } = req.body;
     
     if (!name || !meal_type) {
       return res.status(400).json({ error: 'Name and meal_type required' });
@@ -664,14 +668,26 @@ async function handleUserRecipes(req, res, pool, userId) {
     try {
       const result = await pool.query(`
         INSERT INTO user_recipes (
-          user_id, name, name_ro, description, image_url, meal_type, phase, phases,
+          user_id, name, name_ro, description, ingredients_text, instructions_text, image_url, meal_type, phase, phases,
           calories, protein, carbs, fat, is_public_to_friends
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
         RETURNING *
       `, [
-        userId, name, name_ro || name, description || '', image_url || null, meal_type, 
-        phase || null, phases || null,
-        calories || 0, protein || 0, carbs || 0, fat || 0, is_public_to_friends || false
+        userId,
+        name,
+        name_ro || name,
+        description || '',
+        ingredients_text || '',
+        instructions_text || '',
+        image_url || null,
+        meal_type,
+        phase || null,
+        phases || null,
+        calories || 0,
+        protein || 0,
+        carbs || 0,
+        fat || 0,
+        is_public_to_friends || false
       ]);
       
       return res.status(200).json(result.rows[0]);
@@ -683,7 +699,7 @@ async function handleUserRecipes(req, res, pool, userId) {
   
   // PUT - Update recipe
   if (req.method === 'PUT') {
-    const { id, name, name_ro, description, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends } = req.body;
+    const { id, name, name_ro, description, ingredients_text, instructions_text, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends } = req.body;
     
     if (!id) {
       return res.status(400).json({ error: 'Recipe ID required' });
@@ -695,19 +711,38 @@ async function handleUserRecipes(req, res, pool, userId) {
           name = COALESCE($1, name),
           name_ro = COALESCE($2, name_ro),
           description = COALESCE($3, description),
-          image_url = COALESCE($4, image_url),
-          meal_type = COALESCE($5, meal_type),
-          phase = COALESCE($6, phase),
-          phases = COALESCE($7, phases),
-          calories = COALESCE($8, calories),
-          protein = COALESCE($9, protein),
-          carbs = COALESCE($10, carbs),
-          fat = COALESCE($11, fat),
-          is_public_to_friends = COALESCE($12, is_public_to_friends),
+          ingredients_text = COALESCE($4, ingredients_text),
+          instructions_text = COALESCE($5, instructions_text),
+          image_url = COALESCE($6, image_url),
+          meal_type = COALESCE($7, meal_type),
+          phase = COALESCE($8, phase),
+          phases = COALESCE($9, phases),
+          calories = COALESCE($10, calories),
+          protein = COALESCE($11, protein),
+          carbs = COALESCE($12, carbs),
+          fat = COALESCE($13, fat),
+          is_public_to_friends = COALESCE($14, is_public_to_friends),
           updated_at = CURRENT_TIMESTAMP
-        WHERE id = $13 AND user_id = $14
+        WHERE id = $15 AND user_id = $16
         RETURNING *
-      `, [name, name_ro, description, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends, id, userId]);
+      `, [
+        name,
+        name_ro,
+        description,
+        ingredients_text,
+        instructions_text,
+        image_url,
+        meal_type,
+        phase,
+        phases,
+        calories,
+        protein,
+        carbs,
+        fat,
+        is_public_to_friends,
+        id,
+        userId
+      ]);
       
       if (result.rows.length === 0) {
         return res.status(404).json({ error: 'Recipe not found or not owned by you' });
