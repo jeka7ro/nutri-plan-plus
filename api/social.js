@@ -99,6 +99,9 @@ async function handleFriends(req, res, pool, userId) {
     
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_friend_requests_receiver ON friend_requests(receiver_id)`);
     await pool.query(`CREATE INDEX IF NOT EXISTS idx_friends_users ON friends(user_id_1, user_id_2)`);
+
+    await pool.query(`ALTER TABLE friends ADD COLUMN IF NOT EXISTS share_weight_user1_to_user2 BOOLEAN DEFAULT FALSE`);
+    await pool.query(`ALTER TABLE friends ADD COLUMN IF NOT EXISTS share_weight_user2_to_user1 BOOLEAN DEFAULT FALSE`);
   } catch (error) {
     console.error('❌ Error creating friend tables:', error);
   }
@@ -187,7 +190,9 @@ async function handleFriends(req, res, pool, userId) {
           CASE WHEN f.user_id_1 = $1 THEN u2.first_name ELSE u1.first_name END as first_name,
           CASE WHEN f.user_id_1 = $1 THEN u2.last_name ELSE u1.last_name END as last_name,
           CASE WHEN f.user_id_1 = $1 THEN u2.email ELSE u1.email END as email,
-          CASE WHEN f.user_id_1 = $1 THEN u2.profile_picture ELSE u1.profile_picture END as profile_picture
+          CASE WHEN f.user_id_1 = $1 THEN u2.profile_picture ELSE u1.profile_picture END as profile_picture,
+          CASE WHEN f.user_id_1 = $1 THEN f.share_weight_user2_to_user1 ELSE f.share_weight_user1_to_user2 END as share_weight_from_friend,
+          CASE WHEN f.user_id_1 = $1 THEN f.share_weight_user1_to_user2 ELSE f.share_weight_user2_to_user1 END as share_weight_to_friend
         FROM friends f
         LEFT JOIN users u1 ON f.user_id_1 = u1.id
         LEFT JOIN users u2 ON f.user_id_2 = u2.id
@@ -206,10 +211,14 @@ async function handleFriends(req, res, pool, userId) {
         `, [friend.friend_id]);
         
         let weight_loss_percent = null;
+        let latestWeight = null;
         if (weightResult.rows.length >= 2) {
           const latest = parseFloat(weightResult.rows[0].weight);
           const oldest = parseFloat(weightResult.rows[weightResult.rows.length - 1].weight);
           weight_loss_percent = ((oldest - latest) / oldest) * 100; // Pozitiv = pierdere
+        }
+        if (friend.share_weight_from_friend && weightResult.rows.length > 0) {
+          latestWeight = parseFloat(weightResult.rows[0].weight);
         }
         
         // Count meals completed (last 7 days)
@@ -268,6 +277,9 @@ async function handleFriends(req, res, pool, userId) {
           meals_completed: parseInt(mealsResult.rows[0]?.meals_completed) || 0,
           calories_burned: parseInt(caloriesResult.rows[0]?.calories_burned) || 0,
           recent_recipes: recentRecipes,
+          share_weight_from_friend: !!friend.share_weight_from_friend,
+          share_weight_to_friend: !!friend.share_weight_to_friend,
+          latest_weight: latestWeight,
         };
         
         console.log('📊 Friend progress data:', progressData);
@@ -292,6 +304,8 @@ async function handleFriends(req, res, pool, userId) {
           CASE WHEN f.user_id_1 = $1 THEN u2.last_name ELSE u1.last_name END as last_name,
           CASE WHEN f.user_id_1 = $1 THEN u2.email ELSE u1.email END as email,
           CASE WHEN f.user_id_1 = $1 THEN u2.profile_picture ELSE u1.profile_picture END as profile_picture,
+          CASE WHEN f.user_id_1 = $1 THEN f.share_weight_user1_to_user2 ELSE f.share_weight_user2_to_user1 END as share_weight_to_friend,
+          CASE WHEN f.user_id_1 = $1 THEN f.share_weight_user2_to_user1 ELSE f.share_weight_user1_to_user2 END as share_weight_from_friend,
           f.created_at
         FROM friends f
         LEFT JOIN users u1 ON f.user_id_1 = u1.id
@@ -309,6 +323,30 @@ async function handleFriends(req, res, pool, userId) {
   
   // PUT - Accept/Reject request
   if (req.method === 'PUT') {
+    if (req.body.friendshipId !== undefined && typeof req.body.shareWeight === 'boolean') {
+      const { friendshipId, shareWeight } = req.body;
+      try {
+        const friendshipResult = await pool.query(
+          'SELECT id, user_id_1, user_id_2 FROM friends WHERE id = $1 AND (user_id_1 = $2 OR user_id_2 = $2)',
+          [friendshipId, userId]
+        );
+
+        if (friendshipResult.rows.length === 0) {
+          return res.status(404).json({ error: 'Friendship not found' });
+        }
+
+        const friendship = friendshipResult.rows[0];
+        const column = friendship.user_id_1 === userId ? 'share_weight_user1_to_user2' : 'share_weight_user2_to_user1';
+
+        await pool.query(`UPDATE friends SET ${column} = $1 WHERE id = $2`, [shareWeight, friendshipId]);
+
+        return res.status(200).json({ success: true, shareWeight });
+      } catch (error) {
+        console.error('❌ Friend share update error:', error);
+        return res.status(500).json({ error: error.message });
+      }
+    }
+
     const { requestId, action } = req.body;
     
     if (!requestId || !action) {
@@ -328,6 +366,7 @@ async function handleFriends(req, res, pool, userId) {
       const request = requestResult.rows[0];
       
       if (action === 'accept') {
+        const shareWeight = req.body.shareWeight === true;
         await pool.query(
           'UPDATE friend_requests SET status = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
           ['accepted', requestId]
@@ -336,11 +375,26 @@ async function handleFriends(req, res, pool, userId) {
         const userId1 = Math.min(request.sender_id, request.receiver_id);
         const userId2 = Math.max(request.sender_id, request.receiver_id);
         
-        await pool.query(`
+        const friendshipInsert = await pool.query(`
           INSERT INTO friends (user_id_1, user_id_2)
           VALUES ($1, $2)
           ON CONFLICT (user_id_1, user_id_2) DO NOTHING
+          RETURNING id, user_id_1, user_id_2
         `, [userId1, userId2]);
+
+        let friendship = friendshipInsert.rows[0];
+        if (!friendship) {
+          const friendshipResult = await pool.query(
+            'SELECT id, user_id_1, user_id_2 FROM friends WHERE user_id_1 = $1 AND user_id_2 = $2',
+            [userId1, userId2]
+          );
+          friendship = friendshipResult.rows[0];
+        }
+
+        if (friendship) {
+          const column = friendship.user_id_1 === userId ? 'share_weight_user1_to_user2' : 'share_weight_user2_to_user1';
+          await pool.query(`UPDATE friends SET ${column} = $1 WHERE id = $2`, [shareWeight, friendship.id]);
+        }
         
         // Create notification
         const receiverData = await pool.query('SELECT first_name, last_name FROM users WHERE id = $1', [userId]);

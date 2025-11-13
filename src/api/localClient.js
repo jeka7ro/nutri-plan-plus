@@ -438,9 +438,9 @@ export const localApi = {
       body: JSON.stringify({ friendEmail }),
     }),
     getRequests: () => request('/social?type=friends&requests=true'),
-    acceptRequest: (requestId) => request('/social?type=friends', {
+    acceptRequest: (requestId, options = {}) => request('/social?type=friends', {
       method: 'PUT',
-      body: JSON.stringify({ requestId, action: 'accept' }),
+      body: JSON.stringify({ requestId, action: 'accept', shareWeight: options.shareWeight === true }),
     }),
     rejectRequest: (requestId) => request('/social?type=friends', {
       method: 'PUT',
@@ -448,6 +448,10 @@ export const localApi = {
     }),
     remove: (friendshipId) => request(`/social?type=friends&id=${friendshipId}`, { method: 'DELETE' }),
     getProgress: () => request('/social?type=friends&progress=true'),
+    updateShare: (friendshipId, shareWeight) => request('/social?type=friends', {
+      method: 'PUT',
+      body: JSON.stringify({ friendshipId, shareWeight }),
+    }),
   },
 
   // User Recipes (combined in /api/social.js)

@@ -5,6 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { 
   Users, 
@@ -30,6 +33,7 @@ export default function FriendsNew() {
   const { toast } = useToast();
   const [searchEmail, setSearchEmail] = useState("");
   const [user, setUser] = useState(null);
+  const [shareWeightChoices, setShareWeightChoices] = useState({});
   const queryClient = useQueryClient();
 
   // Get user info
@@ -111,13 +115,29 @@ export default function FriendsNew() {
 
   // Accept request mutation
   const acceptMutation = useMutation({
-    mutationFn: (requestId) => localApi.friends.acceptRequest(requestId),
-    onSuccess: () => {
+    mutationFn: ({ requestId, shareWeight }) => localApi.friends.acceptRequest(requestId, { shareWeight }),
+    onSuccess: (_, variables) => {
       queryClient.invalidateQueries(['friendRequests']);
       queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries(['friendsProgress']);
+      setShareWeightChoices((prev) => {
+        if (variables?.requestId) {
+          const updated = { ...prev };
+          delete updated[variables.requestId];
+          return updated;
+        }
+        return prev;
+      });
       toast({
         title: language === 'ro' ? "Cerere acceptată!" : "Request accepted!",
         description: language === 'ro' ? "Acum sunteți prieteni!" : "You are now friends!",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: language === 'ro' ? "Eroare" : "Error",
+        description: error.message,
+        variant: "destructive",
       });
     },
   });
@@ -140,6 +160,27 @@ export default function FriendsNew() {
       queryClient.invalidateQueries(['friends']);
       toast({
         title: language === 'ro' ? "Prieten șters" : "Friend removed",
+      });
+    },
+  });
+
+  const sharePreferenceMutation = useMutation({
+    mutationFn: ({ friendshipId, shareWeight }) => localApi.friends.updateShare(friendshipId, shareWeight),
+    onSuccess: () => {
+      queryClient.invalidateQueries(['friends']);
+      queryClient.invalidateQueries(['friendsProgress']);
+      toast({
+        title: language === 'ro' ? "Setări actualizate" : "Settings updated",
+        description: language === 'ro'
+          ? 'Preferința ta de partajare a greutății a fost salvată.'
+          : 'Your weight sharing preference has been saved.',
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: language === 'ro' ? "Eroare" : "Error",
+        description: error.message,
+        variant: "destructive",
       });
     },
   });
@@ -302,13 +343,36 @@ export default function FriendsNew() {
                       </div>
                     </div>
                   </div>
-                  {/* BUTOANE PE RÂND SEPARAT - NU SUPRAPUSE! */}
+                <div className="flex items-center gap-3 mt-4 text-sm text-[rgb(var(--ios-text-secondary))]">
+                  <Checkbox
+                    id={`share-weight-${req.id}`}
+                    checked={!!shareWeightChoices[req.id]}
+                    onCheckedChange={(checked) =>
+                      setShareWeightChoices((prev) => ({
+                        ...prev,
+                        [req.id]: !!checked,
+                      }))
+                    }
+                  />
+                  <Label
+                    htmlFor={`share-weight-${req.id}`}
+                    className="cursor-pointer select-none text-[rgb(var(--ios-text-secondary))]"
+                  >
+                    {language === 'ro'
+                      ? 'Permite acestui prieten să vadă greutatea mea'
+                      : 'Allow this friend to see my weight'}
+                  </Label>
+                </div>
+                {/* BUTOANE PE RÂND SEPARAT - NU SUPRAPUSE! */}
                   <div className="flex gap-3 mt-4 w-full">
                     <button
                       onClick={(e) => {
                         e.preventDefault();
                         console.log('✅ ACCEPT friend request:', req.id);
-                        acceptMutation.mutate(req.id);
+                      acceptMutation.mutate({
+                        requestId: req.id,
+                        shareWeight: !!shareWeightChoices[req.id],
+                      });
                       }}
                       disabled={acceptMutation.isPending}
                       className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-3 px-4 rounded-xl disabled:opacity-50 transition-all active:scale-95 flex items-center justify-center gap-2"
@@ -388,45 +452,87 @@ export default function FriendsNew() {
           </CardHeader>
           <CardContent className="space-y-3">
             {friends.length > 0 ? (
-              friends.map((friend) => (
-                <div key={friend.id} className="p-4 bg-[rgb(var(--ios-bg-tertiary))] rounded-[14px] border border-[rgb(var(--ios-border))]">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      {friend.profile_picture ? (
-                        <img 
-                          src={friend.profile_picture} 
-                          alt={friend.first_name}
-                          className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500"
-                        />
-                      ) : (
-                        <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
-                          <span className="text-white font-bold">
-                            {friend.first_name?.[0]?.toUpperCase() || 'U'}
-                          </span>
-                        </div>
-                      )}
-                      <div>
-                        <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                          {friend.first_name && friend.last_name ? `${friend.first_name} ${friend.last_name}` : friend.email}
-                        </div>
-                        <div className="text-sm text-[rgb(var(--ios-text-secondary))]">{friend.email}</div>
-                        <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
-                          {language === 'ro' ? 'Prieten din' : 'Friends since'} {format(new Date(friend.created_at), 'dd MMM yyyy', { locale: ro })}
+              friends.map((friend) => {
+                const isUpdatingShare =
+                  sharePreferenceMutation.isPending &&
+                  sharePreferenceMutation.variables?.friendshipId === friend.id;
+                return (
+                  <div key={friend.id} className="p-4 bg-[rgb(var(--ios-bg-tertiary))] rounded-[14px] border border-[rgb(var(--ios-border))] space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        {friend.profile_picture ? (
+                          <img 
+                            src={friend.profile_picture} 
+                            alt={friend.first_name}
+                            className="w-12 h-12 rounded-full object-cover border-2 border-emerald-500"
+                          />
+                        ) : (
+                          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-full flex items-center justify-center shadow-md">
+                            <span className="text-white font-bold">
+                              {friend.first_name?.[0]?.toUpperCase() || 'U'}
+                            </span>
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                            {friend.first_name && friend.last_name ? `${friend.first_name} ${friend.last_name}` : friend.email}
+                          </div>
+                          <div className="text-sm text-[rgb(var(--ios-text-secondary))]">{friend.email}</div>
+                          <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
+                            {language === 'ro' ? 'Prieten din' : 'Friends since'} {format(new Date(friend.created_at), 'dd MMM yyyy', { locale: ro })}
+                          </div>
+                          <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
+                            {friend.share_weight_from_friend
+                              ? (language === 'ro'
+                                ? 'Acest prieten îți partajează greutatea.'
+                                : 'This friend shares their weight with you.')
+                              : (language === 'ro'
+                                ? 'Acest prieten nu îți partajează greutatea.'
+                                : 'This friend does not share their weight with you.')}
+                          </div>
                         </div>
                       </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => removeMutation.mutate(friend.id)}
+                        disabled={removeMutation.isPending}
+                        className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
                     </div>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => removeMutation.mutate(friend.id)}
-                      disabled={removeMutation.isPending}
-                      className="border-red-300 text-red-600 hover:bg-red-50 dark:border-red-700 dark:text-red-400"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center justify-between gap-3 border-t border-[rgb(var(--ios-border))] pt-3">
+                      <div className="flex items-center gap-3">
+                        <Switch
+                          id={`share-toggle-${friend.id}`}
+                          checked={!!friend.share_weight_to_friend}
+                          onCheckedChange={(checked) =>
+                            sharePreferenceMutation.mutate({
+                              friendshipId: friend.id,
+                              shareWeight: !!checked,
+                            })
+                          }
+                          disabled={isUpdatingShare}
+                        />
+                        <Label
+                          htmlFor={`share-toggle-${friend.id}`}
+                          className="cursor-pointer text-sm text-[rgb(var(--ios-text-secondary))]"
+                        >
+                          {language === 'ro'
+                            ? 'Partajează greutatea cu acest prieten'
+                            : 'Share my weight with this friend'}
+                        </Label>
+                      </div>
+                      {isUpdatingShare && (
+                        <span className="text-xs text-[rgb(var(--ios-text-tertiary))]">
+                          {language === 'ro' ? 'Se salvează...' : 'Saving...'}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-12 text-[rgb(var(--ios-text-tertiary))]">
                 <Users className="w-16 h-16 mx-auto mb-4 opacity-30" />
@@ -451,8 +557,8 @@ export default function FriendsNew() {
               </CardTitle>
               <p className="text-sm text-[rgb(var(--ios-text-secondary))] mt-2">
                 {language === 'ro' 
-                  ? '🔒 Privat: Vezi doar procentul de pierdere, nu kilograme absolute.' 
-                  : '🔒 Private: See only % loss, not absolute weight.'}
+                  ? '🔒 Datele sunt private. Vezi greutatea doar dacă prietenul îți acordă acces.'
+                  : '🔒 Data is private. You only see weight if your friend grants access.'}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -499,6 +605,23 @@ export default function FriendsNew() {
                           </Badge>
                         )}
                       </div>
+                    </div>
+                    <div className="mt-3 text-sm text-[rgb(var(--ios-text-secondary))]">
+                      {friend.share_weight_from_friend && Number.isFinite(friend.latest_weight)
+                        ? (
+                          <span>
+                            {language === 'ro'
+                              ? 'Greutate actuală: '
+                              : 'Current weight: '}
+                            <strong>{Number(friend.latest_weight).toFixed(1)} kg</strong>
+                          </span>
+                        ) : (
+                          <span>
+                            {language === 'ro'
+                              ? 'Greutatea este privată 🔒'
+                              : 'Weight is private 🔒'}
+                          </span>
+                        )}
                     </div>
                     <div className="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-800 grid grid-cols-2 gap-2 text-sm">
                       <div className="flex items-center gap-2 text-[rgb(var(--ios-text-secondary))]">
