@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useRef } from "react";
 import localApi from "@/api/localClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,21 +20,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { 
-  ChefHat, 
-  Plus, 
-  Trash2, 
-  Edit, 
+import {
+  ChefHat,
+  Plus,
+  Trash2,
+  Edit,
   Users,
   Lock,
   Image as ImageIcon,
   Save,
   X,
-  Loader2
+  Loader2,
+  CheckCircle,
+  XCircle,
+  HelpCircle
 } from "lucide-react";
 import { useLanguage } from "../components/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { getPhaseInfo } from "@/utils/phaseUtils";
 
 export default function MyRecipes() {
   const { language } = useLanguage();
@@ -54,6 +58,8 @@ export default function MyRecipes() {
     is_public_to_friends: false,
   });
   const [isSearchingOnline, setIsSearchingOnline] = useState(false);
+  const [imagePreview, setImagePreview] = useState('');
+  const fileInputRef = useRef(null);
 
   const { data: myRecipes = [], isLoading } = useQuery({
     queryKey: ['myRecipes'],
@@ -269,6 +275,7 @@ export default function MyRecipes() {
         image_url: unsplashUrl,
         description: benefits,
       }));
+      setImagePreview(unsplashUrl);
 
       toast({
         title: language === 'ro' ? '✅ Rețetă completată!' : '✅ Recipe completed!',
@@ -299,6 +306,7 @@ export default function MyRecipes() {
       phases: [], // Array pentru multiple faze
       is_public_to_friends: false,
     });
+    setImagePreview('');
   };
 
   const handleEdit = (recipe) => {
@@ -311,6 +319,7 @@ export default function MyRecipes() {
       phases: recipe.phases || (recipe.phase ? [recipe.phase] : []), // Convertește phase vechi la array
       is_public_to_friends: recipe.is_public_to_friends,
     });
+    setImagePreview(recipe.image_url || '');
     setShowAddDialog(true);
   };
 
@@ -358,6 +367,109 @@ export default function MyRecipes() {
     2: { ro: 'Faza 2 (Deblocare)', en: 'Phase 2 (Unlock)' },
     3: { ro: 'Faza 3 (Ardere)', en: 'Phase 3 (Unleash)' },
     null: { ro: 'Toate fazele', en: 'All phases' },
+  };
+
+  const phaseAllowedData = useMemo(() => {
+    if (!formData.phases || formData.phases.length === 0) return [];
+    return formData.phases.map((phase) => {
+      const info = getPhaseInfo(phase, language);
+      return {
+        phase,
+        label: phaseLabels[phase]?.[language] || `Phase ${phase}`,
+        allowed: (info?.allowedFoods?.yes || []).map((item) => item.toLowerCase()),
+        forbidden: (info?.allowedFoods?.no || []).map((item) => item.toLowerCase()),
+      };
+    });
+  }, [formData.phases, language]);
+
+  const ingredientChecks = useMemo(() => {
+    const lines = formData.ingredients_text
+      .split('\n')
+      .map((line) => line.trim())
+      .filter((line) => line.length > 0);
+
+    if (lines.length === 0 || phaseAllowedData.length === 0) {
+      return [];
+    }
+
+    return lines.map((line) => {
+      const normalized = line.toLowerCase();
+      const matchedAllowed = [];
+      const matchedForbidden = [];
+
+      phaseAllowedData.forEach(({ label, allowed, forbidden }) => {
+        if (forbidden.some((item) => normalized.includes(item))) {
+          matchedForbidden.push(label);
+        } else if (allowed.some((item) => normalized.includes(item))) {
+          matchedAllowed.push(label);
+        }
+      });
+
+      let status = 'unknown';
+      let message;
+      if (matchedForbidden.length > 0) {
+        status = 'forbidden';
+        message = language === 'ro'
+          ? `Nu este permis în: ${matchedForbidden.join(', ')}`
+          : `Not allowed in: ${matchedForbidden.join(', ')}`;
+      } else if (matchedAllowed.length > 0) {
+        status = 'allowed';
+        message = language === 'ro'
+          ? `Permis în: ${matchedAllowed.join(', ')}`
+          : `Allowed in: ${matchedAllowed.join(', ')}`;
+      } else {
+        status = 'unknown';
+        message = language === 'ro'
+          ? 'Ingredient necunoscut pentru fazele selectate'
+          : 'Unknown ingredient for selected phases';
+      }
+
+      return { line, status, message };
+    });
+  }, [formData.ingredients_text, phaseAllowedData, language]);
+
+  const handleImageUpload = (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 8 * 1024 * 1024) {
+      toast({
+        title: language === 'ro' ? 'Imagine prea mare' : 'Image too large',
+        description: language === 'ro'
+          ? 'Limita este de 8MB.'
+          : 'Maximum allowed size is 8MB.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (loadEvent) => {
+      const dataUrl = loadEvent.target?.result;
+      if (typeof dataUrl === 'string') {
+        setFormData((prev) => ({ ...prev, image_url: dataUrl }));
+        setImagePreview(dataUrl);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleRemoveImage = () => {
+    setFormData((prev) => ({ ...prev, image_url: '' }));
+    setImagePreview('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const ingredientStatusIcon = (status) => {
+    if (status === 'allowed') {
+      return <CheckCircle className="w-4 h-4 text-emerald-500" />;
+    }
+    if (status === 'forbidden') {
+      return <XCircle className="w-4 h-4 text-red-500" />;
+    }
+    return <HelpCircle className="w-4 h-4 text-yellow-500" />;
   };
 
   return (
@@ -565,7 +677,7 @@ export default function MyRecipes() {
                   id="ingredients"
                   value={formData.ingredients_text}
                   onChange={(e) => setFormData({ ...formData, ingredients_text: e.target.value })}
-                  placeholder={language === 'ro' ? '200g piept de pui\n1 cană orez brun\n2 linguri ulei măsline\nSare și piper' : '200g chicken breast\n1 cup brown rice\n2 tbsp olive oil\nSalt and pepper'}
+                  placeholder=""
                   rows={5}
                   className="font-mono text-sm"
                 />
@@ -577,24 +689,88 @@ export default function MyRecipes() {
                   id="instructions"
                   value={formData.instructions_text}
                   onChange={(e) => setFormData({ ...formData, instructions_text: e.target.value })}
-                  placeholder={language === 'ro' ? '1. Fierbe apa și orezul\n2. Gătește puiul la tigaie\n3. Amestecă și servește' : '1. Boil water and rice\n2. Cook chicken in pan\n3. Mix and serve'}
+                  placeholder=""
                   rows={5}
                   className="font-mono text-sm"
                 />
               </div>
 
+              {formData.ingredients_text.trim().length > 0 && formData.phases.length === 0 && (
+                <div className="rounded-lg border border-yellow-300 bg-yellow-50 dark:border-yellow-700 dark:bg-yellow-900/30 px-3 py-2 text-xs text-yellow-700 dark:text-yellow-200">
+                  {language === 'ro'
+                    ? 'Selectează cel puțin o fază pentru a verifica dacă ingredientele sunt permise.'
+                    : 'Select at least one phase to validate your ingredients.'}
+                </div>
+              )}
+
+              {ingredientChecks.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">
+                    {language === 'ro' ? 'Compatibilitate ingrediente' : 'Ingredient compatibility'}
+                  </Label>
+                  <div className="space-y-2">
+                    {ingredientChecks.map(({ line, status, message }, index) => (
+                      <div
+                        key={`${line}-${index}`}
+                        className={`flex flex-col gap-1 rounded-lg border px-3 py-2 text-sm ${
+                          status === 'allowed'
+                            ? 'border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-200'
+                            : status === 'forbidden'
+                            ? 'border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-900/20 dark:text-red-200'
+                            : 'border-yellow-300 bg-yellow-50 text-yellow-700 dark:border-yellow-700 dark:bg-yellow-900/20 dark:text-yellow-200'
+                        }`}
+                      >
+                        <div className="flex items-center gap-2">
+                          {ingredientStatusIcon(status)}
+                          <span className="font-medium">{line}</span>
+                        </div>
+                        <span className="text-xs">{message}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-2">
-                <Label htmlFor="image_url">{language === 'ro' ? 'Link Poză (opțional)' : 'Image URL (optional)'}</Label>
-                <div className="flex gap-2">
+                <Label htmlFor="image_url">{language === 'ro' ? 'Poză rețetă (opțional)' : 'Recipe image (optional)'}</Label>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+                <div className="flex flex-col gap-3">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <Button type="button" variant="outline" onClick={() => fileInputRef.current?.click()}>
+                      <ImageIcon className="w-4 h-4 mr-2" />
+                      {language === 'ro' ? 'Încarcă din galerie/cameră' : 'Upload from gallery/camera'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      onClick={handleRemoveImage}
+                      disabled={!imagePreview}
+                      className="text-red-600 hover:text-red-700 disabled:text-gray-400"
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      {language === 'ro' ? 'Șterge imaginea' : 'Remove image'}
+                    </Button>
+                  </div>
                   <Input
                     id="image_url"
                     value={formData.image_url}
-                    onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      setFormData({ ...formData, image_url: value });
+                      setImagePreview(value);
+                    }}
                     placeholder="https://..."
                   />
-                  {formData.image_url && (
-                    <div className="w-16 h-16 rounded-lg overflow-hidden border-2 border-[rgb(var(--ios-border))] flex-shrink-0">
-                      <img src={formData.image_url} alt="Preview" className="w-full h-full object-cover" />
+                  {imagePreview && (
+                    <div className="w-full max-w-[200px] h-40 rounded-xl overflow-hidden border-2 border-[rgb(var(--ios-border))]">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
                     </div>
                   )}
                 </div>
