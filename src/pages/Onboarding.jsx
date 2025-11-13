@@ -46,6 +46,43 @@ export default function Onboarding() {
   const [imagePreview, setImagePreview] = useState(null);
   const [countries, setCountries] = useState({});
   const [cities, setCities] = useState([]);
+  const [errors, setErrors] = useState({});
+
+  const isUSCountry = (country) => {
+    const value = (country || "").toLowerCase();
+    return value.includes("united states") || value === "usa";
+  };
+
+  const formatDateForDisplay = (isoDate, country) => {
+    if (!isoDate) return "";
+    const iso = new Date(isoDate);
+    if (Number.isNaN(iso.getTime())) return "";
+    const day = String(iso.getUTCDate()).padStart(2, "0");
+    const month = String(iso.getUTCMonth() + 1).padStart(2, "0");
+    const year = iso.getUTCFullYear();
+    return isUSCountry(country) ? `${month}/${day}/${year}` : `${day}.${month}.${year}`;
+  };
+
+  const parseDisplayDate = (value, country) => {
+    if (!value) return "";
+    try {
+      let day, month, year;
+      if (isUSCountry(country)) {
+        const parts = value.split("/");
+        if (parts.length !== 3) return "";
+        [month, day, year] = parts;
+      } else {
+        const parts = value.split(".");
+        if (parts.length !== 3) return "";
+        [day, month, year] = parts;
+      }
+      const iso = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+      if (Number.isNaN(iso.getTime())) return "";
+      return iso.toISOString().split("T")[0];
+    } catch (error) {
+      return "";
+    }
+  };
   
   // Verifică user-ul curent
   React.useEffect(() => {
@@ -56,7 +93,7 @@ export default function Onboarding() {
         setFormData(prev => ({
           ...prev,
           full_name: user.name || user.first_name || "",
-          birth_date: user.birth_date || "",
+          birth_date: formatDateForDisplay(user.birth_date, user.country),
           country: user.country || "",
           city: user.city || "",
           current_weight: user.current_weight || "",
@@ -64,9 +101,14 @@ export default function Onboarding() {
           height: user.height || "",
           gender: user.gender || "",
           activity_level: user.activity_level || "moderate",
+          start_date: formatDateForDisplay(user.start_date, user.country),
           is_vegetarian: user.is_vegetarian || false,
           is_vegan: user.is_vegan || false,
-          allergies: user.allergies || [],
+          allergies: user.allergies
+            ? Array.isArray(user.allergies)
+              ? user.allergies
+              : String(user.allergies).split(',').map(a => a.trim()).filter(Boolean)
+            : [],
           favorite_foods: user.favorite_foods || ""
         }));
         if (user.profile_picture) setImagePreview(user.profile_picture);
@@ -200,29 +242,40 @@ export default function Onboarding() {
   };
 
   const handleSubmit = async () => {
+    const birthDateIso = parseDisplayDate(formData.birth_date, formData.country || currentUser?.country);
+    if (!birthDateIso) {
+      setErrors(prev => ({ ...prev, birth_date: language === 'ro' ? 'Format corect: ' + (isUSCountry(formData.country || currentUser?.country) ? 'MM/DD/YYYY' : 'DD.MM.YYYY') : 'Use format ' + (isUSCountry(formData.country || currentUser?.country) ? 'MM/DD/YYYY' : 'DD.MM.YYYY') }));
+      return;
+    }
+    if (!formData.profile_picture) {
+      setErrors(prev => ({ ...prev, profile_picture: language === 'ro' ? 'Adaugă o poză de profil' : 'Add a profile picture' }));
+      return;
+    }
+
     setLoading(true);
     try {
-      // Prepare dietary preferences
       let dietary_preferences = [];
       if (formData.is_vegetarian) dietary_preferences.push('vegetarian');
       if (formData.is_vegan) dietary_preferences.push('vegan');
 
-      // Calculate age from birth_date
       const age = calculateAge();
+      const startDateIso = parseDisplayDate(formData.start_date, formData.country || currentUser?.country) || formData.start_date;
 
-      await localApi.auth.updateMe({
+      await localApi.auth.updateProfile({
         name: formData.full_name,
-        birth_date: formData.birth_date,
+        birth_date: birthDateIso,
         current_weight: parseFloat(formData.current_weight),
         target_weight: parseFloat(formData.target_weight),
         height: parseFloat(formData.height),
         age: age,
         gender: formData.gender,
-        activity_level: 'moderate', // Default moderat
-        start_date: formData.start_date,
+        activity_level: formData.activity_level || 'moderate',
+        start_date: startDateIso,
         dietary_preferences: dietary_preferences.join(','),
         allergies: formData.allergies.join(','),
-        profile_picture: formData.profile_picture
+        profile_picture: formData.profile_picture,
+        country: formData.country,
+        city: formData.city
       });
 
       navigate(createPageUrl("Dashboard"));
@@ -236,8 +289,17 @@ export default function Onboarding() {
 
   const isStepValid = () => {
     if (step === 1) {
-      return formData.full_name && formData.current_weight && formData.target_weight && 
-             formData.height && formData.birth_date && formData.gender;
+      return (
+        formData.current_weight &&
+        formData.target_weight &&
+        formData.height &&
+        formData.birth_date &&
+        parseDisplayDate(formData.birth_date, formData.country || currentUser?.country) &&
+        formData.gender &&
+        formData.country &&
+        formData.city &&
+        formData.profile_picture
+      );
     }
     return true;
   };
@@ -265,9 +327,10 @@ export default function Onboarding() {
   };
 
   const calculateAge = () => {
-    if (!formData.birth_date) return 0;
+    const iso = parseDisplayDate(formData.birth_date, formData.country || currentUser?.country);
+    if (!iso) return 0;
     const today = new Date();
-    const birthDate = new Date(formData.birth_date);
+    const birthDate = new Date(iso);
     let age = today.getFullYear() - birthDate.getFullYear();
     const monthDiff = today.getMonth() - birthDate.getMonth();
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
@@ -277,7 +340,8 @@ export default function Onboarding() {
   };
 
   const calculateTDEE = () => {
-    if (!formData.current_weight || !formData.height || !formData.birth_date || !formData.gender) return 0;
+    const iso = parseDisplayDate(formData.birth_date, formData.country || currentUser?.country);
+    if (!formData.current_weight || !formData.height || !iso || !formData.gender) return 0;
 
     const weight = parseFloat(formData.current_weight);
     const height = parseFloat(formData.height);
@@ -396,6 +460,9 @@ export default function Onboarding() {
                     <Camera className="w-4 h-4 text-blue-600" />
                     {language === 'ro' ? 'Poză de profil (opțional)' : 'Profile Picture (optional)'}
                   </Label>
+                  {errors.profile_picture && (
+                    <p className="text-xs text-red-500 mb-2">{errors.profile_picture}</p>
+                  )}
                   <div className="flex items-center gap-4">
                     {imagePreview ? (
                       <div className="relative">
@@ -451,12 +518,14 @@ export default function Onboarding() {
                       {language === 'ro' ? 'Data de naștere *' : 'Date of Birth *'}
                     </Label>
                     <Input
-                      type="date"
+                      type="text"
+                      inputMode="numeric"
                       value={formData.birth_date}
                       onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
-                      max={new Date().toISOString().split('T')[0]}
+                      placeholder={isUSCountry(formData.country || currentUser?.country) ? "MM/DD/YYYY" : "DD.MM.YYYY"}
                       className="h-12"
                     />
+                    {errors.birth_date && <p className="text-xs text-red-500 mt-1">{errors.birth_date}</p>}
                   </div>
 
                   <div>
