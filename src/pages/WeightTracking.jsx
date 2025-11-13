@@ -53,7 +53,7 @@ export default function WeightTracking() {
 
   const addWeightMutation = useMutation({
     mutationFn: async (data) => {
-      await localApi.weight.add({
+      const result = await localApi.weight.add({
         weight: data.weight,
         date: data.date,
         notes: data.notes,
@@ -62,10 +62,13 @@ export default function WeightTracking() {
       if (user && !user.current_weight) {
         await localApi.auth.updateProfile({ current_weight: data.weight });
       }
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (savedEntry) => {
       queryClient.invalidateQueries(['weightEntries']);
-      setWeight("");
+      if (savedEntry?.weight !== undefined && savedEntry?.weight !== null) {
+        setWeight(parseFloat(savedEntry.weight).toFixed(1));
+      }
       setNotes("");
       setMood("normal");
       toast({
