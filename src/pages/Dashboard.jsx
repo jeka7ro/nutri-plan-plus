@@ -13,19 +13,20 @@ import {
 } from "@/components/ui/dialog";
 import { Link, useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { 
-  Apple, 
-  Flame, 
-  Droplets, 
+import {
+  Apple,
+  Flame,
+  Droplets,
   TrendingUp,
-  Award, 
+  Award,
   Calendar,
   ChevronRight,
   Target,
   Activity,
   Heart,
   UtensilsCrossed,
-  Dumbbell
+  Dumbbell,
+  Loader2
 } from "lucide-react";
 import { format, differenceInDays, subDays } from "date-fns";
 import { ro, enUS } from "date-fns/locale";
