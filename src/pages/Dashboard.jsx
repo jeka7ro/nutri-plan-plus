@@ -178,29 +178,61 @@ export default function Dashboard() {
   const tdee = calculateTDEE();
   const caloriesRemaining = tdee - netCalories;
 
-  // Use centralized phase info
+  const buildPhaseInfo = (phaseNumber, overrides) => {
+    const info = getPhaseInfo(phaseNumber, language);
+
+    const localizedName =
+      (info?.name && typeof info.name === 'object' && info.name[language]) || info?.name || '';
+
+    const localizedDescription =
+      (info?.description && typeof info.description === 'object' && info.description[language]) ||
+      info?.description ||
+      '';
+
+    const localizedGuidelines = Array.isArray(info?.guidelines?.[language])
+      ? info.guidelines[language]
+      : Array.isArray(info?.guidelines)
+        ? info.guidelines
+        : [];
+
+    const allowedFoods = info?.allowedFoods || {};
+    const allowedForLanguage =
+      (allowedFoods && typeof allowedFoods[language] === 'object' && allowedFoods[language]) || allowedFoods || {};
+
+    return {
+      ...info,
+      ...overrides,
+      name: localizedName,
+      description: localizedDescription,
+      guidelines: localizedGuidelines,
+      allowedFoods: {
+        yes: Array.isArray(allowedForLanguage?.yes) ? allowedForLanguage.yes : [],
+        no: Array.isArray(allowedForLanguage?.no) ? allowedForLanguage.no : []
+      }
+    };
+  };
+
+  // Use centralized phase info with localized strings
   const phaseInfo = {
-    1: {
-      ...getPhaseInfo(1, language),
+    1: buildPhaseInfo(1, {
       color: "from-red-400 to-orange-500",
       bgColor: "bg-orange-50 dark:bg-orange-900/10",
       textColor: "text-orange-700 dark:text-orange-400"
-    },
-    2: {
-      ...getPhaseInfo(2, language),
+    }),
+    2: buildPhaseInfo(2, {
       color: "from-emerald-400 to-green-600",
       bgColor: "bg-emerald-50 dark:bg-emerald-900/10",
       textColor: "text-emerald-700 dark:text-emerald-400"
-    },
-    3: {
-      ...getPhaseInfo(3, language),
+    }),
+    3: buildPhaseInfo(3, {
       color: "from-purple-400 to-pink-500",
       bgColor: "bg-purple-50 dark:bg-purple-900/10",
       textColor: "text-purple-700 dark:text-purple-400"
-    }
+    })
   };
 
-  const phase = phaseInfo[currentPhase];
+  const phase = phaseInfo[currentPhase] || phaseInfo[1];
+  const getPhaseDisplay = (phaseNumber) => phaseInfo[phaseNumber] || phaseInfo[1];
 
   const last7Days = Array.from({length: 7}, (_, i) => {
     const date = subDays(new Date(), 6 - i);
@@ -738,7 +770,7 @@ export default function Dashboard() {
                 <div key={checkIn.id} className="flex items-center justify-between p-3 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-[14px]">
                   <div>
                     <div className="font-medium text-[rgb(var(--ios-text-primary))]">
-                      {language === 'ro' ? 'Ziua' : 'Day'} {checkIn.day_number} - {phaseInfo[checkIn.phase].name}
+                      {language === 'ro' ? 'Ziua' : 'Day'} {checkIn.day_number} - {getPhaseDisplay(checkIn.phase).name}
                     </div>
                     <div className="text-sm text-[rgb(var(--ios-text-secondary))]">
                       {format(new Date(checkIn.date), "d MMMM yyyy", { locale: language === 'ro' ? ro : enUS })}
@@ -749,7 +781,7 @@ export default function Dashboard() {
                       </div>
                     )}
                   </div>
-                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${phaseInfo[checkIn.phase].bgColor} ${phaseInfo[checkIn.phase].textColor}`}>
+                  <div className={`px-3 py-1 rounded-full text-xs font-medium ${getPhaseDisplay(checkIn.phase).bgColor} ${getPhaseDisplay(checkIn.phase).textColor}`}>
                     {language === 'ro' ? 'Faza' : 'Phase'} {checkIn.phase}
                   </div>
                 </div>
