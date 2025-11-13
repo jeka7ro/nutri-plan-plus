@@ -110,7 +110,7 @@ export default async function handler(req, res) {
       return res.status(200).json(rows.map(mapRow));
     } catch (error) {
       console.error('❌ Weight GET error:', error);
-      return res.status(500).json({ error: 'Failed to load weight history' });
+      return res.status(500).json({ error: error.message || 'Failed to load weight history' });
     }
   }
 
@@ -142,7 +142,7 @@ export default async function handler(req, res) {
       return res.status(201).json(mapRow(rows[0]));
     } catch (error) {
       console.error('❌ Weight POST error:', error);
-      return res.status(500).json({ error: 'Failed to save weight entry' });
+      return res.status(500).json({ error: error.message || 'Failed to save weight entry' });
     }
   }
 
@@ -167,7 +167,7 @@ export default async function handler(req, res) {
       return res.status(200).json(mapRow(rows[0]));
     } catch (error) {
       console.error('❌ Weight DELETE error:', error);
-      return res.status(500).json({ error: 'Failed to delete weight entry' });
+      return res.status(500).json({ error: error.message || 'Failed to delete weight entry' });
     }
   }
 

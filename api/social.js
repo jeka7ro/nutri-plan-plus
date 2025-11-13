@@ -244,12 +244,13 @@ async function handleFriends(req, res, pool, userId) {
         
         // Get recent recipes (last 3)
         const recipesResult = await pool.query(`
-          SELECT DISTINCT 
-            COALESCE(breakfast_option, snack1_option, lunch_option, snack2_option, dinner_option) as recipe_id
+          SELECT DISTINCT ON (COALESCE(breakfast_option, snack1_option, lunch_option, snack2_option, dinner_option))
+            COALESCE(breakfast_option, snack1_option, lunch_option, snack2_option, dinner_option) AS recipe_id,
+            date
           FROM daily_checkins
           WHERE user_id = $1 
             AND (breakfast_option IS NOT NULL OR snack1_option IS NOT NULL OR lunch_option IS NOT NULL OR snack2_option IS NOT NULL OR dinner_option IS NOT NULL)
-          ORDER BY date DESC
+          ORDER BY COALESCE(breakfast_option, snack1_option, lunch_option, snack2_option, dinner_option), date DESC
           LIMIT 3
         `, [friend.friend_id]);
         
