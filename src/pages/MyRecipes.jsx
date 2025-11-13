@@ -59,6 +59,8 @@ export default function MyRecipes() {
   });
   const [isSearchingOnline, setIsSearchingOnline] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
+  const [imageOptions, setImageOptions] = useState([]);
+  const [selectedImage, setSelectedImage] = useState('');
   const fileInputRef = useRef(null);
 
   const { data: myRecipes = [], isLoading } = useQuery({
@@ -107,6 +109,39 @@ export default function MyRecipes() {
   });
 
   const optionalLabel = language === 'ro' ? '(opțional)' : '(optional)';
+
+  const imageLibrary = {
+    chicken: [
+      'https://images.unsplash.com/photo-1604908176997-12518821c0e2?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop',
+    ],
+    quinoa: [
+      'https://images.unsplash.com/photo-1525755662778-989d0524087e?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1512621776951-aaa3875b4372?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1604908177225-d33202c48493?w=800&auto=format&fit=crop',
+    ],
+    pumpkin: [
+      'https://images.unsplash.com/photo-1475855581690-80accde3ae2b?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=800&auto=format&fit=crop',
+    ],
+    broccoli: [
+      'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1512621776951-aaa3875b4372?w=800&auto=format&fit=crop',
+    ],
+    rice: [
+      'https://images.unsplash.com/photo-1562059390-a761a084768e?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1543353071-10c8ba85a904?w=800&auto=format&fit=crop',
+    ],
+    default: [
+      'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=800&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&auto=format&fit=crop',
+    ],
+  };
 
   const keywordConfigs = [
     {
@@ -266,11 +301,21 @@ export default function MyRecipes() {
 
     const description = Array.from(benefitSet).join(', ');
 
+    const imageUrlsRaw = [];
+    imageKeywords.forEach((key) => {
+      const pool = imageLibrary[key] || [];
+      pool.forEach((url) => imageUrlsRaw.push(url));
+    });
+    if (imageUrlsRaw.length === 0) {
+      imageLibrary.default.forEach((url) => imageUrlsRaw.push(url));
+    }
+    const uniqueImageUrls = Array.from(new Set(imageUrlsRaw)).slice(0, 4);
+
     return {
       ingredients: Array.from(ingredientSet),
       instructions: combinedInstructions,
       benefits: description,
-      imageQuery: imageKeywords.join('+'),
+      imageUrls: uniqueImageUrls,
     };
   };
 
@@ -290,15 +335,26 @@ export default function MyRecipes() {
       const smartRecipe = buildSmartRecipeFromName(recipeName);
 
       if (smartRecipe) {
+        setImageOptions(smartRecipe.imageUrls);
+        const defaultImage = smartRecipe.imageUrls[0] || '';
+        setSelectedImage(defaultImage);
         setFormData((prev) => ({
           ...prev,
           ingredients_text: smartRecipe.ingredients.join('\n'),
           instructions_text: smartRecipe.instructions.join('\n'),
-          image_url: `https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=${smartRecipe.imageQuery}`,
+          image_url: defaultImage,
           description: smartRecipe.benefits,
         }));
-        setImagePreview(`https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=${smartRecipe.imageQuery}`);
+        setImagePreview(defaultImage);
       } else {
+        setImageOptions(imageLibrary.default);
+        const fallback = imageLibrary.default[0] || '';
+        setSelectedImage(fallback);
+        setFormData((prev) => ({
+          ...prev,
+          image_url: fallback,
+        }));
+        setImagePreview(fallback);
         toast({
           title: language === 'ro' ? 'ℹ️ Sugestie limitată' : 'ℹ️ Limited suggestion',
           description: language === 'ro'
@@ -337,6 +393,8 @@ export default function MyRecipes() {
       is_public_to_friends: false,
     });
     setImagePreview('');
+    setImageOptions([]);
+    setSelectedImage('');
   };
 
   const handleEdit = (recipe) => {
@@ -350,6 +408,8 @@ export default function MyRecipes() {
       is_public_to_friends: recipe.is_public_to_friends,
     });
     setImagePreview(recipe.image_url || '');
+    setImageOptions([]);
+    setSelectedImage(recipe.image_url || '');
     setShowAddDialog(true);
   };
 
@@ -479,6 +539,7 @@ export default function MyRecipes() {
       if (typeof dataUrl === 'string') {
         setFormData((prev) => ({ ...prev, image_url: dataUrl }));
         setImagePreview(dataUrl);
+        setSelectedImage(dataUrl);
       }
     };
     reader.readAsDataURL(file);
@@ -487,6 +548,7 @@ export default function MyRecipes() {
   const handleRemoveImage = () => {
     setFormData((prev) => ({ ...prev, image_url: '' }));
     setImagePreview('');
+    setSelectedImage('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -795,6 +857,7 @@ export default function MyRecipes() {
                       const value = e.target.value;
                       setFormData({ ...formData, image_url: value });
                       setImagePreview(value);
+                      setSelectedImage(value);
                     }}
                     placeholder="https://..."
                   />
@@ -805,6 +868,37 @@ export default function MyRecipes() {
                   )}
                 </div>
               </div>
+
+              {imageOptions.length > 0 && (
+                <div className="space-y-2">
+                  <Label className="text-sm font-semibold">
+                    {language === 'ro' ? 'Sugestii de imagini' : 'Suggested images'}
+                  </Label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {imageOptions.map((url) => {
+                      const isSelected = selectedImage === url;
+                      return (
+                        <button
+                          type="button"
+                          key={url}
+                          onClick={() => {
+                            setSelectedImage(url);
+                            setFormData((prev) => ({ ...prev, image_url: url }));
+                            setImagePreview(url);
+                          }}
+                          className={`rounded-xl overflow-hidden border-2 transition-all ${
+                            isSelected
+                              ? 'border-emerald-500 ring-2 ring-emerald-300'
+                              : 'border-[rgb(var(--ios-border))] hover:border-emerald-400'
+                          }`}
+                        >
+                          <img src={url} alt="Recipe suggestion" className="w-full h-28 object-cover" />
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
 
               <div className="space-y-2">
                 <Label>{language === 'ro' ? 'Tip Masă' : 'Meal Type'} *</Label>
