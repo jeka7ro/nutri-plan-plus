@@ -260,7 +260,7 @@ export default function Onboarding() {
   };
 
   const requiredFieldsByStep = {
-    1: ["profile_picture", "birth_date", "gender", "current_weight", "target_weight", "height", "country", "city", "start_date"],
+    1: ["birth_date", "gender", "current_weight", "target_weight", "height", "country", "city", "start_date"],
     2: [],
     3: []
   };
@@ -517,11 +517,8 @@ export default function Onboarding() {
                 <div>
                   <Label className="flex items-center gap-2 mb-2">
                     <Camera className="w-4 h-4 text-blue-600" />
-                    {language === 'ro' ? 'Poză de profil *' : 'Profile Picture *'}
+                    {language === 'ro' ? 'Poză de profil (opțional)' : 'Profile Picture (optional)'}
                   </Label>
-                  {errors.profile_picture && (
-                    <p className="text-xs text-red-500 mb-2">{errors.profile_picture}</p>
-                  )}
                   <div className="flex items-center gap-4">
                     {imagePreview ? (
                       <div className="relative">
