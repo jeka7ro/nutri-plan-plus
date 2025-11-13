@@ -402,6 +402,8 @@ export default function MyRecipes() {
     setFormData({
       name: recipe.name,
       description: recipe.description || '',
+      ingredients_text: recipe.ingredients_text || '',
+      instructions_text: recipe.instructions_text || '',
       image_url: recipe.image_url || '',
       meal_type: recipe.meal_type,
       phases: recipe.phases || (recipe.phase ? [recipe.phase] : []), // Convertește phase vechi la array
@@ -473,7 +475,7 @@ export default function MyRecipes() {
   }, [formData.phases, language]);
 
   const ingredientChecks = useMemo(() => {
-    const lines = formData.ingredients_text
+    const lines = (formData.ingredients_text || '')
       .split('\n')
       .map((line) => line.trim())
       .filter((line) => line.length > 0);
