@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { TrendingDown, Target, Calendar, Ruler, User, Leaf, Heart, AlertCircle, Activity, Camera, Upload, X, Shield } from "lucide-react";
+import { TrendingDown, Target, Calendar, Ruler, Leaf, Heart, AlertCircle, Activity, Camera, Upload, X, Shield, User } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "../components/LanguageContext";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -26,15 +26,16 @@ export default function Onboarding() {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [currentUser, setCurrentUser] = React.useState(null);
+  const todayIso = new Date().toISOString();
+
   const [formData, setFormData] = useState({
-    full_name: "",
     current_weight: "",
     target_weight: "",
     height: "",
     birth_date: "",
     gender: "",
     activity_level: "moderate",
-    start_date: new Date().toISOString().split('T')[0],
+    start_date: "",
     is_vegetarian: false,
     is_vegan: false,
     allergies: [],
@@ -47,6 +48,13 @@ export default function Onboarding() {
   const [countries, setCountries] = useState({});
   const [cities, setCities] = useState([]);
   const [errors, setErrors] = useState({});
+
+  React.useEffect(() => {
+    setFormData(prev => ({
+      ...prev,
+      start_date: prev.start_date || formatDateForDisplay(todayIso, prev.country)
+    }));
+  }, []);
 
   const isUSCountry = (country) => {
     const value = (country || "").toLowerCase();
@@ -89,21 +97,20 @@ export default function Onboarding() {
     localApi.auth.me()
       .then(user => {
         setCurrentUser(user);
-        // Pre-populează TOATE datele dacă există
+        const country = user.country || "";
         setFormData(prev => ({
           ...prev,
-          full_name: user.name || user.first_name || "",
-          birth_date: formatDateForDisplay(user.birth_date, user.country),
-          country: user.country || "",
+          birth_date: formatDateForDisplay(user.birth_date, country),
+          country,
           city: user.city || "",
-          current_weight: user.current_weight || "",
-          target_weight: user.target_weight || "",
-          height: user.height || "",
+          current_weight: user.current_weight ? String(user.current_weight) : "",
+          target_weight: user.target_weight ? String(user.target_weight) : "",
+          height: user.height ? String(user.height) : "",
           gender: user.gender || "",
           activity_level: user.activity_level || "moderate",
-          start_date: formatDateForDisplay(user.start_date, user.country),
-          is_vegetarian: user.is_vegetarian || false,
-          is_vegan: user.is_vegan || false,
+          start_date: formatDateForDisplay(user.start_date, country) || prev.start_date,
+          is_vegetarian: Boolean(user.is_vegetarian),
+          is_vegan: Boolean(user.is_vegan),
           allergies: user.allergies
             ? Array.isArray(user.allergies)
               ? user.allergies
@@ -111,10 +118,13 @@ export default function Onboarding() {
             : [],
           favorite_foods: user.favorite_foods || ""
         }));
-        if (user.profile_picture) setImagePreview(user.profile_picture);
+        if (user.profile_picture) {
+          setFormData(prev => ({ ...prev, profile_picture: user.profile_picture }));
+          setImagePreview(user.profile_picture);
+          setErrors(prev => ({ ...prev, profile_picture: undefined }));
+        }
         
-        // Dacă user-ul ARE deja datele complete, SKIP onboarding
-        if (user.current_weight && user.target_weight && user.height && user.birth_date) {
+        if (user.current_weight && user.target_weight && user.height && user.birth_date && user.gender) {
           console.log('✅ User are date complete - SKIP onboarding');
           navigate('/dashboard');
         }
@@ -180,12 +190,13 @@ export default function Onboarding() {
   };
 
   const handleAllergenToggle = (allergen) => {
-    setFormData(prev => ({
-      ...prev,
-      allergies: prev.allergies.includes(allergen)
+    setFormData(prev => {
+      const updatedAllergies = prev.allergies.includes(allergen)
         ? prev.allergies.filter(a => a !== allergen)
-        : [...prev.allergies, allergen]
-    }));
+        : [...prev.allergies, allergen];
+      return { ...prev, allergies: updatedAllergies };
+    });
+    setErrors(prev => ({ ...prev, allergies: undefined }));
   };
 
   const handleImageUpload = (e) => {
@@ -227,8 +238,9 @@ export default function Onboarding() {
 
           // Convert to base64 with compression (0.7 quality)
           const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
-          setFormData({ ...formData, profile_picture: compressedBase64 });
+          setFormData(prev => ({ ...prev, profile_picture: compressedBase64 }));
           setImagePreview(compressedBase64);
+          setErrors(prev => ({ ...prev, profile_picture: undefined }));
         };
         img.src = event.target.result;
       };
@@ -237,18 +249,92 @@ export default function Onboarding() {
   };
 
   const removeImage = () => {
-    setFormData({ ...formData, profile_picture: "" });
+    setFormData(prev => ({ ...prev, profile_picture: "" }));
     setImagePreview(null);
+    setErrors(prev => ({ ...prev, profile_picture: undefined }));
+  };
+
+  const setField = (field, value) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
+    setErrors(prev => ({ ...prev, [field]: undefined }));
+  };
+
+  const requiredFieldsByStep = {
+    1: ["profile_picture", "birth_date", "gender", "current_weight", "target_weight", "height", "country", "city", "start_date"],
+    2: [],
+    3: []
+  };
+
+  const checkStepFields = (stepNumber) => {
+    const fields = requiredFieldsByStep[stepNumber] || [];
+    const stepErrors = {};
+
+    fields.forEach(field => {
+      const value = formData[field];
+      const isEmpty =
+        value === null ||
+        value === undefined ||
+        value === "" ||
+        (Array.isArray(value) && value.length === 0);
+      if (isEmpty) {
+        stepErrors[field] = language === 'ro' ? 'Câmp obligatoriu' : 'Required field';
+      }
+    });
+
+    if (fields.includes("birth_date")) {
+      const iso = parseDisplayDate(formData.birth_date, formData.country || currentUser?.country);
+      if (!iso) {
+        stepErrors.birth_date = language === 'ro'
+          ? `Format corect: ${isUSCountry(formData.country || currentUser?.country) ? 'MM/DD/YYYY' : 'DD.MM.YYYY'}`
+          : `Correct format: ${isUSCountry(formData.country || currentUser?.country) ? 'MM/DD/YYYY' : 'DD.MM.YYYY'}`;
+      }
+    }
+
+    if (fields.includes("start_date")) {
+      const iso = parseDisplayDate(formData.start_date, formData.country || currentUser?.country);
+      if (!iso) {
+        stepErrors.start_date = language === 'ro'
+          ? `Format corect: ${isUSCountry(formData.country || currentUser?.country) ? 'MM/DD/YYYY' : 'DD.MM.YYYY'}`
+          : `Correct format: ${isUSCountry(formData.country || currentUser?.country) ? 'MM/DD/YYYY' : 'DD.MM.YYYY'}`;
+      }
+    }
+
+    return {
+      valid: Object.keys(stepErrors).length === 0,
+      errors: stepErrors
+    };
+  };
+
+  const validateStep = (stepNumber) => {
+    const { valid, errors: stepErrors } = checkStepFields(stepNumber);
+    if (!valid) {
+      setErrors(prev => ({ ...prev, ...stepErrors }));
+    }
+    return valid;
+  };
+
+  const isStepValid = () => checkStepFields(step).valid;
+
+  const goToNextStep = () => {
+    if (validateStep(step)) {
+      setStep(step + 1);
+    }
   };
 
   const handleSubmit = async () => {
-    const birthDateIso = parseDisplayDate(formData.birth_date, formData.country || currentUser?.country);
-    if (!birthDateIso) {
-      setErrors(prev => ({ ...prev, birth_date: language === 'ro' ? 'Format corect: ' + (isUSCountry(formData.country || currentUser?.country) ? 'MM/DD/YYYY' : 'DD.MM.YYYY') : 'Use format ' + (isUSCountry(formData.country || currentUser?.country) ? 'MM/DD/YYYY' : 'DD.MM.YYYY') }));
-      return;
+    const stepsOrder = [1, 2, 3];
+    for (const stepNumber of stepsOrder) {
+      if (!validateStep(stepNumber)) {
+        setStep(stepNumber);
+        return;
+      }
     }
-    if (!formData.profile_picture) {
-      setErrors(prev => ({ ...prev, profile_picture: language === 'ro' ? 'Adaugă o poză de profil' : 'Add a profile picture' }));
+
+    const birthDateIso = parseDisplayDate(formData.birth_date, formData.country || currentUser?.country);
+    const startDateIso = parseDisplayDate(formData.start_date, formData.country || currentUser?.country);
+
+    if (!birthDateIso || !startDateIso) {
+      // Ar trebui deja prins de validare, dar ieșim defensiv
       return;
     }
 
@@ -259,10 +345,8 @@ export default function Onboarding() {
       if (formData.is_vegan) dietary_preferences.push('vegan');
 
       const age = calculateAge();
-      const startDateIso = parseDisplayDate(formData.start_date, formData.country || currentUser?.country) || formData.start_date;
 
       await localApi.auth.updateProfile({
-        name: formData.full_name,
         birth_date: birthDateIso,
         current_weight: parseFloat(formData.current_weight),
         target_weight: parseFloat(formData.target_weight),
@@ -285,23 +369,6 @@ export default function Onboarding() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const isStepValid = () => {
-    if (step === 1) {
-      return (
-        formData.current_weight &&
-        formData.target_weight &&
-        formData.height &&
-        formData.birth_date &&
-        parseDisplayDate(formData.birth_date, formData.country || currentUser?.country) &&
-        formData.gender &&
-        formData.country &&
-        formData.city &&
-        formData.profile_picture
-      );
-    }
-    return true;
   };
 
   const steps = [
@@ -360,8 +427,13 @@ export default function Onboarding() {
   };
 
   const handleSkip = () => {
-    console.log('⏭️ SKIP onboarding - navigare la Dashboard');
-    navigate(createPageUrl("Dashboard"));
+    if (validateStep(1)) {
+      console.log('⏭️ SKIP onboarding - navigare la Dashboard');
+      navigate(createPageUrl("Dashboard"));
+    } else {
+      setStep(1);
+      alert(language === 'ro' ? 'Completează întâi datele obligatorii.' : 'Please fill in the required fields first.');
+    }
   };
 
   return (
@@ -441,24 +513,11 @@ export default function Onboarding() {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-6"
               >
-                <div>
-                  <Label className="flex items-center gap-2 mb-2">
-                    <User className="w-4 h-4 text-emerald-600" />
-                    {language === 'ro' ? 'Numele complet *' : 'Full Name *'}
-                  </Label>
-                  <Input
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
-                    placeholder={language === 'ro' ? 'Ex: Maria Popescu' : 'Ex: John Doe'}
-                    className="h-12"
-                  />
-                </div>
-
                 {/* Profile Picture Upload */}
                 <div>
                   <Label className="flex items-center gap-2 mb-2">
                     <Camera className="w-4 h-4 text-blue-600" />
-                    {language === 'ro' ? 'Poză de profil (opțional)' : 'Profile Picture (optional)'}
+                    {language === 'ro' ? 'Poză de profil *' : 'Profile Picture *'}
                   </Label>
                   {errors.profile_picture && (
                     <p className="text-xs text-red-500 mb-2">{errors.profile_picture}</p>
@@ -521,7 +580,7 @@ export default function Onboarding() {
                       type="text"
                       inputMode="numeric"
                       value={formData.birth_date}
-                      onChange={(e) => setFormData({ ...formData, birth_date: e.target.value })}
+                      onChange={(e) => setField("birth_date", e.target.value)}
                       placeholder={isUSCountry(formData.country || currentUser?.country) ? "MM/DD/YYYY" : "DD.MM.YYYY"}
                       className="h-12"
                     />
@@ -533,15 +592,17 @@ export default function Onboarding() {
                       <User className="w-4 h-4 text-pink-600" />
                       {language === 'ro' ? 'Sexul *' : 'Gender *'}
                     </Label>
-                    <Select value={formData.gender} onValueChange={(value) => setFormData({ ...formData, gender: value })}>
+                    <Select value={formData.gender} onValueChange={(value) => setField("gender", value)}>
                       <SelectTrigger className="h-12">
                         <SelectValue placeholder={language === 'ro' ? 'Selectează' : 'Select'} />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="female">{language === 'ro' ? 'Feminin' : 'Female'}</SelectItem>
                         <SelectItem value="male">{language === 'ro' ? 'Masculin' : 'Male'}</SelectItem>
+                        <SelectItem value="other">{language === 'ro' ? 'Altul' : 'Other'}</SelectItem>
                       </SelectContent>
                     </Select>
+                    {errors.gender && <p className="text-xs text-red-500 mt-1">{errors.gender}</p>}
                   </div>
                 </div>
 
@@ -555,10 +616,11 @@ export default function Onboarding() {
                       type="number"
                       step="0.1"
                       value={formData.current_weight}
-                      onChange={(e) => setFormData({ ...formData, current_weight: e.target.value })}
+                      onChange={(e) => setField("current_weight", e.target.value)}
                       placeholder="75.5"
                       className="h-12"
                     />
+                    {errors.current_weight && <p className="text-xs text-red-500 mt-1">{errors.current_weight}</p>}
                   </div>
 
                   <div>
@@ -570,10 +632,11 @@ export default function Onboarding() {
                       type="number"
                       step="0.1"
                       value={formData.target_weight}
-                      onChange={(e) => setFormData({ ...formData, target_weight: e.target.value })}
+                      onChange={(e) => setField("target_weight", e.target.value)}
                       placeholder="65.0"
                       className="h-12"
                     />
+                    {errors.target_weight && <p className="text-xs text-red-500 mt-1">{errors.target_weight}</p>}
                   </div>
                 </div>
 
@@ -585,10 +648,11 @@ export default function Onboarding() {
                   <Input
                     type="number"
                     value={formData.height}
-                    onChange={(e) => setFormData({ ...formData, height: e.target.value })}
+                    onChange={(e) => setField("height", e.target.value)}
                     placeholder="165"
                     className="h-12"
                   />
+                    {errors.height && <p className="text-xs text-red-500 mt-1">{errors.height}</p>}
                 </div>
 
                 {/* ȚARĂ + ORAȘ */}
@@ -600,7 +664,8 @@ export default function Onboarding() {
                     <Select 
                       value={formData.country} 
                       onValueChange={(value) => {
-                        setFormData({ ...formData, country: value, city: '' });
+                        setField("country", value);
+                        setField("city", '');
                         setCities(countries[value] || []);
                       }}
                     >
@@ -613,6 +678,7 @@ export default function Onboarding() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {errors.country && <p className="text-xs text-red-500 mt-1">{errors.country}</p>}
                   </div>
 
                   <div>
@@ -621,7 +687,7 @@ export default function Onboarding() {
                     </Label>
                     <Select 
                       value={formData.city} 
-                      onValueChange={(value) => setFormData({ ...formData, city: value })}
+                      onValueChange={(value) => setField("city", value)}
                       disabled={!formData.country}
                     >
                       <SelectTrigger className="h-12">
@@ -633,6 +699,7 @@ export default function Onboarding() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                   </div>
                 </div>
 
@@ -646,7 +713,14 @@ export default function Onboarding() {
                       <Checkbox
                         id="vegetarian"
                         checked={formData.is_vegetarian}
-                        onCheckedChange={(checked) => setFormData({ ...formData, is_vegetarian: checked })}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            is_vegetarian: Boolean(checked),
+                            is_vegan: checked ? prev.is_vegan : false
+                          }));
+                          setErrors(prev => ({ ...prev, is_vegetarian: undefined }));
+                        }}
                       />
                       <Label htmlFor="vegetarian" className="cursor-pointer flex-1">
                         <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
@@ -662,7 +736,14 @@ export default function Onboarding() {
                       <Checkbox
                         id="vegan"
                         checked={formData.is_vegan}
-                        onCheckedChange={(checked) => setFormData({ ...formData, is_vegan: checked, is_vegetarian: checked ? true : formData.is_vegetarian })}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            is_vegan: Boolean(checked),
+                            is_vegetarian: checked ? true : prev.is_vegetarian
+                          }));
+                          setErrors(prev => ({ ...prev, is_vegan: undefined }));
+                        }}
                       />
                       <Label htmlFor="vegan" className="cursor-pointer flex-1">
                         <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
@@ -682,11 +763,14 @@ export default function Onboarding() {
                     {language === 'ro' ? 'Data de început *' : 'Start Date *'}
                   </Label>
                   <Input
-                    type="date"
+                    type="text"
+                    inputMode="numeric"
                     value={formData.start_date}
-                    onChange={(e) => setFormData({ ...formData, start_date: e.target.value })}
+                    onChange={(e) => setField("start_date", e.target.value)}
+                    placeholder={isUSCountry(formData.country || currentUser?.country) ? "MM/DD/YYYY" : "DD.MM.YYYY"}
                     className="h-12"
                   />
+                  {errors.start_date && <p className="text-xs text-red-500 mt-1">{errors.start_date}</p>}
                   <p className="text-xs text-gray-500 mt-1">
                     {language === 'ro' 
                       ? 'Data când începi programul de 28 de zile' 
@@ -731,7 +815,14 @@ export default function Onboarding() {
                       <Checkbox
                         id="vegetarian"
                         checked={formData.is_vegetarian}
-                        onCheckedChange={(checked) => setFormData({ ...formData, is_vegetarian: checked, is_vegan: false })}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            is_vegetarian: Boolean(checked),
+                            is_vegan: checked ? prev.is_vegan : false
+                          }));
+                          setErrors(prev => ({ ...prev, is_vegetarian: undefined }));
+                        }}
                       />
                       <label htmlFor="vegetarian" className="flex-1 cursor-pointer">
                         <div className="font-bold text-lg flex items-center gap-2">
@@ -751,7 +842,14 @@ export default function Onboarding() {
                       <Checkbox
                         id="vegan"
                         checked={formData.is_vegan}
-                        onCheckedChange={(checked) => setFormData({ ...formData, is_vegan: checked, is_vegetarian: checked })}
+                        onCheckedChange={(checked) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            is_vegan: Boolean(checked),
+                            is_vegetarian: checked ? true : prev.is_vegetarian
+                          }));
+                          setErrors(prev => ({ ...prev, is_vegan: undefined }));
+                        }}
                       />
                       <label htmlFor="vegan" className="flex-1 cursor-pointer">
                         <div className="font-bold text-lg flex items-center gap-2">
@@ -809,7 +907,7 @@ export default function Onboarding() {
                   </Label>
                   <Input
                     value={formData.favorite_foods}
-                    onChange={(e) => setFormData({ ...formData, favorite_foods: e.target.value })}
+                    onChange={(e) => setField("favorite_foods", e.target.value)}
                     placeholder={language === 'ro' ? 'Ex: pui, avocado, spanac, quinoa' : 'Ex: chicken, avocado, spinach, quinoa'}
                     className="h-12"
                   />
@@ -837,7 +935,11 @@ export default function Onboarding() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <div className="text-xs text-gray-600 dark:text-gray-400">{language === 'ro' ? 'Nume' : 'Name'}</div>
-                        <div className="font-semibold text-[rgb(var(--ios-text-primary))]">{formData.full_name}</div>
+                        <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                          {currentUser?.first_name && currentUser?.last_name
+                            ? `${currentUser.first_name} ${currentUser.last_name}`
+                            : currentUser?.name || currentUser?.email || "—"}
+                        </div>
                       </div>
                       <div>
                         <div className="text-xs text-gray-600 dark:text-gray-400">{language === 'ro' ? 'Vârstă' : 'Age'}</div>
@@ -870,7 +972,7 @@ export default function Onboarding() {
                     <div>
                       <div className="text-xs text-gray-600 dark:text-gray-400">{language === 'ro' ? 'Nivel activitate' : 'Activity Level'}</div>
                       <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                        {activityLevels[formData.activity_level].name[language]}
+                        {(activityLevels[formData.activity_level]?.name?.[language]) || activityLevels.moderate.name[language]}
                       </div>
                       <div className="text-xs text-orange-600 dark:text-orange-400 mt-1">
                         TDEE estimat: ~{calculateTDEE()} {language === 'ro' ? 'calorii/zi' : 'calories/day'}
@@ -938,7 +1040,7 @@ export default function Onboarding() {
             )}
             {step < 3 ? (
               <Button
-                onClick={() => setStep(step + 1)}
+                onClick={goToNextStep}
                 disabled={!isStepValid()}
                 className="flex-1 bg-emerald-600 hover:bg-emerald-700"
               >
