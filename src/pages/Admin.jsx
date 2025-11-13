@@ -37,6 +37,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -406,9 +407,13 @@ export default function Admin() {
   };
 
   const confirmGrantPremium = () => {
-    grantPremiumMutation.mutate({ 
-      userId: grantPremiumUser.id, 
-      duration: premiumDuration 
+    if (!grantPremiumUser?.id) {
+      alert('Selectează un utilizator valid înainte de a acorda Premium.');
+      return;
+    }
+    grantPremiumMutation.mutate({
+      userId: grantPremiumUser.id,
+      duration: premiumDuration,
     });
   };
 
@@ -2462,10 +2467,22 @@ export default function Admin() {
       </Dialog>
 
       {/* Grant Premium Dialog */}
-      <Dialog open={showGrantPremium} onOpenChange={setShowGrantPremium}>
-        <DialogContent>
+      <Dialog
+        open={showGrantPremium}
+        onOpenChange={(open) => {
+          setShowGrantPremium(open);
+          if (!open) {
+            setGrantPremiumUser(null);
+            setPremiumDuration('lifetime');
+          }
+        }}
+      >
+        <DialogContent aria-describedby="grant-premium-description">
           <DialogHeader>
             <DialogTitle>👑 Acordă Premium</DialogTitle>
+            <DialogDescription id="grant-premium-description">
+              Activează manual abonamentul Premium pentru utilizatorul selectat. După confirmare, starea lui devine „Premium activ”.
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div>
