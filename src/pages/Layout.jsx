@@ -490,7 +490,7 @@ function LayoutContent() {
           <header className="bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-gray-200 dark:border-[rgb(var(--ios-border))] px-6 py-3 md:hidden sticky top-0 z-10 ios-shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <SidebarTrigger className="hover:bg-gray-100 dark:hover:bg-white/5 p-2 rounded-[12px] transition-colors duration-200" />
+                <SidebarTrigger className="hover:bg-gray-100 dark:hover:bg-white/5 p-3 rounded-[16px] border border-gray-200 dark:border-white/15 transition-colors duration-200 text-xl" />
                 {user && (
                   <div className="flex items-center gap-2">
                     {user.profile_picture ? (
@@ -513,16 +513,14 @@ function LayoutContent() {
               {/* Progress Bar - Centered */}
               {user?.start_date && (
                 <div className="flex-1 max-w-[140px]">
-                  <div className="flex items-center justify-center gap-2 mb-1">
-                    <span className="text-xs font-bold text-emerald-600 dark:text-emerald-400">
-                      {language === 'ro' ? 'Ziua' : 'Day'} {currentDay}/28
-                    </span>
-                  </div>
                   <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div 
-                      className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-500"
+                      className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500"
                       style={{ width: `${(currentDay / 28) * 100}%` }}
                     />
+                  </div>
+                  <div className="mt-1 text-[11px] font-semibold text-center text-emerald-600 dark:text-emerald-400">
+                    {language === 'ro' ? 'Ziua' : 'Day'} {currentDay}/28
                   </div>
                 </div>
               )}
@@ -552,15 +550,8 @@ function LayoutContent() {
                       </span>
                     </div>
                   )}
-                  <div>
-                    <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                      {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.full_name || user.email}
-                    </div>
-                    {user.start_date && (
-                      <div className="text-xs text-emerald-600 dark:text-emerald-400 font-bold">
-                        {language === 'ro' ? 'Ziua' : 'Day'} {currentDay}/28
-                      </div>
-                    )}
+                  <div className="font-semibold text-[rgb(var(--ios-text-primary))]">
+                    {user.first_name && user.last_name ? `${user.first_name} ${user.last_name}` : user.full_name || user.email}
                   </div>
                 </div>
               )}
@@ -571,9 +562,12 @@ function LayoutContent() {
               <div className="flex-1 max-w-[200px] mx-6">
                 <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div 
-                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-full transition-all duration-500"
+                    className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500"
                     style={{ width: `${(currentDay / 28) * 100}%` }}
                   />
+                </div>
+                <div className="mt-1 text-xs font-semibold text-center text-emerald-600 dark:text-emerald-400">
+                  {language === 'ro' ? 'Ziua' : 'Day'} {currentDay}/28
                 </div>
               </div>
             )}

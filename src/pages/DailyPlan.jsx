@@ -483,6 +483,36 @@ export default function DailyPlan() {
     { key: 'dinner_completed', icon: Moon, label: t('dinner'), mealType: 'dinner' },
   ], [t]);
 
+  const getOptionDisplayName = useCallback((option) => {
+    if (!option) return '';
+    if (language === 'ro') {
+      if (option.name_ro && option.name_ro.trim()) return option.name_ro;
+      if (option.name && option.name.trim()) return option.name;
+      if (option.name_en && option.name_en.trim()) return option.name_en;
+      if (option.title && option.title.trim()) return option.title;
+      if (option.alt_name && option.alt_name.trim()) return option.alt_name;
+    } else {
+      if (option.name_en && option.name_en.trim()) return option.name_en;
+      if (option.name && option.name.trim()) return option.name;
+      if (option.name_ro && option.name_ro.trim()) return option.name_ro;
+      if (option.title && option.title.trim()) return option.title;
+      if (option.alt_name && option.alt_name.trim()) return option.alt_name;
+    }
+    return option.display_name || option.id || (language === 'ro' ? 'Rețetă' : 'Recipe');
+  }, [language]);
+
+  const resolveRecipeByName = useCallback((name) => {
+    if (!name) return null;
+    const pools = [recipes, myRecipes, friendsRecipes].filter(Boolean);
+    for (const collection of pools) {
+      const found = collection.find((recipe) => getOptionDisplayName(recipe) === name);
+      if (found) {
+        return found;
+      }
+    }
+    return null;
+  }, [recipes, myRecipes, friendsRecipes, getOptionDisplayName]);
+
   // FIXAT: Nu mai face TOGGLE - doar marchează ca COMPLETAT
   // Verifică că există opțiune selectată ÎNAINTE de a marca ca completat
   const handleMealCheck = useCallback((mealKey, mealType) => {
@@ -539,7 +569,7 @@ export default function DailyPlan() {
       return;
     }
 
-    const optionName = language === 'ro' ? option.name_ro : option.name_en;
+    const optionName = getOptionDisplayName(option);
     const quantity = checkIn?.[mapping.quantityKey] || 1;
 
     const updatedFields = {
@@ -568,7 +598,7 @@ export default function DailyPlan() {
     
     console.log('📤 TRIMIT LA BACKEND:', dataToSend);
     updateCheckInMutation.mutate(dataToSend);
-  }, [checkIn, language, updateCheckInMutation, meals, selectedDate, currentPhase]);
+  }, [checkIn, updateCheckInMutation, meals, selectedDate, currentPhase, getOptionDisplayName]);
 
   // DESELECT meal - șterge selecția și permite alegerea altei opțiuni
   const handleMealDeselect = useCallback((mealType) => {
@@ -627,9 +657,7 @@ export default function DailyPlan() {
     if (newQuantity === currentQuantity && increment !== 0) return;
 
     const selectedOptionName = checkIn?.[mapping.optionKey];
-    const baseRecipe = recipes.find(r => 
-      (language === 'ro' ? r.name_ro : r.name_en) === selectedOptionName
-    );
+    const baseRecipe = resolveRecipeByName(selectedOptionName);
 
     const baseCalories = baseRecipe?.calories || 0;
     const newCalories = baseCalories * newQuantity;
@@ -654,7 +682,7 @@ export default function DailyPlan() {
       phase: currentPhase,
       total_calories: totalCalories
     });
-  }, [checkIn, recipes, language, updateCheckInMutation, meals, selectedDate, currentPhase]);
+  }, [checkIn, resolveRecipeByName, updateCheckInMutation, meals, selectedDate, currentPhase]);
 
   const handleWaterUpdate = useCallback((increment) => {
     const current = checkIn?.water_intake || 0;
@@ -863,7 +891,14 @@ export default function DailyPlan() {
                 <span className="text-3xl font-bold text-white">{currentPhase}</span>
               </div>
             </div>
-            <Progress value={(currentDay / 28) * 100} className="h-2 mb-4 bg-emerald-100 dark:bg-emerald-900/30 [&>div]:bg-emerald-500 dark:[&>div]:bg-emerald-500" />
+            <Progress 
+              value={(currentDay / 28) * 100} 
+              className="h-2 mb-2 bg-emerald-100 dark:bg-emerald-900/30"
+              indicatorClassName="bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500"
+            />
+            <div className="text-xs font-semibold text-[rgb(var(--ios-text-secondary))] mb-4 text-center">
+              {language === 'ro' ? 'Ziua ' : 'Day '} {currentDay}/28
+            </div>
             <div className="space-y-2">
               {phase.guidelines[language].map((guideline, i) => (
                 <div key={i} className="flex items-start gap-2">
@@ -1495,7 +1530,7 @@ export default function DailyPlan() {
                       {(expandedMeals[meal.mealType] ? options : options.slice(0, 3)).map((option, index) => {
                       const favoriteScore = scoreMealOption(option);
                       // FIXAT: Compară AMBELE nume pentru a evita false positive
-                      const currentName = language === 'ro' ? option.name_ro : option.name_en;
+                      const currentName = getOptionDisplayName(option);
                       const isSelected = selectedOptionName === currentName;
                       
                       // FREE: vezi doar prima opțiune, restul blur
@@ -1541,7 +1576,7 @@ export default function DailyPlan() {
                           {option.image_url ? (
                             <img
                               src={option.image_url}
-                              alt={language === 'ro' ? option.name_ro : option.name_en}
+                              alt={currentName}
                               className="w-full h-32 object-cover"
                               onError={(e) => {
                                 e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop';
@@ -1554,7 +1589,7 @@ export default function DailyPlan() {
                           )}
                           <div className="p-3">
                             <p className="font-medium text-sm text-[rgb(var(--ios-text-primary))] line-clamp-2 mb-2">
-                              {language === 'ro' ? option.name_ro : option.name_en}
+                              {currentName}
                             </p>
                             <div className="flex items-center gap-2 text-xs text-[rgb(var(--ios-text-secondary))] mb-2">
                               <span className="font-semibold">{option.calories} cal</span>
