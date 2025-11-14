@@ -472,17 +472,70 @@ export default function Admin() {
   });
 
   return (
-    <div className="p-4 md:p-8 min-h-screen">
+    <div className="admin-page p-4 md:p-8 min-h-screen text-white">
+      <style>{`
+        .admin-page {
+          background: radial-gradient(circle at top, rgba(147, 197, 253, 0.18), transparent 55%),
+                      radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.18), transparent 40%),
+                      radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.15), transparent 45%),
+                      #050714;
+        }
+        .admin-page .ios-card {
+          background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(15,23,42,0.55));
+          border: 1px solid rgba(255,255,255,0.12);
+          border-radius: 28px;
+          box-shadow: 0 25px 65px rgba(3,7,18,0.55);
+          backdrop-filter: blur(28px);
+          color: #f8fafc;
+        }
+        .admin-page .ios-card h3,
+        .admin-page .ios-card p,
+        .admin-page .ios-card span,
+        .admin-page .ios-card div {
+          color: inherit;
+        }
+        .admin-page .glass-pill {
+          background: linear-gradient(135deg, rgba(79, 209, 197, 0.8), rgba(99, 102, 241, 0.85));
+          border: 1px solid rgba(255,255,255,0.25);
+          color: #fff;
+          padding: 0.55rem 1.25rem;
+          border-radius: 999px;
+          box-shadow: 0 15px 35px rgba(59, 130, 246, 0.35);
+        }
+        .admin-page .glass-select {
+          background: rgba(15,23,42,0.55);
+          border: 1px solid rgba(255,255,255,0.15);
+          backdrop-filter: blur(20px);
+          color: #f8fafc;
+          border-radius: 18px;
+        }
+        .admin-page .glass-select svg,
+        .admin-page .glass-select span {
+          color: inherit;
+        }
+        .admin-page table {
+          color: #f8fafc;
+        }
+        .admin-page .glass-button {
+          background: linear-gradient(135deg, #5de0e6, #004aad);
+          border: none;
+          color: #fff;
+          box-shadow: 0 15px 35px rgba(0, 74, 173, 0.35);
+        }
+        .admin-page .glass-button:hover {
+          opacity: 0.9;
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-[rgb(var(--ios-text-primary))] flex items-center gap-3">
-              <Shield className="w-8 h-8 text-emerald-600" />
+            <h1 className="text-3xl font-bold flex items-center gap-3">
+              <Shield className="w-8 h-8 text-emerald-300" />
               Admin Dashboard
             </h1>
-            <p className="text-[rgb(var(--ios-text-secondary))] mt-1">Gestionează aplicația</p>
+            <p className="text-white/70 mt-1">Gestionează aplicația</p>
           </div>
-          <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+          <Badge className="glass-pill text-sm font-semibold tracking-wide">
             <Crown className="w-4 h-4 mr-1" />
             Administrator
           </Badge>
@@ -490,54 +543,54 @@ export default function Admin() {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           <Card 
-            className="ios-card border-none ios-shadow-lg cursor-pointer hover:shadow-2xl transition-all hover:scale-105"
+            className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
             onClick={() => setActiveTab("users")}
           >
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <Users className="w-6 h-6 md:w-8 md:h-8 text-blue-600 dark:text-blue-400" />
+                <Users className="w-6 h-6 md:w-8 md:h-8 text-sky-300" />
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-[rgb(var(--ios-text-primary))]">{stats.totalUsers}</div>
-              <div className="text-xs md:text-sm text-[rgb(var(--ios-text-secondary))] mt-1">Utilizatori</div>
+              <div className="text-2xl md:text-3xl font-bold">{stats.totalUsers}</div>
+              <div className="text-xs md:text-sm text-white/70 mt-1">Utilizatori</div>
             </CardContent>
           </Card>
 
           <Card 
-            className="ios-card border-none ios-shadow-lg cursor-pointer hover:shadow-2xl transition-all hover:scale-105"
+            className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
             onClick={() => setActiveTab("users")}
           >
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <Activity className="w-6 h-6 md:w-8 md:h-8 text-emerald-600 dark:text-emerald-400" />
+                <Activity className="w-6 h-6 md:w-8 md:h-8 text-emerald-300" />
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-[rgb(var(--ios-text-primary))]">{stats.activeUsers}</div>
-              <div className="text-xs md:text-sm text-[rgb(var(--ios-text-secondary))] mt-1">Activi (ultim 7 zile)</div>
+              <div className="text-2xl md:text-3xl font-bold">{stats.activeUsers}</div>
+              <div className="text-xs md:text-sm text-white/70 mt-1">Activi (ultim 7 zile)</div>
             </CardContent>
           </Card>
 
           <Card 
-            className="ios-card border-none ios-shadow-lg cursor-pointer hover:shadow-2xl transition-all hover:scale-105"
+            className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
             onClick={() => setActiveTab("support")}
           >
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <MessageSquare className="w-6 h-6 md:w-8 md:h-8 text-orange-600 dark:text-orange-400" />
+                <MessageSquare className="w-6 h-6 md:w-8 md:h-8 text-orange-300" />
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-[rgb(var(--ios-text-primary))]">{stats.pendingSupport}</div>
-              <div className="text-xs md:text-sm text-[rgb(var(--ios-text-secondary))] mt-1">Suport</div>
+              <div className="text-2xl md:text-3xl font-bold">{stats.pendingSupport}</div>
+              <div className="text-xs md:text-sm text-white/70 mt-1">Suport</div>
             </CardContent>
           </Card>
 
           <Card 
-            className="ios-card border-none ios-shadow-lg cursor-pointer hover:shadow-2xl transition-all hover:scale-105"
+            className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
             onClick={() => setActiveTab("recipes")}
           >
             <CardContent className="p-4 md:p-6">
               <div className="flex items-center justify-between mb-2">
-                <ChefHat className="w-6 h-6 md:w-8 md:h-8 text-purple-600 dark:text-purple-400" />
+                <ChefHat className="w-6 h-6 md:w-8 md:h-8 text-purple-300" />
               </div>
-              <div className="text-2xl md:text-3xl font-bold text-[rgb(var(--ios-text-primary))]">{stats.totalRecipes}</div>
-              <div className="text-xs md:text-sm text-[rgb(var(--ios-text-secondary))] mt-1">Rețete</div>
+              <div className="text-2xl md:text-3xl font-bold">{stats.totalRecipes}</div>
+              <div className="text-xs md:text-sm text-white/70 mt-1">Rețete</div>
             </CardContent>
           </Card>
         </div>
@@ -546,7 +599,7 @@ export default function Admin() {
           {/* HAMBURGER MENU - MOBIL ȘI DESKTOP */}
           <div className="mb-6">
             <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="w-full bg-[rgb(var(--ios-bg-tertiary))] border-[rgb(var(--ios-border))] h-14 text-lg">
+              <SelectTrigger className="glass-select w-full h-14 text-lg">
                 <div className="flex items-center gap-3">
                   <Menu className="w-5 h-5 text-emerald-500" />
                   <SelectValue placeholder="Selectează secțiune" />
