@@ -335,57 +335,6 @@ export default function IndexPage() {
                   </div>
                 </div>
 
-                {/* 2 COLOANE: Țara și Orașul */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="country" className="text-[rgb(var(--ios-text-primary))] font-semibold">
-                    {language === 'ro' ? 'Țara' : 'Country'}
-                  </Label>
-                    <Input
-                      id="country"
-                      name="country"
-                      type="text"
-                      placeholder={language === 'ro' ? 'România' : 'Romania'}
-                      value={formData.country}
-                      onChange={handleChange}
-                      className="h-12 rounded-[12px] text-base"
-                      required={!isLogin}
-                    />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="city" className="text-[rgb(var(--ios-text-primary))] font-semibold">
-                    {language === 'ro' ? 'Orașul' : 'City'}
-                  </Label>
-                    <Input
-                      id="city"
-                      name="city"
-                      type="text"
-                      placeholder={language === 'ro' ? 'București' : 'Bucharest'}
-                      value={formData.city}
-                      onChange={handleChange}
-                      className="h-12 rounded-[12px] text-base"
-                      required={!isLogin}
-                    />
-                  </div>
-                </div>
-
-                {/* Data Nașterii - pe toată lățimea */}
-                <div className="space-y-2">
-                  <Label htmlFor="date_of_birth" className="text-[rgb(var(--ios-text-primary))] font-semibold">
-                    {language === 'ro' ? 'Data Nașterii' : 'Date of Birth'}
-                  </Label>
-                    <Input
-                      id="date_of_birth"
-                      name="date_of_birth"
-                      type="date"
-                      value={formData.date_of_birth}
-                      onChange={handleChange}
-                      className="h-12 rounded-[12px] text-base"
-                      required={!isLogin}
-                      max={new Date().toISOString().split('T')[0]}
-                    />
-                </div>
               </>
             )}
 

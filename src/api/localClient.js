@@ -8,10 +8,9 @@ const getNormalizedApiBase = () => {
 
   if (typeof window !== 'undefined') {
     const protocol = window.location.protocol;
-    const hostname = window.location.hostname.replace(/^www\./i, '');
+    const hostname = window.location.hostname;
     const port = window.location.port ? `:${window.location.port}` : '';
 
-    // Pentru dev local mergem pe backend-ul localApi
     if (hostname === 'localhost') {
       return 'http://localhost:3001/api';
     }
