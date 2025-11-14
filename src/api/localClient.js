@@ -1,7 +1,28 @@
 // Client API pentru serverul local
 // Pe Vercel: /api (relative path)
 // Local: http://localhost:3001/api
-const API_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' && window.location.hostname === 'localhost' ? 'http://localhost:3001/api' : '/api');
+const getNormalizedApiBase = () => {
+  if (import.meta.env.VITE_API_URL) {
+    return import.meta.env.VITE_API_URL.replace(/\/$/, '');
+  }
+
+  if (typeof window !== 'undefined') {
+    const protocol = window.location.protocol;
+    const hostname = window.location.hostname.replace(/^www\./i, '');
+    const port = window.location.port ? `:${window.location.port}` : '';
+
+    // Pentru dev local mergem pe backend-ul localApi
+    if (hostname === 'localhost') {
+      return 'http://localhost:3001/api';
+    }
+
+    return `${protocol}//${hostname}${port}/api`;
+  }
+
+  return '/api';
+};
+
+const API_URL = getNormalizedApiBase();
 
 // Helper pentru localStorage
 const storage = {
@@ -43,6 +64,8 @@ const writeStored = (key, value) => {
 // Helper pentru request-uri
 async function request(endpoint, options = {}) {
   const token = storage.getToken();
+  const normalizedEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const url = `${API_URL}${normalizedEndpoint}`;
   
   const config = {
     ...options,
@@ -52,11 +75,29 @@ async function request(endpoint, options = {}) {
       ...options.headers,
     },
   };
-  
-  const response = await fetch(`${API_URL}${endpoint}`, config);
+
+  const response = await fetch(url, config);
+  const contentType = response.headers.get('content-type') || '';
+  const isJsonResponse = contentType.includes('application/json');
+
+  if (!isJsonResponse) {
+    const text = await response.text();
+
+    if (response.status === 401) {
+      storage.removeToken();
+      storage.removeUser();
+    }
+
+    throw new Error(text || 'Unexpected response format');
+  }
+
   const data = await response.json();
   
   if (!response.ok) {
+    if (response.status === 401) {
+      storage.removeToken();
+      storage.removeUser();
+    }
     throw new Error(data.error || 'Request failed');
   }
   

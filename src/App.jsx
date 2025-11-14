@@ -1,5 +1,6 @@
 import './App.css'
 import { Routes, Route } from "react-router-dom"
+import { useEffect } from "react"
 import { Toaster } from "@/components/ui/toaster"
 import { LanguageProvider } from "@/components/LanguageContext"
 import { ThemeProvider } from "@/components/ThemeContext"
@@ -24,6 +25,18 @@ import Upgrade from "@/pages/Upgrade.jsx"
 import Landing from "@/pages/Landing.jsx"
 
 function App() {
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const host = window.location.hostname;
+      if (host.startsWith('www.')) {
+        const normalizedHost = host.replace(/^www\./i, '');
+        const port = window.location.port ? `:${window.location.port}` : '';
+        const targetUrl = `${window.location.protocol}//${normalizedHost}${port}${window.location.pathname}${window.location.search}${window.location.hash}`;
+        window.location.replace(targetUrl);
+      }
+    }
+  }, []);
+
   return (
     <ThemeProvider>
       <LanguageProvider>
