@@ -15,11 +15,6 @@ const getNormalizedApiBase = () => {
       return 'http://localhost:3001/api';
     }
 
-    // Normalize both eatnfit.app and www.eatnfit.app to the same API host
-    if (hostname.endsWith('eatnfit.app')) {
-      return `${protocol}//eatnfit.app/api`;
-    }
-
     return `${protocol}//${hostname}${port}/api`;
   }
 
