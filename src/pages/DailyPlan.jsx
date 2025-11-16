@@ -88,8 +88,16 @@ export default function DailyPlan() {
   const { data: checkIn } = useQuery({
     queryKey: ['checkIn', format(selectedDate, 'yyyy-MM-dd')],
     queryFn: async () => {
-      // FIXAT: folosește localApi.checkins.get() pentru PostgreSQL
-      const result = await localApi.checkins.get(format(selectedDate, 'yyyy-MM-dd'));
+      const targetDate = format(selectedDate, 'yyyy-MM-dd');
+
+      // Folosim list() (endpoint stabil) și filtrăm pe front-end pe baza datei,
+      // ca să evităm orice problemă de routing cu /checkins/:date
+      const allCheckIns = await localApi.checkins.list();
+      const result =
+        Array.isArray(allCheckIns)
+          ? allCheckIns.find((c) => c.date === targetDate) || null
+          : null;
+
       // Return empty object if no check-in exists to avoid undefined errors
       return result || {
         breakfast_completed: false,
@@ -99,7 +107,7 @@ export default function DailyPlan() {
         dinner_completed: false,
         exercise_completed: false,
         water_intake: 0,
-        date: format(selectedDate, 'yyyy-MM-dd')
+        date: targetDate,
       };
     },
   });
