@@ -536,45 +536,7 @@ export default function DailyPlan() {
     return null;
   }, [recipes, myRecipes, friendsRecipes, getOptionDisplayName]);
 
-  // FIXAT: Nu mai face TOGGLE - doar marchează ca COMPLETAT
-  // Verifică că există opțiune selectată ÎNAINTE de a marca ca completat
-  const handleMealCheck = useCallback((mealKey, mealType) => {
-    const currentValue = checkIn?.[mealKey];
-    
-    // Verifică dacă există opțiune selectată pentru această masă
-    const mealTypeMap = {
-      'breakfast': 'breakfast_option',
-      'snack1': 'snack1_option',
-      'lunch': 'lunch_option',
-      'snack2': 'snack2_option',
-      'dinner': 'dinner_option'
-    };
-    
-    const optionKey = mealTypeMap[mealType];
-    const hasSelection = checkIn?.[optionKey];
-    
-    // Dacă NU are selecție și vrea să bifeze ca "completed" → OPREȘTE
-    if (!hasSelection && !currentValue) {
-      alert(language === 'ro' ? '⚠️ Selectează mai întâi o mâncare!' : '⚠️ Select a meal option first!');
-      return;
-    }
-    
-    const updateData = {
-      ...checkIn,
-      [mealKey]: !currentValue,  // TOGGLE: false → true → false
-      date: format(selectedDate, 'yyyy-MM-dd'),
-      day_number: getCurrentDay(),
-      phase: currentPhase
-    };
-    
-    // Reset editing mode when marking as completed
-    setEditingMeal(null);
-    
-    console.log('🔍 handleMealCheck:', { mealKey, currentValue, newValue: !currentValue, hasSelection, updateData });
-    updateCheckInMutation.mutate(updateData);
-  }, [checkIn, updateCheckInMutation, selectedDate, currentPhase, language]);
-
-  // OPTIMIZED: Batch all updates together
+  // OPTIMIZED: Batch all updates together - selectarea unei opțiuni = marcarea ca FINALIZAT
   const handleMealSelection = useCallback((mealType, option) => {
     console.log('🍽️ CLICK SELECȚIE MASĂ!', { mealType, optionName: option.name_ro });
     
@@ -1475,24 +1437,9 @@ export default function DailyPlan() {
                         </p>
                       )}
                     </div>
-                    <Button
-                      variant={isCompleted ? "outline" : "default"}
-                      size="sm"
-                      onClick={() => handleMealCheck(meal.key, meal.mealType)}
-                      className={`min-w-[120px] whitespace-nowrap ${isCompleted ? 'border-emerald-200 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300' : ''}`}
-                    >
-                      {isCompleted ? (
-                        <>
-                          <CheckCircle2 className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                          <span className="text-xs sm:text-sm">{t('completed')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Circle className="w-4 h-4 mr-1.5 flex-shrink-0" />
-                          <span className="text-xs sm:text-sm truncate">{t('markCompleted')}</span>
-                        </>
-                      )}
-                    </Button>
+                    {/* Butonul de "finalizare" manuală nu mai este necesar:
+                        - selectarea unei opțiuni marchează automat masa ca finalizată
+                        - utilizatorul poate deselecta cu X și alege altceva */}
                   </div>
 
                   {/* Meal Options Grid - FROM DATABASE */}
