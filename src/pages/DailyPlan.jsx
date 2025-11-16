@@ -91,12 +91,27 @@ export default function DailyPlan() {
       const targetDate = format(selectedDate, 'yyyy-MM-dd');
 
       // Folosim list() (endpoint stabil) și filtrăm pe front-end pe baza datei,
-      // ca să evităm orice problemă de routing cu /checkins/:date
+      // normalizând atât data din DB cât și targetDate la yyyy-MM-dd
       const allCheckIns = await localApi.checkins.list();
-      const result =
-        Array.isArray(allCheckIns)
-          ? allCheckIns.find((c) => c.date === targetDate) || null
-          : null;
+
+      const normalizeDate = (value) => {
+        if (!value) return null;
+        try {
+          // Dacă e deja string yyyy-MM-dd, îl returnăm direct
+          if (typeof value === 'string' && value.length === 10 && value.includes('-')) {
+            return value;
+          }
+          const d = new Date(value);
+          if (Number.isNaN(d.getTime())) return null;
+          return format(d, 'yyyy-MM-dd');
+        } catch {
+          return null;
+        }
+      };
+
+      const result = Array.isArray(allCheckIns)
+        ? allCheckIns.find((c) => normalizeDate(c.date) === targetDate) || null
+        : null;
 
       // Return empty object if no check-in exists to avoid undefined errors
       return result || {
