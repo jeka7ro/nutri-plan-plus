@@ -1,12 +1,12 @@
 import React from 'react';
 import { useTheme } from './ThemeContext';
-import { Sun, Moon, Monitor } from 'lucide-react';
+import { Sun, Moon } from 'lucide-react';
 
 export default function ThemeSelector() {
   const { themeMode, setThemeMode } = useTheme();
 
   const baseBtn =
-    'flex items-center justify-center w-8 h-8 rounded-full text-xs transition-colors';
+    'flex items-center justify-center min-w-[2.1rem] h-8 rounded-full text-xs font-medium transition-colors';
 
   const getClasses = (mode) =>
     `${baseBtn} ${
@@ -23,7 +23,7 @@ export default function ThemeSelector() {
         onClick={() => setThemeMode('auto')}
         title="Auto (sistem)"
       >
-        <Monitor className="w-4 h-4" />
+        <span className="text-[0.7rem] leading-none">Auto</span>
       </button>
       <button
         type="button"
