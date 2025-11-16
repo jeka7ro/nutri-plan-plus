@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import localApi from "@/api/localClient";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Bell, Check, X, UserPlus, ChefHat } from "lucide-react";
@@ -19,6 +20,7 @@ export default function NotificationBell() {
   const queryClient = useQueryClient();
   const [isOpen, setIsOpen] = useState(false);
   const [user, setUser] = useState(null);
+  const navigate = useNavigate();
 
   // Get user subscription plan
   React.useEffect(() => {
@@ -135,6 +137,14 @@ export default function NotificationBell() {
     if (!notification.is_read) {
       markAsReadMutation.mutate(notification.id);
     }
+
+    // Friend request: du direct la pagina de prieteni ca să poți accepta/refuza
+    if (notification.type === 'friend_request') {
+      setIsOpen(false);
+      navigate('/friends');
+      return;
+    }
+
     if (notification.action_url) {
       window.location.href = notification.action_url;
     }
@@ -190,12 +200,12 @@ export default function NotificationBell() {
               notifications.map((notification) => (
                 <div 
                   key={notification.id}
-                  className={`p-4 rounded-xl border transition-all ${
+                  className={`p-4 rounded-xl border transition-all cursor-pointer hover:shadow-md ${
                     !notification.is_read 
                       ? 'bg-blue-50 dark:bg-blue-950/30 border-blue-200 dark:border-blue-800' 
                       : 'bg-[rgb(var(--ios-bg-tertiary))] border-[rgb(var(--ios-border))]'
-                  } ${notification.type !== 'friend_request' ? 'cursor-pointer hover:shadow-md' : ''}`}
-                  onClick={() => notification.type !== 'friend_request' && handleNotificationClick(notification)}
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
                 >
                 <div className="flex gap-3 w-full">
                   <div className="flex-shrink-0 mt-1">
