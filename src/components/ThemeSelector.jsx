@@ -1,34 +1,46 @@
 import React from 'react';
 import { useTheme } from './ThemeContext';
-import { Sun, Moon } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { Sun, Moon, Monitor } from 'lucide-react';
 
 export default function ThemeSelector() {
-  const { theme, toggleTheme } = useTheme();
+  const { themeMode, setThemeMode } = useTheme();
+
+  const baseBtn =
+    'flex items-center justify-center w-8 h-8 rounded-full text-xs transition-colors';
+
+  const getClasses = (mode) =>
+    `${baseBtn} ${
+      themeMode === mode
+        ? 'bg-emerald-500 text-white shadow'
+        : 'text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+    }`;
 
   return (
-    <motion.button
-      onClick={toggleTheme}
-      className="relative w-16 h-8 rounded-full bg-gray-200 dark:bg-gray-700 transition-colors duration-300 flex items-center px-1"
-      whileTap={{ scale: 0.95 }}
-    >
-      <motion.div
-        className="w-6 h-6 rounded-full bg-white dark:bg-gray-800 shadow-lg flex items-center justify-center"
-        animate={{
-          x: theme === 'dark' ? 32 : 0
-        }}
-        transition={{
-          type: "spring",
-          stiffness: 500,
-          damping: 30
-        }}
+    <div className="flex items-center gap-1 px-1.5 py-1 rounded-full bg-gray-100/80 dark:bg-gray-800/80 ios-glass border border-[rgb(var(--ios-border))]">
+      <button
+        type="button"
+        className={getClasses('auto')}
+        onClick={() => setThemeMode('auto')}
+        title="Auto (sistem)"
       >
-        {theme === 'light' ? (
-          <Sun className="w-4 h-4 text-amber-500" />
-        ) : (
-          <Moon className="w-4 h-4 text-blue-400" />
-        )}
-      </motion.div>
-    </motion.button>
+        <Monitor className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        className={getClasses('light')}
+        onClick={() => setThemeMode('light')}
+        title="Luminos"
+      >
+        <Sun className="w-4 h-4" />
+      </button>
+      <button
+        type="button"
+        className={getClasses('dark')}
+        onClick={() => setThemeMode('dark')}
+        title="Întunecat"
+      >
+        <Moon className="w-4 h-4" />
+      </button>
+    </div>
   );
 }
