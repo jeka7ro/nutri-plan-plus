@@ -487,10 +487,10 @@ function LayoutContent() {
 
         <main className="flex-1 flex flex-col relative max-w-full overflow-x-hidden">
           {/* HEADER MOBIL (ascuns pe desktop) */}
-          <header className="bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-gray-200 dark:border-[rgb(var(--ios-border))] px-6 py-3 md:hidden sticky top-0 z-10 ios-shadow-sm">
+          <header className="bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-gray-200 dark:border-[rgb(var(--ios-border))] px-4 py-3 md:hidden sticky top-0 z-10 ios-shadow-sm">
             <div className="flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
-                <SidebarTrigger className="hover:bg-gray-100 dark:hover:bg-white/5 p-3 rounded-[16px] border border-gray-200 dark:border-white/15 transition-colors duration-200 text-xl" />
+                <SidebarTrigger className="hover:bg-gray-100 dark:hover:bg-white/5 p-3 rounded-2xl border border-gray-200 dark:border-white/15 transition-colors duration-200 text-xl w-11 h-11 flex items-center justify-center active:scale-[0.97]" />
                 {user && (
                   <div className="flex items-center gap-2">
                     {user.profile_picture ? (
