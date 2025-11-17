@@ -52,6 +52,7 @@ export default function Admin() {
   const [uploadingBook, setUploadingBook] = useState(false);
   const [bookUrl, setBookUrl] = useState("");
   const [recipeSearchQuery, setRecipeSearchQuery] = useState("");
+  const [isSearchingOnline, setIsSearchingOnline] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null); // Pentru dialog detalii user
   const [activeTab, setActiveTab] = useState("users"); // Control tab-uri - Users primul pentru management
   const [showCreateUser, setShowCreateUser] = useState(false); // Dialog creare utilizator
@@ -297,6 +298,7 @@ export default function Admin() {
       carbs: parseFloat(editingRecipe.carbs) || 0,
       fat: parseFloat(editingRecipe.fat) || 0,
       phase: parseInt(editingRecipe.phase) || 1,
+      is_admin_recipe: editingRecipe.is_admin_recipe || false,
     };
 
     delete recipeData.ingredients_en_text;
@@ -333,6 +335,147 @@ export default function Admin() {
     });
   };
 
+  // Funcție pentru căutare online (similar cu MyRecipes.jsx)
+  const handleSearchOnline = async () => {
+    if (!editingRecipe?.name_ro?.trim() && !editingRecipe?.name?.trim()) {
+      alert('⚠️ Introdu numele rețetei mai întâi');
+      return;
+    }
+
+    setIsSearchingOnline(true);
+    try {
+      const recipeName = (editingRecipe.name_ro || editingRecipe.name || '').toLowerCase();
+      
+      // Calculează macros bazat pe numele rețetei și meal type
+      let estimatedCalories = 300;
+      let estimatedProtein = 20;
+      let estimatedCarbs = 30;
+      let estimatedFat = 10;
+
+      // Estimări inteligente bazate pe keywords
+      if (/salată|salad|vegetarian/i.test(recipeName)) {
+        estimatedCalories = 250;
+        estimatedProtein = 15;
+        estimatedCarbs = 20;
+        estimatedFat = 12;
+      } else if (/pui|chicken|curcan|turkey/i.test(recipeName)) {
+        estimatedCalories = 350;
+        estimatedProtein = 35;
+        estimatedCarbs = 25;
+        estimatedFat = 12;
+      } else if (/pește|fish|somon|salmon|ton|tuna/i.test(recipeName)) {
+        estimatedCalories = 320;
+        estimatedProtein = 30;
+        estimatedCarbs = 15;
+        estimatedFat = 15;
+      } else if (/smoothie|shake/i.test(recipeName)) {
+        estimatedCalories = 280;
+        estimatedProtein = 25;
+        estimatedCarbs = 45;
+        estimatedFat = 2;
+      } else if (/omletă|omleta|omelette|ouă|oua|eggs/i.test(recipeName)) {
+        estimatedCalories = 220;
+        estimatedProtein = 18;
+        estimatedCarbs = 8;
+        estimatedFat = 14;
+      } else if (/avocado|nuci|nuts|seeds/i.test(recipeName)) {
+        estimatedCalories = 380;
+        estimatedProtein = 10;
+        estimatedCarbs = 20;
+        estimatedFat = 28;
+      } else if (/terci|porridge|oatmeal|ovăz|oats/i.test(recipeName)) {
+        estimatedCalories = 300;
+        estimatedProtein = 12;
+        estimatedCarbs = 55;
+        estimatedFat = 6;
+      } else if (/quinoa/i.test(recipeName)) {
+        estimatedCalories = 320;
+        estimatedProtein = 14;
+        estimatedCarbs = 60;
+        estimatedFat = 5;
+      } else if (/fructe|fruit|berries|mere|apples/i.test(recipeName)) {
+        estimatedCalories = 150;
+        estimatedProtein = 2;
+        estimatedCarbs = 35;
+        estimatedFat = 1;
+      }
+
+      // Ajustare pe meal type
+      const mealType = editingRecipe.meal_type || 'breakfast';
+      if (mealType === 'snack1' || mealType === 'snack2') {
+        estimatedCalories = Math.round(estimatedCalories * 0.4);
+        estimatedProtein = Math.round(estimatedProtein * 0.4);
+        estimatedCarbs = Math.round(estimatedCarbs * 0.4);
+        estimatedFat = Math.round(estimatedFat * 0.4);
+      }
+
+      // Generare ingrediente și instrucțiuni bazate pe keywords
+      const ingredients_ro = [];
+      const ingredients_en = [];
+      const instructions_ro = [];
+      const instructions_en = [];
+
+      if (/pui|chicken/i.test(recipeName)) {
+        ingredients_ro.push('300g piept pui');
+        ingredients_en.push('300g chicken breast');
+        instructions_ro.push('1. Gătește pieptul de pui la tigaie/grătar până devine fraged.');
+        instructions_en.push('1. Cook the chicken breast in a pan/grill until tender.');
+      }
+      if (/quinoa/i.test(recipeName)) {
+        ingredients_ro.push('1 cană quinoa, clătită');
+        ingredients_en.push('1 cup quinoa, rinsed');
+        instructions_ro.push('2. Fierbe quinoa 15 minute în apă cu puțină sare.');
+        instructions_en.push('2. Cook quinoa for 15 minutes in lightly salted water.');
+      }
+      if (/orez|rice/i.test(recipeName)) {
+        ingredients_ro.push('1 cană orez brun');
+        ingredients_en.push('1 cup brown rice');
+        instructions_ro.push('1. Fierbe orezul conform instrucțiunilor de pe ambalaj.');
+        instructions_en.push('1. Cook rice according to package instructions.');
+      }
+      if (/broccoli/i.test(recipeName)) {
+        ingredients_ro.push('200g broccoli desfăcut buchețele');
+        ingredients_en.push('200g broccoli florets');
+        instructions_ro.push('2. Blanșează broccoli 3-4 minute sau gătește-l la abur.');
+        instructions_en.push('2. Blanch the broccoli for 3-4 minutes or steam it.');
+      }
+
+      // Dacă nu am găsit ingrediente, adaugă unul generic
+      if (ingredients_ro.length === 0) {
+        ingredients_ro.push('Ingrediente principale');
+        ingredients_en.push('Main ingredients');
+        instructions_ro.push('1. Pregătește ingredientele conform rețetei.');
+        instructions_en.push('1. Prepare ingredients according to recipe.');
+      }
+
+      instructions_ro.push(`${instructions_ro.length + 1}. Amestecă toate ingredientele și asezonează după gust.`);
+      instructions_en.push(`${instructions_en.length + 1}. Combine all ingredients and season to taste.`);
+
+      // Imagine default
+      const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop';
+
+      setEditingRecipe({
+        ...editingRecipe,
+        ingredients_ro_text: ingredients_ro.join('\n'),
+        ingredients_en_text: ingredients_en.join('\n'),
+        instructions_ro_text: instructions_ro.join('\n'),
+        instructions_en_text: instructions_en.join('\n'),
+        image_url: editingRecipe.image_url || defaultImage,
+        calories: estimatedCalories,
+        protein: estimatedProtein,
+        carbs: estimatedCarbs,
+        fat: estimatedFat,
+      });
+
+      alert('✅ Rețetă completată! Ingrediente, instrucțiuni, imagine și valori nutriționale generate.');
+    } catch (error) {
+      console.error('Error searching online:', error);
+      alert('❌ Eroare la căutare online');
+    } finally {
+      setIsSearchingOnline(false);
+    }
+  };
+
   const handleNewRecipe = () => {
     setEditingRecipe({
       name: '',
@@ -347,6 +490,7 @@ export default function Admin() {
       protein: 0,
       carbs: 0,
       fat: 0,
+      is_admin_recipe: true, // Default pentru rețete noi create de admin
       ingredients_en_text: '',
       ingredients_ro_text: '',
       instructions_en_text: '',
@@ -971,6 +1115,9 @@ export default function Admin() {
                             </Badge>
                             <Badge variant="outline">{recipe.meal_type}</Badge>
                             <Badge variant="outline">{recipe.calories} cal</Badge>
+                            {recipe.is_admin_recipe && (
+                              <Badge className="bg-purple-500 text-white">👑 ADMIN</Badge>
+                            )}
                           </div>
                         </div>
                         <div className="flex gap-2">
@@ -1698,6 +1845,31 @@ export default function Admin() {
                       </Button>
                     </label>
                   </div>
+                  <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
+                    💡 Poți edita imaginea ulterior - schimbă URL-ul sau încarcă o imagine nouă
+                  </p>
+                </div>
+
+                {/* Buton Caută Online */}
+                <div className="flex gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={handleSearchOnline}
+                    disabled={isSearchingOnline || !editingRecipe?.name_ro?.trim() && !editingRecipe?.name?.trim()}
+                    className="flex-1"
+                  >
+                    {isSearchingOnline ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Caută...
+                      </>
+                    ) : (
+                      <>
+                        🔍 Caută Online (Ingrediente, Calorii, Mod de preparare)
+                      </>
+                    )}
+                  </Button>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-4">
@@ -1817,7 +1989,7 @@ export default function Admin() {
                 </div>
 
                 <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-4 flex-wrap">
                     <Checkbox
                       id="vegetarian"
                       checked={editingRecipe.is_vegetarian}
@@ -1838,6 +2010,13 @@ export default function Admin() {
                       onCheckedChange={(checked) => setEditingRecipe({ ...editingRecipe, is_featured: checked })}
                     />
                     <Label htmlFor="featured">Featured</Label>
+
+                    <Checkbox
+                      id="admin_recipe"
+                      checked={editingRecipe.is_admin_recipe}
+                      onCheckedChange={(checked) => setEditingRecipe({ ...editingRecipe, is_admin_recipe: checked })}
+                    />
+                    <Label htmlFor="admin_recipe" className="text-purple-600 dark:text-purple-400 font-semibold">👑 Rețetă Admin</Label>
                   </div>
                   <div>
                     <Label>Keywords (separă cu virgulă)</Label>

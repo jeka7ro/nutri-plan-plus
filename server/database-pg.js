@@ -107,11 +107,18 @@ export async function initDatabase() {
         allergens JSONB,
         is_public BOOLEAN DEFAULT TRUE,
         requires_premium BOOLEAN DEFAULT FALSE,
+        is_admin_recipe BOOLEAN DEFAULT FALSE,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
     console.log('✅ Recipes table created');
+    
+    // Add is_admin_recipe column if it doesn't exist (migration)
+    await client.query(`
+      ALTER TABLE recipes ADD COLUMN IF NOT EXISTS is_admin_recipe BOOLEAN DEFAULT FALSE
+    `);
+    console.log('✅ is_admin_recipe column ensured');
 
     // Daily check-ins table
     await client.query(`
