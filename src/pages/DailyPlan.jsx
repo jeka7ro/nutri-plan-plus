@@ -45,7 +45,22 @@ const getPhaseInfoWithColors = (phase, language) => {
     2: { color: "from-emerald-400 to-green-600", bgColor: "bg-emerald-50", textColor: "text-emerald-700" },
     3: { color: "from-purple-400 to-pink-500", bgColor: "bg-purple-50", textColor: "text-purple-700" }
   };
-  return { ...baseInfo, ...colorMap[phase] };
+  
+  // Extract localized strings from baseInfo
+  const localizedName = baseInfo?.name && typeof baseInfo.name === 'object' 
+    ? (baseInfo.name[language] || baseInfo.name.en || '') 
+    : (baseInfo?.name || '');
+  
+  const localizedDescription = baseInfo?.description && typeof baseInfo.description === 'object'
+    ? (baseInfo.description[language] || baseInfo.description.en || '')
+    : (baseInfo?.description || '');
+  
+  return { 
+    ...baseInfo, 
+    ...colorMap[phase],
+    name: localizedName,
+    description: localizedDescription
+  };
 };
 
 export default function DailyPlan() {
@@ -869,7 +884,9 @@ export default function DailyPlan() {
           <CardContent className="p-6">
             <div className="flex items-center justify-between mb-4">
               <div>
-                <h2 className={`text-2xl font-bold ${phase.textColor}`}>{phase.name[language]}</h2>
+                <h2 className={`text-2xl font-bold ${phase?.textColor || ''}`}>
+                  {phase?.name || ''}
+                </h2>
                 <p className="text-[rgb(var(--ios-text-secondary))] mt-1">{language === 'ro' ? 'Ziua' : 'Day'} {currentDay} {language === 'ro' ? 'din' : 'of'} 28</p>
               </div>
               <div className={`w-16 h-16 bg-gradient-to-br ${phase.color} rounded-2xl flex items-center justify-center shadow-lg`}>
