@@ -2109,10 +2109,10 @@ export default function Admin() {
                 </div>
 
                 <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setEditingRecipe(null)} className="flex-1">
+                  <Button variant="outline" onClick={() => setEditingRecipe(null)} className="flex-1 border-2 border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-bold">
                     Anulează
                   </Button>
-                  <Button onClick={handleSaveRecipe} className="flex-1 bg-emerald-600 hover:bg-emerald-700">
+                  <Button onClick={handleSaveRecipe} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg">
                     {editingRecipe.id ? 'Salvează' : 'Creează'}
                   </Button>
                 </div>
