@@ -256,6 +256,11 @@ export const localApi = {
     list: () => request('/recipes?countries=true'),
   },
   
+  // Build Info
+  buildInfo: {
+    get: () => request('/build-info'),
+  },
+  
   // Progress
   progress: {
     list: () => request('/progress'),

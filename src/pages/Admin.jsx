@@ -160,6 +160,14 @@ export default function Admin() {
     refetchOnMount: 'always',
   });
 
+  const { data: buildInfo } = useQuery({
+    queryKey: ['buildInfo'],
+    queryFn: () => localApi.buildInfo.get(),
+    enabled: user?.role === 'admin',
+    staleTime: 30000, // Cache for 30 seconds
+    refetchInterval: 60000, // Refetch every minute
+  });
+
   const createBackupMutation = useMutation({
     mutationFn: () => localApi.admin.backups.create(),
     onSuccess: () => {
