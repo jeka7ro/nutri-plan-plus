@@ -1,12 +1,59 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/components/LanguageContext";
 import LanguageSelector from "@/components/LanguageSelector";
+import api from "@/api/apiAdapter";
+const localApi = api;
+import { createPageUrl } from "@/utils";
 
 export default function Landing() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
+  const [isCheckingAuth, setIsCheckingAuth] = React.useState(true);
+
+  // Verifică dacă utilizatorul este autentificat și redirecționează
+  useEffect(() => {
+    const checkAuthAndRedirect = async () => {
+      try {
+        const user = await localApi.auth.me();
+        
+        // Utilizator autentificat - redirecționează direct la aplicație
+        if (user.role === 'admin') {
+          navigate(createPageUrl("DailyPlan"));
+          return;
+        }
+        
+        const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
+        const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
+        
+        if (hasCompletedProfile || hasBasicInfo) {
+          navigate(createPageUrl("DailyPlan"));
+        } else {
+          navigate(createPageUrl("Onboarding"));
+        }
+      } catch (error) {
+        // Utilizator neautentificat - lasă-l să vadă landing page-ul
+        console.log("User not authenticated - showing landing page");
+        setIsCheckingAuth(false);
+      }
+    };
+
+    checkAuthAndRedirect();
+  }, [navigate]);
+
+  // Afișează loading în timpul verificării
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-[#0A0E1A] flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-400">{language === 'ro' ? 'Se încarcă...' : 'Loading...'}</p>
+        </div>
+      </div>
+    );
+  }
   
   const t = {
     hero: {

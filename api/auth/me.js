@@ -611,9 +611,10 @@ export default async function handler(req, res) {
         ? null 
         : new Date(Date.now() + durationMonths * 30 * 24 * 60 * 60 * 1000);
       
+      // Update both subscription_plan and subscription_tier for consistency
       await pool.query(
-        'UPDATE users SET subscription_plan = $1, subscription_status = $2 WHERE id = $3',
-        ['premium', 'active', targetUserId]
+        'UPDATE users SET subscription_plan = $1, subscription_tier = $1, subscription_status = $2, subscription_expires_at = $3 WHERE id = $4',
+        ['premium', 'active', expiresAt, targetUserId]
       );
       
       await pool.query(`

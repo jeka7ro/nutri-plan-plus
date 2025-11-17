@@ -1259,14 +1259,14 @@ export default function Admin() {
                                   🔑
                                 </Button>
                                 <Button
-                                  variant={u.subscription_plan === 'premium' ? "secondary" : "default"}
+                                  variant={(u.subscription_tier || u.subscription_plan) === 'premium' ? "secondary" : "default"}
                                   size="sm"
                                   onClick={(e) => {
                                     e.stopPropagation();
                                     handleGrantPremium(u);
                                   }}
                                   disabled={u.id === user?.id}
-                                  title={u.subscription_plan === 'premium' ? 'Deja Premium' : 'Acordă Premium'}
+                                  title={(u.subscription_tier || u.subscription_plan) === 'premium' ? 'Deja Premium' : 'Acordă Premium'}
                                   className="text-xs px-2 py-1"
                                 >
                                   👑
@@ -2547,7 +2547,7 @@ export default function Admin() {
                   ? `${grantPremiumUser.first_name} ${grantPremiumUser.last_name}` 
                   : grantPremiumUser?.name} ({grantPremiumUser?.email})
               </p>
-              {grantPremiumUser?.subscription_plan === 'premium' && (
+              {((grantPremiumUser?.subscription_tier || grantPremiumUser?.subscription_plan) === 'premium') && (
                 <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
                     ⚠️ Utilizatorul are deja Premium activ

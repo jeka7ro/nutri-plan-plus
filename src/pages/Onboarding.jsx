@@ -545,7 +545,6 @@ export default function Onboarding() {
                         type="file"
                         id="profile-picture"
                         accept="image/*"
-                        capture="environment"
                         onChange={handleImageUpload}
                         className="hidden"
                       />

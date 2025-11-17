@@ -523,8 +523,12 @@ export default function Dashboard() {
                 <Flame className="w-6 h-6 text-white" />
               </div>
               <div>
-                <div className={`text-xl font-bold ${phase.textColor}`}>{phase.name}</div>
-                <div className="text-sm text-[rgb(var(--ios-text-secondary))] font-normal">{phase.description}</div>
+                <div className={`text-xl font-bold ${phase.textColor}`}>
+                  {typeof phase.name === 'object' ? (phase.name[language] || phase.name.en) : phase.name}
+                </div>
+                <div className="text-sm text-[rgb(var(--ios-text-secondary))] font-normal">
+                  {typeof phase.description === 'object' ? (phase.description[language] || phase.description.en) : phase.description}
+                </div>
               </div>
             </CardTitle>
           </CardHeader>

@@ -832,7 +832,6 @@ export default function MyRecipes() {
                   ref={fileInputRef}
                   type="file"
                   accept="image/*"
-                  capture="environment"
                   className="hidden"
                   onChange={handleImageUpload}
                 />

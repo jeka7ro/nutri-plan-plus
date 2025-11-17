@@ -83,7 +83,7 @@ export default function Recipes() {
     });
   };
 
-  const phase = phaseInfo[selectedPhase];
+  const phase = phaseInfo[selectedPhase] || phaseInfo[1];
   
   // Filter recipes by selected phase
   const phaseRecipes = allRecipes.filter(r => r.phase === parseInt(selectedPhase));
@@ -174,8 +174,16 @@ export default function Recipes() {
                     <Flame className="w-8 h-8 text-white" />
                   </div>
                   <div>
-                    <h2 className={`text-2xl font-bold ${phase.textColor}`}>{phase.name}</h2>
-                    <p className="text-[rgb(var(--ios-text-secondary))]">{phase.description}</p>
+                    <h2 className={`text-2xl font-bold ${phase?.textColor || ''}`}>
+                      {phase?.name && typeof phase.name === 'object' 
+                        ? (phase.name[language] || phase.name.en || '') 
+                        : (phase?.name || '')}
+                    </h2>
+                    <p className="text-[rgb(var(--ios-text-secondary))]">
+                      {phase?.description && typeof phase.description === 'object' 
+                        ? (phase.description[language] || phase.description.en || '') 
+                        : (phase?.description || '')}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 flex-wrap">
