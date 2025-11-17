@@ -1147,25 +1147,36 @@ export default function Admin() {
                               </div>
                             </TableCell>
                             <TableCell>
-                              <div className="space-y-1">
-                                <Badge className={
-                                  (u.subscription_tier || 'free') === 'premium' 
-                                    ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' 
-                                    : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
-                                }>
-                                  <Crown className="w-3 h-3 mr-1" />
-                                  {(u.subscription_tier || 'free').toUpperCase()}
-                                </Badge>
-                                {u.subscription_expires_at && (
-                                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                                    Expiră: {new Date(u.subscription_expires_at).toLocaleDateString('ro-RO')}
-                                  </p>
-                                )}
-                                {u.subscription_code && (
-                                  <p className="text-xs text-blue-600 dark:text-blue-400 font-mono">
-                                    Cod: {u.subscription_code}
-                                  </p>
-                                )}
+                              <div className="space-y-2">
+                                {(() => {
+                                  const isPremium = (u.subscription_tier || u.subscription_plan || 'free') === 'premium';
+                                  return (
+                                    <>
+                                      {isPremium ? (
+                                        <div className="flex items-center gap-2">
+                                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1.5 text-sm font-bold">
+                                            <Crown className="w-4 h-4 mr-1.5" />
+                                            👑 PREMIUM
+                                          </Badge>
+                                        </div>
+                                      ) : (
+                                        <Badge className="bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm">
+                                          FREE
+                                        </Badge>
+                                      )}
+                                      {isPremium && u.subscription_expires_at && (
+                                        <p className="text-xs font-semibold text-purple-600 dark:text-purple-400">
+                                          ⏰ Expiră: {new Date(u.subscription_expires_at).toLocaleDateString('ro-RO')}
+                                        </p>
+                                      )}
+                                      {isPremium && u.subscription_code && (
+                                        <p className="text-xs text-blue-600 dark:text-blue-400 font-mono bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
+                                          🔑 Cod: {u.subscription_code}
+                                        </p>
+                                      )}
+                                    </>
+                                  );
+                                })()}
                               </div>
                             </TableCell>
                             <TableCell>
@@ -2013,7 +2024,24 @@ export default function Admin() {
                         <CardTitle className="text-sm">Abonament</CardTitle>
                       </CardHeader>
                       <CardContent className="text-xs space-y-2">
-                        <p><strong>Tier:</strong> <Badge className={selectedUser.subscription_tier === 'premium' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-700'}>{(selectedUser.subscription_tier || 'free').toUpperCase()}</Badge></p>
+                        {(() => {
+                          const isPremium = (selectedUser.subscription_tier || selectedUser.subscription_plan || 'free') === 'premium';
+                          return (
+                            <p>
+                              <strong>Abonament:</strong>{' '}
+                              {isPremium ? (
+                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1.5 text-sm font-bold">
+                                  <Crown className="w-4 h-4 mr-1.5" />
+                                  👑 PREMIUM
+                                </Badge>
+                              ) : (
+                                <Badge className="bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm">
+                                  FREE
+                                </Badge>
+                              )}
+                            </p>
+                          );
+                        })()}
                         {selectedUser.subscription_expires_at && (
                           <p><strong>Expiră:</strong> {new Date(selectedUser.subscription_expires_at).toLocaleDateString('ro-RO')}</p>
                         )}
