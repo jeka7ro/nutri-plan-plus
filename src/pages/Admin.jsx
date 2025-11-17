@@ -53,6 +53,7 @@ export default function Admin() {
   const [bookUrl, setBookUrl] = useState("");
   const [recipeSearchQuery, setRecipeSearchQuery] = useState("");
   const [isSearchingOnline, setIsSearchingOnline] = useState(false);
+  const [showOnlyAdminRecipes, setShowOnlyAdminRecipes] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null); // Pentru dialog detalii user
   const [activeTab, setActiveTab] = useState("users"); // Control tab-uri - Users primul pentru management
   const [showCreateUser, setShowCreateUser] = useState(false); // Dialog creare utilizator
@@ -592,8 +593,14 @@ export default function Admin() {
     3: recipes.filter(r => r.phase === 3).length,
   };
 
-  // Filter recipes based on search query
+  // Filter recipes based on search query and admin filter
   const filteredRecipes = recipes.filter(recipe => {
+    // Filter by admin recipes first
+    if (showOnlyAdminRecipes && !recipe.is_admin_recipe) {
+      return false;
+    }
+    
+    // Then filter by search query
     if (!recipeSearchQuery.trim()) return true;
     
     const searchLower = recipeSearchQuery.toLowerCase();
@@ -1068,10 +1075,30 @@ export default function Admin() {
                   </div>
                 )}
 
-                <div className="flex gap-2 mt-4">
-                  <Badge className="bg-orange-100 text-orange-700">Faza 1: {recipesByPhase[1]}</Badge>
-                  <Badge className="bg-emerald-100 text-emerald-700">Faza 2: {recipesByPhase[2]}</Badge>
-                  <Badge className="bg-purple-100 text-purple-700">Faza 3: {recipesByPhase[3]}</Badge>
+                <div className="flex flex-wrap items-center gap-3 mt-4">
+                  <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">Faza 1: {recipesByPhase[1]}</Badge>
+                  <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">Faza 2: {recipesByPhase[2]}</Badge>
+                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Faza 3: {recipesByPhase[3]}</Badge>
+                  
+                  {/* Filtru pentru rețete admin */}
+                  <div className="flex items-center gap-2 ml-auto">
+                    <Checkbox
+                      id="admin-filter"
+                      checked={showOnlyAdminRecipes}
+                      onCheckedChange={(checked) => setShowOnlyAdminRecipes(checked)}
+                    />
+                    <Label 
+                      htmlFor="admin-filter" 
+                      className="text-sm font-semibold cursor-pointer text-purple-600 dark:text-purple-400"
+                    >
+                      👑 Doar Rețete Admin
+                    </Label>
+                    {showOnlyAdminRecipes && (
+                      <Badge className="bg-purple-500 text-white">
+                        {recipes.filter(r => r.is_admin_recipe).length} rețete admin
+                      </Badge>
+                    )}
+                  </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -1113,10 +1140,12 @@ export default function Admin() {
                             }>
                               Faza {recipe.phase}
                             </Badge>
-                            <Badge variant="outline">{recipe.meal_type}</Badge>
-                            <Badge variant="outline">{recipe.calories} cal</Badge>
+                            <Badge variant="outline" className="text-xs">{recipe.meal_type}</Badge>
+                            <Badge variant="outline" className="text-xs">{recipe.calories} cal</Badge>
                             {recipe.is_admin_recipe && (
-                              <Badge className="bg-purple-500 text-white">👑 ADMIN</Badge>
+                              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1 text-sm font-bold">
+                                👑 ADMIN
+                              </Badge>
                             )}
                           </div>
                         </div>
