@@ -33,7 +33,8 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  HelpCircle
+  HelpCircle,
+  Flame
 } from "lucide-react";
 import { useLanguage } from "../components/LanguageContext";
 import { useToast } from "@/components/ui/use-toast";
@@ -56,6 +57,10 @@ export default function MyRecipes() {
     meal_type: 'breakfast',
     phase: null,
     is_public_to_friends: false,
+    calories: 0,
+    protein: 0,
+    carbs: 0,
+    fat: 0,
   });
   const [isSearchingOnline, setIsSearchingOnline] = useState(false);
   const [imagePreview, setImagePreview] = useState('');
@@ -337,6 +342,68 @@ export default function MyRecipes() {
       const recipeName = formData.name.toLowerCase();
       const smartRecipe = buildSmartRecipeFromName(recipeName);
 
+      // Calculează macros bazat pe numele rețetei și meal type
+      let estimatedCalories = 300;
+      let estimatedProtein = 20;
+      let estimatedCarbs = 30;
+      let estimatedFat = 10;
+
+      // Estimări inteligente bazate pe keywords
+      if (/salată|salad|vegetarian/i.test(recipeName)) {
+        estimatedCalories = 250;
+        estimatedProtein = 15;
+        estimatedCarbs = 20;
+        estimatedFat = 12;
+      } else if (/pui|chicken|curcan|turkey/i.test(recipeName)) {
+        estimatedCalories = 350;
+        estimatedProtein = 35;
+        estimatedCarbs = 25;
+        estimatedFat = 12;
+      } else if (/pește|fish|somon|salmon|ton|tuna/i.test(recipeName)) {
+        estimatedCalories = 320;
+        estimatedProtein = 30;
+        estimatedCarbs = 15;
+        estimatedFat = 15;
+      } else if (/smoothie|shake/i.test(recipeName)) {
+        estimatedCalories = 280;
+        estimatedProtein = 25;
+        estimatedCarbs = 45;
+        estimatedFat = 2;
+      } else if (/omletă|omleta|omelette|ouă|oua|eggs/i.test(recipeName)) {
+        estimatedCalories = 220;
+        estimatedProtein = 18;
+        estimatedCarbs = 8;
+        estimatedFat = 14;
+      } else if (/avocado|nuci|nuts|seeds/i.test(recipeName)) {
+        estimatedCalories = 380;
+        estimatedProtein = 10;
+        estimatedCarbs = 20;
+        estimatedFat = 28;
+      } else if (/terci|porridge|oatmeal|ovăz|oats/i.test(recipeName)) {
+        estimatedCalories = 300;
+        estimatedProtein = 12;
+        estimatedCarbs = 55;
+        estimatedFat = 6;
+      } else if (/quinoa/i.test(recipeName)) {
+        estimatedCalories = 320;
+        estimatedProtein = 14;
+        estimatedCarbs = 60;
+        estimatedFat = 5;
+      } else if (/fructe|fruit|berries|mere|apples/i.test(recipeName)) {
+        estimatedCalories = 150;
+        estimatedProtein = 2;
+        estimatedCarbs = 35;
+        estimatedFat = 1;
+      }
+
+      // Ajustare pe meal type
+      if (formData.meal_type === 'snack1' || formData.meal_type === 'snack2') {
+        estimatedCalories = Math.round(estimatedCalories * 0.4); // Snack = 40% din masă principală
+        estimatedProtein = Math.round(estimatedProtein * 0.4);
+        estimatedCarbs = Math.round(estimatedCarbs * 0.4);
+        estimatedFat = Math.round(estimatedFat * 0.4);
+      }
+
       if (smartRecipe) {
         setImageOptions(smartRecipe.imageUrls);
         const defaultImage = smartRecipe.imageUrls[0] || '';
@@ -347,6 +414,10 @@ export default function MyRecipes() {
           instructions_text: smartRecipe.instructions.join('\n'),
           image_url: defaultImage,
           description: smartRecipe.benefits,
+          calories: estimatedCalories,
+          protein: estimatedProtein,
+          carbs: estimatedCarbs,
+          fat: estimatedFat,
         }));
         setImagePreview(defaultImage);
       } else {
@@ -356,6 +427,10 @@ export default function MyRecipes() {
         setFormData((prev) => ({
           ...prev,
           image_url: fallback,
+          calories: estimatedCalories,
+          protein: estimatedProtein,
+          carbs: estimatedCarbs,
+          fat: estimatedFat,
         }));
         setImagePreview(fallback);
         toast({
@@ -369,8 +444,8 @@ export default function MyRecipes() {
       toast({
         title: language === 'ro' ? '✅ Rețetă completată!' : '✅ Recipe completed!',
         description: language === 'ro' 
-          ? `Ingrediente, instrucțiuni și imagine generate pe baza rețetei tale.` 
-          : `Ingredients, instructions and image generated from your recipe name.`,
+          ? `Ingrediente, instrucțiuni, imagine și valori nutriționale generate.` 
+          : `Ingredients, instructions, image and nutritional values generated.`,
       });
 
     } catch (error) {
@@ -394,6 +469,10 @@ export default function MyRecipes() {
       meal_type: 'breakfast',
       phases: [], // Array pentru multiple faze
       is_public_to_friends: false,
+      calories: 0,
+      protein: 0,
+      carbs: 0,
+      fat: 0,
     });
     setImagePreview('');
     setImageOptions([]);
@@ -411,6 +490,10 @@ export default function MyRecipes() {
       meal_type: recipe.meal_type,
       phases: recipe.phases || (recipe.phase ? [recipe.phase] : []), // Convertește phase vechi la array
       is_public_to_friends: recipe.is_public_to_friends,
+      calories: recipe.calories || 0,
+      protein: recipe.protein || 0,
+      carbs: recipe.carbs || 0,
+      fat: recipe.fat || 0,
     });
     setImagePreview(recipe.image_url || '');
     setImageOptions([]);
@@ -968,6 +1051,73 @@ export default function MyRecipes() {
                     {language === 'ro' ? 'Vizibilă prietenilor mei' : 'Visible to my friends'}
                   </span>
                 </Label>
+              </div>
+
+              {/* Valori Nutriționale */}
+              <div className="space-y-3 p-4 bg-blue-50 dark:bg-blue-950/20 rounded-[14px] border border-blue-200 dark:border-blue-800">
+                <Label className="text-sm font-semibold text-[rgb(var(--ios-text-primary))] flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                  {language === 'ro' ? 'Valori Nutriționale' : 'Nutritional Values'}
+                </Label>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <div className="space-y-1">
+                    <Label htmlFor="calories" className="text-xs text-[rgb(var(--ios-text-secondary))]">
+                      {language === 'ro' ? 'Calorii' : 'Calories'}
+                    </Label>
+                    <Input
+                      id="calories"
+                      type="number"
+                      min="0"
+                      value={formData.calories || 0}
+                      onChange={(e) => setFormData({ ...formData, calories: parseInt(e.target.value) || 0 })}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="protein" className="text-xs text-[rgb(var(--ios-text-secondary))]">
+                      {language === 'ro' ? 'Proteine (g)' : 'Protein (g)'}
+                    </Label>
+                    <Input
+                      id="protein"
+                      type="number"
+                      min="0"
+                      value={formData.protein || 0}
+                      onChange={(e) => setFormData({ ...formData, protein: parseInt(e.target.value) || 0 })}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="carbs" className="text-xs text-[rgb(var(--ios-text-secondary))]">
+                      {language === 'ro' ? 'Carbohidrați (g)' : 'Carbs (g)'}
+                    </Label>
+                    <Input
+                      id="carbs"
+                      type="number"
+                      min="0"
+                      value={formData.carbs || 0}
+                      onChange={(e) => setFormData({ ...formData, carbs: parseInt(e.target.value) || 0 })}
+                      className="text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1">
+                    <Label htmlFor="fat" className="text-xs text-[rgb(var(--ios-text-secondary))]">
+                      {language === 'ro' ? 'Grăsimi (g)' : 'Fat (g)'}
+                    </Label>
+                    <Input
+                      id="fat"
+                      type="number"
+                      min="0"
+                      value={formData.fat || 0}
+                      onChange={(e) => setFormData({ ...formData, fat: parseInt(e.target.value) || 0 })}
+                      className="text-sm"
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-[rgb(var(--ios-text-tertiary))]">
+                  {language === 'ro' 
+                    ? '💡 Folosește butonul "🔍 Online" pentru a completa automat valorile' 
+                    : '💡 Use the "🔍 Online" button to auto-fill values'}
+                </p>
               </div>
 
               <div className="flex gap-3 pt-4">
