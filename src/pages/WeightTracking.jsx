@@ -40,16 +40,19 @@ export default function WeightTracking() {
   });
 
   // PRE-POPULEAZĂ greutatea cu ultima valoare salvată
+  // PRIORITATE: weightEntries > user.current_weight
   useEffect(() => {
-    if (weightEntries.length > 0 && !weight) {
+    if (weightEntries.length > 0) {
+      // Folosește întotdeauna ultima greutate din istoric dacă există
       const lastWeight = weightEntries[0].weight;
       setWeight(lastWeight.toFixed(1));
-      console.log('✅ Pre-populat greutate:', lastWeight);
-    } else if (user?.current_weight && !weight && weightEntries.length === 0) {
+      console.log('✅ Pre-populat greutate din istoric:', lastWeight);
+    } else if (user?.current_weight) {
+      // Fallback la current_weight doar dacă nu există înregistrări
       setWeight(parseFloat(user.current_weight).toFixed(1));
       console.log('✅ Pre-populat greutate din profil:', user.current_weight);
     }
-  }, [weightEntries, user, weight]);
+  }, [weightEntries, user]);
 
   const addWeightMutation = useMutation({
     mutationFn: async (data) => {
@@ -59,13 +62,15 @@ export default function WeightTracking() {
         notes: data.notes,
         mood: data.mood,
       });
-      if (user && !user.current_weight) {
+      // Actualizează current_weight în profil pentru consistență
+      if (user) {
         await localApi.auth.updateProfile({ current_weight: data.weight });
       }
       return result;
     },
     onSuccess: (savedEntry) => {
       queryClient.invalidateQueries(['weightEntries']);
+      queryClient.invalidateQueries(['user']); // Reîncarcă user pentru current_weight actualizat
       if (savedEntry?.weight !== undefined && savedEntry?.weight !== null) {
         setWeight(parseFloat(savedEntry.weight).toFixed(1));
       }
