@@ -106,7 +106,8 @@ export default async function handler(req, res) {
     console.log('Fetching all users...');
     
     const result = await pool.query(`
-      SELECT id, email, name, first_name, last_name, phone, role, subscription_tier, subscription_expires_at,
+      SELECT id, email, name, first_name, last_name, phone, role, 
+             subscription_tier, subscription_plan, subscription_expires_at, subscription_code,
              start_date, birth_date, current_weight, target_weight,
              height, age, gender, activity_level, dietary_preferences, allergies,
              profile_picture, country, city, created_at, last_login
