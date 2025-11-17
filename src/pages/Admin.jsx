@@ -1125,9 +1125,9 @@ export default function Admin() {
                 )}
 
                 <div className="flex flex-wrap items-center gap-3 mt-4">
-                  <Badge className="bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300">Faza 1: {recipesByPhase[1]}</Badge>
-                  <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">Faza 2: {recipesByPhase[2]}</Badge>
-                  <Badge className="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300">Faza 3: {recipesByPhase[3]}</Badge>
+                  <Badge className="bg-orange-500 text-white dark:bg-orange-600 dark:text-white px-4 py-2 text-base font-bold shadow-lg">Faza 1: {recipesByPhase[1]}</Badge>
+                  <Badge className="bg-emerald-500 text-white dark:bg-emerald-600 dark:text-white px-4 py-2 text-base font-bold shadow-lg">Faza 2: {recipesByPhase[2]}</Badge>
+                  <Badge className="bg-purple-500 text-white dark:bg-purple-600 dark:text-white px-4 py-2 text-base font-bold shadow-lg">Faza 3: {recipesByPhase[3]}</Badge>
                   
                   {/* Filtru pentru rețete admin */}
                   <div className="flex items-center gap-2 ml-auto">
@@ -1138,12 +1138,12 @@ export default function Admin() {
                     />
                     <Label 
                       htmlFor="admin-filter" 
-                      className="text-sm font-semibold cursor-pointer text-purple-600 dark:text-purple-400"
+                      className="text-base font-bold cursor-pointer text-purple-400 dark:text-purple-300 hover:text-purple-300 dark:hover:text-purple-200"
                     >
                       👑 Doar Rețete Admin
                     </Label>
                     {showOnlyAdminRecipes && (
-                      <Badge className="bg-purple-500 text-white">
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-4 py-2 text-base font-bold">
                         {recipes.filter(r => r.is_admin_recipe).length} rețete admin
                       </Badge>
                     )}
