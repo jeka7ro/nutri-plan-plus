@@ -1203,6 +1203,7 @@ export default function Admin() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleEditRecipe(recipe)}
+                            className="border-2 border-blue-500 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold"
                           >
                             <Edit className="w-4 h-4" />
                           </Button>
@@ -1214,8 +1215,9 @@ export default function Admin() {
                                 deleteRecipeMutation.mutate(recipe.id);
                               }
                             }}
+                            className="border-2 border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 font-bold"
                           >
-                            <Trash2 className="w-4 h-4 text-red-600" />
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </div>
