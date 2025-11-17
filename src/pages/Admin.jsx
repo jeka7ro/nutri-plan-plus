@@ -700,6 +700,47 @@ export default function Admin() {
           </Badge>
         </div>
 
+        {/* Build Info Card */}
+        {buildInfo && (
+          <Card className="ios-card border-2 border-blue-500/50 bg-gradient-to-r from-blue-900/30 to-purple-900/30">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                    <Settings className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-white/70">Build Number</div>
+                    <div className="text-2xl font-bold text-white">
+                      #{buildInfo.buildNumber || 0}
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="text-xs text-white/60 mb-1">Deployed</div>
+                  <div className="text-sm font-semibold text-white">
+                    {buildInfo.buildDate 
+                      ? new Date(buildInfo.buildDate).toLocaleDateString('ro-RO', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric'
+                        })
+                      : 'N/A'}
+                  </div>
+                  <div className="text-xs text-white/60 mt-1">
+                    {buildInfo.buildTime || 'N/A'}
+                  </div>
+                  {buildInfo.gitCommit && buildInfo.gitCommit !== 'unknown' && (
+                    <div className="text-xs text-blue-300 font-mono mt-1">
+                      {buildInfo.gitCommit}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           <Card 
             className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
