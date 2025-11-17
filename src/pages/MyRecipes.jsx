@@ -77,6 +77,7 @@ export default function MyRecipes() {
     mutationFn: (data) => localApi.userRecipes.create(data),
     onSuccess: () => {
       queryClient.invalidateQueries(['myRecipes']);
+      queryClient.invalidateQueries(['recipes']); // Invalidate recipes cache pentru DailyPlan
       setShowAddDialog(false);
       resetForm();
       toast({
@@ -90,6 +91,7 @@ export default function MyRecipes() {
     mutationFn: ({ id, data }) => localApi.userRecipes.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries(['myRecipes']);
+      queryClient.invalidateQueries(['recipes']); // Invalidate recipes cache pentru DailyPlan
       setEditingRecipe(null);
       setShowAddDialog(false);
       resetForm();

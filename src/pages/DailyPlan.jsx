@@ -157,7 +157,8 @@ export default function DailyPlan() {
   const { data: recipes = [] } = useQuery({
     queryKey: ['recipes'],
     queryFn: () => localApi.recipes.list(),
-    staleTime: 30 * 60 * 1000, // Cache 30 minutes - recipes don't change often
+    staleTime: 0, // No cache - always fetch fresh data to show updated images
+    refetchOnMount: 'always',
   });
 
   const { data: myRecipes = [] } = useQuery({
