@@ -131,7 +131,23 @@ export default async function handler(req, res) {
   }
   
   if (req.method === 'GET') {
-    // RETURNARE listă check-ins pentru user-ul autentificat
+    // GET cu parametru date - returnează check-in pentru o dată specifică
+    if (req.query.date) {
+      try {
+        const result = await pool.query(
+          'SELECT * FROM daily_checkins WHERE user_id = $1 AND date = $2',
+          [userId, req.query.date]
+        );
+        const checkin = result.rows[0] || null;
+        console.log(`✅ GET /api/checkins?date=${req.query.date}:`, checkin ? 'FOUND' : 'NULL');
+        return res.status(200).json(checkin);
+      } catch (error) {
+        console.error(`❌ GET /api/checkins?date=${req.query.date} error:`, error);
+        return res.status(500).json({ error: error.message });
+      }
+    }
+    
+    // GET fără parametru - RETURNARE listă check-ins pentru user-ul autentificat
     try {
       const result = await pool.query(
         'SELECT * FROM daily_checkins WHERE user_id = $1 ORDER BY date DESC',

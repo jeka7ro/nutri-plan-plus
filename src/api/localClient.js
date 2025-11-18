@@ -358,7 +358,7 @@ export const localApi = {
     get: async (date) => {
       // STRICT: DOAR PostgreSQL!
       try {
-        const result = await request(`/checkins/${date}`);
+        const result = await request(`/checkins?date=${date}`);
         return result || null;
       } catch (error) {
         console.error(`❌ checkins.get(${date}) FAILED:`, error.message);
