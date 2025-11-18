@@ -1183,14 +1183,14 @@ export default function Admin() {
                           <div className="text-sm text-[rgb(var(--ios-text-secondary))]">{recipe.name}</div>
                           <div className="flex gap-2 mt-1">
                             <Badge className={
-                              recipe.phase === 1 ? 'bg-orange-100 text-orange-700' :
-                              recipe.phase === 2 ? 'bg-emerald-100 text-emerald-700' :
-                              'bg-purple-100 text-purple-700'
+                              recipe.phase === 1 ? 'bg-orange-500 text-white border-0 shadow-md font-bold' :
+                              recipe.phase === 2 ? 'bg-emerald-500 text-white border-0 shadow-md font-bold' :
+                              'bg-purple-500 text-white border-0 shadow-md font-bold'
                             }>
                               Faza {recipe.phase}
                             </Badge>
-                            <Badge variant="outline" className="text-xs">{recipe.meal_type}</Badge>
-                            <Badge variant="outline" className="text-xs">{recipe.calories} cal</Badge>
+                            <Badge className="bg-blue-500 text-white border-0 shadow-md text-xs font-bold">{recipe.meal_type}</Badge>
+                            <Badge className="bg-gray-600 text-white border-0 shadow-md text-xs font-bold">{recipe.calories} cal</Badge>
                             {recipe.is_admin_recipe && (
                               <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1 text-sm font-bold">
                                 👑 ADMIN
@@ -1200,30 +1200,61 @@ export default function Admin() {
                         </div>
                         <div className="flex gap-2">
                           <Button
-                            variant="outline"
                             size="sm"
                             onClick={() => handleEditRecipe(recipe)}
-                            className="border-2 border-blue-500 text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 font-bold"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg border-0"
+                            style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
                           >
-                            <Edit className="w-4 h-4" />
+                            <Edit className="w-4 h-4 mr-1" />
+                            Edit
                           </Button>
                           <Button
-                            variant="outline"
                             size="sm"
                             onClick={() => {
                               if (confirm('Ștergi rețeta?')) {
                                 deleteRecipeMutation.mutate(recipe.id);
                               }
                             }}
-                            className="border-2 border-red-500 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 font-bold"
+                            className="bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg border-0"
+                            style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-4 h-4 mr-1" />
+                            Șterge
                           </Button>
                         </div>
                       </div>
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* Rețele Admin - Afișare */}
+            <Card className="ios-card border-none ios-shadow-lg mt-6">
+              <CardHeader>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">🔗 Rețele Admin</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex flex-wrap gap-3">
+                  <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-md font-bold">
+                    🔵 Facebook
+                  </Button>
+                  <Button className="bg-pink-600 hover:bg-pink-700 text-white border-0 shadow-md font-bold">
+                    📷 Instagram
+                  </Button>
+                  <Button className="bg-sky-500 hover:bg-sky-600 text-white border-0 shadow-md font-bold">
+                    🐦 Twitter
+                  </Button>
+                  <Button className="bg-blue-700 hover:bg-blue-800 text-white border-0 shadow-md font-bold">
+                    💼 LinkedIn
+                  </Button>
+                  <Button className="bg-red-600 hover:bg-red-700 text-white border-0 shadow-md font-bold">
+                    📺 YouTube
+                  </Button>
+                  <Button className="bg-gray-700 hover:bg-gray-800 text-white border-0 shadow-md font-bold">
+                    🌐 Website
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
