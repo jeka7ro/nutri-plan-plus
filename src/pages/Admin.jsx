@@ -1172,7 +1172,7 @@ export default function Admin() {
                   <div className="space-y-3">
                     {filteredRecipes.map((recipe) => (
                       <div key={recipe.id} className="flex items-center gap-4 p-4 border border-[rgb(var(--ios-border))] rounded-xl hover:bg-[rgb(var(--ios-bg-tertiary))] transition-colors">
-                        <div className="relative w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden border-2 border-[rgb(var(--ios-border))] shadow-md bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                        <div className="relative w-40 h-40 flex-shrink-0 rounded-lg overflow-hidden border-2 border-[rgb(var(--ios-border))] shadow-md bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                           {recipe.image_url ? (
                             <img 
                               src={recipe.image_url} 
