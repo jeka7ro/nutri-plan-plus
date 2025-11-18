@@ -31,7 +31,8 @@ try {
   }
   
   // Increment build number
-  buildInfo.buildNumber = (buildInfo.buildNumber || 0) + 1;
+  const previousBuildNumber = buildInfo.buildNumber || 0;
+  buildInfo.buildNumber = previousBuildNumber + 1;
   
   // Update build date and time
   const now = new Date();
@@ -48,10 +49,11 @@ try {
   // Write back to file
   writeFileSync(buildInfoPath, JSON.stringify(buildInfo, null, 2), 'utf8');
   
-  console.log(`✅ Build number updated to ${buildInfo.buildNumber}`);
+  console.log(`✅ Build number updated: ${previousBuildNumber} → ${buildInfo.buildNumber}`);
   console.log(`📅 Build date: ${buildInfo.buildDate}`);
   console.log(`🕐 Build time: ${buildInfo.buildTime}`);
   console.log(`🔗 Git commit: ${gitCommit}`);
+  console.log(`🚀 Deploy number: #${buildInfo.buildNumber}`);
   
 } catch (error) {
   console.error('❌ Error updating build info:', error);
