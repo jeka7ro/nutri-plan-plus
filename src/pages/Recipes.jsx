@@ -217,11 +217,11 @@ export default function Recipes() {
                   }}
                 >
                   {/* Recipe Image - FROM DATABASE */}
-                  <div className="relative h-48 overflow-hidden">
+                  <div className="relative overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center p-2" style={{ height: '280px' }}>
                     <img 
                       src={recipe.image_url} 
                       alt={language === 'ro' ? recipe.name_ro : recipe.name_en}
-                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                      className="max-w-full max-h-full object-contain hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute top-3 right-3">
                       <Badge className="bg-black/70 text-white border-none">
@@ -325,15 +325,14 @@ export default function Recipes() {
           {selectedRecipe && (
             <>
               {/* Recipe Image in Modal - FROM DATABASE */}
-              <div className="relative h-64 -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-lg">
+              <div className="relative -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4" style={{ height: '400px' }}>
                 <img 
                   src={selectedRecipe.image_url} 
                   alt={language === 'ro' ? selectedRecipe.name_ro : selectedRecipe.name}
-                  className="w-full h-full object-cover"
+                  className="max-w-full max-h-full object-contain"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
                 <div className="absolute bottom-4 left-6 right-6">
-                  <h2 id="recipe-description" className="text-3xl font-bold text-white drop-shadow-lg">
+                  <h2 id="recipe-description" className="text-3xl font-bold text-[rgb(var(--ios-text-primary))] drop-shadow-lg">
                     {language === 'ro' ? selectedRecipe.name_ro : selectedRecipe.name}
                   </h2>
                 </div>
