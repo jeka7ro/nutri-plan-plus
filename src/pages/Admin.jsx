@@ -1172,12 +1172,12 @@ export default function Admin() {
                   <div className="space-y-3">
                     {filteredRecipes.map((recipe) => (
                       <div key={recipe.id} className="flex items-center gap-4 p-4 border border-[rgb(var(--ios-border))] rounded-xl hover:bg-[rgb(var(--ios-bg-tertiary))] transition-colors">
-                        <div className="relative w-40 h-40 flex-shrink-0 rounded-lg overflow-hidden border-2 border-[rgb(var(--ios-border))] shadow-md bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                        <div className="relative w-36 h-36 flex-shrink-0 rounded-lg overflow-hidden border-2 border-[rgb(var(--ios-border))] shadow-md bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2">
                           {recipe.image_url ? (
                             <img 
                               src={recipe.image_url} 
                               alt={recipe.name}
-                              className="w-full h-full object-contain"
+                              className="max-w-full max-h-full object-contain"
                               onError={(e) => {
                                 e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop';
                               }}

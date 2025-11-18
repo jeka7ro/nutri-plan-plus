@@ -712,15 +712,15 @@ export default function MyRecipes() {
                 }}
               >
                 {recipe.image_url ? (
-                  <div className="h-64 bg-gray-200 dark:bg-gray-800 overflow-hidden flex items-center justify-center">
+                  <div className="h-56 bg-gray-200 dark:bg-gray-800 overflow-hidden flex items-center justify-center p-2">
                     <img 
                       src={recipe.image_url} 
                       alt={recipe.name}
-                      className="w-full h-full object-contain"
+                      className="max-w-full max-h-full object-contain"
                     />
                   </div>
                 ) : (
-                  <div className="h-64 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 flex items-center justify-center">
+                  <div className="h-56 bg-gradient-to-br from-purple-100 to-purple-200 dark:from-purple-900/30 dark:to-purple-800/30 flex items-center justify-center">
                     <ChefHat className="w-16 h-16 text-purple-400 dark:text-purple-600" />
                   </div>
                 )}
@@ -1178,11 +1178,11 @@ export default function MyRecipes() {
               <div className="space-y-6 py-4">
                 {/* Image */}
                 {selectedRecipe.image_url && (
-                  <div className="w-full h-96 rounded-xl overflow-hidden border-2 border-[rgb(var(--ios-border))] bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
+                  <div className="w-full h-80 rounded-xl overflow-hidden border-2 border-[rgb(var(--ios-border))] bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4">
                     <img 
                       src={selectedRecipe.image_url} 
                       alt={selectedRecipe.name}
-                      className="w-full h-full object-contain"
+                      className="max-w-full max-h-full object-contain"
                     />
                   </div>
                 )}
