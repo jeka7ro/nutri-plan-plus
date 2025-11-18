@@ -712,11 +712,11 @@ export default function MyRecipes() {
                 }}
               >
                 {recipe.image_url ? (
-                  <div className="h-48 bg-gray-200 dark:bg-gray-800 overflow-hidden">
+                  <div className="h-48 bg-gray-200 dark:bg-gray-800 overflow-hidden flex items-center justify-center">
                     <img 
                       src={recipe.image_url} 
                       alt={recipe.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                 ) : (
@@ -1178,11 +1178,11 @@ export default function MyRecipes() {
               <div className="space-y-6 py-4">
                 {/* Image */}
                 {selectedRecipe.image_url && (
-                  <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-[rgb(var(--ios-border))]">
+                  <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-[rgb(var(--ios-border))] bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
                     <img 
                       src={selectedRecipe.image_url} 
                       alt={selectedRecipe.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain"
                     />
                   </div>
                 )}
