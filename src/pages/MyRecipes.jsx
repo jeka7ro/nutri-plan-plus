@@ -46,6 +46,8 @@ export default function MyRecipes() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [user, setUser] = useState(null);
   const [editingRecipe, setEditingRecipe] = useState(null);
   const [formData, setFormData] = useState({
@@ -701,7 +703,14 @@ export default function MyRecipes() {
         ) : myRecipes.length > 0 ? (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {myRecipes.map((recipe) => (
-              <Card key={recipe.id} className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))] overflow-hidden">
+              <Card 
+                key={recipe.id} 
+                className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))] overflow-hidden cursor-pointer hover:shadow-xl transition-shadow"
+                onClick={() => {
+                  setSelectedRecipe(recipe);
+                  setShowDetailsDialog(true);
+                }}
+              >
                 {recipe.image_url ? (
                   <div className="h-48 bg-gray-200 dark:bg-gray-800 overflow-hidden">
                     <img 
@@ -761,7 +770,7 @@ export default function MyRecipes() {
                       )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
                       <Button
                         size="sm"
                         variant="outline"
@@ -822,6 +831,13 @@ export default function MyRecipes() {
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                     placeholder={language === 'ro' ? 'Ex: Omletă cu legume' : 'Ex: Veggie Omelette'}
                     className="flex-1"
+                    autoFocus={false}
+                    onFocus={(e) => {
+                      // Previne inserarea textului - selectează tot textul dacă există
+                      if (e.target.value) {
+                        e.target.select();
+                      }
+                    }}
                   />
                   <Button
                     type="button"
@@ -1145,6 +1161,192 @@ export default function MyRecipes() {
                 </Button>
               </div>
             </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Details Dialog - View Only */}
+        <Dialog open={showDetailsDialog} onOpenChange={setShowDetailsDialog}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <ChefHat className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                {selectedRecipe?.name_ro || selectedRecipe?.name}
+              </DialogTitle>
+            </DialogHeader>
+
+            {selectedRecipe && (
+              <div className="space-y-6 py-4">
+                {/* Image */}
+                {selectedRecipe.image_url && (
+                  <div className="w-full h-64 rounded-xl overflow-hidden border-2 border-[rgb(var(--ios-border))]">
+                    <img 
+                      src={selectedRecipe.image_url} 
+                      alt={selectedRecipe.name}
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+
+                {/* Description */}
+                {selectedRecipe.description && (
+                  <div>
+                    <Label className="text-sm font-semibold mb-2">
+                      {language === 'ro' ? 'Descriere' : 'Description'}
+                    </Label>
+                    <p className="text-[rgb(var(--ios-text-secondary))]">
+                      {selectedRecipe.description}
+                    </p>
+                  </div>
+                )}
+
+                {/* Badges */}
+                <div className="flex flex-wrap gap-2">
+                  <Badge className="bg-blue-500 text-white border-0 shadow-md text-xs font-bold">
+                    {mealTypeLabels[selectedRecipe.meal_type]?.[language] || selectedRecipe.meal_type}
+                  </Badge>
+                  {(selectedRecipe.phases && selectedRecipe.phases.length > 0) ? (
+                    selectedRecipe.phases.map(p => (
+                      <Badge 
+                        key={p} 
+                        className={
+                          p === 1 ? 'bg-orange-500 text-white border-0 shadow-md text-xs font-bold' :
+                          p === 2 ? 'bg-emerald-500 text-white border-0 shadow-md text-xs font-bold' :
+                          'bg-purple-500 text-white border-0 shadow-md text-xs font-bold'
+                        }
+                      >
+                        {phaseLabels[p]?.[language]}
+                      </Badge>
+                    ))
+                  ) : selectedRecipe.phase ? (
+                    <Badge 
+                      className={
+                        selectedRecipe.phase === 1 ? 'bg-orange-500 text-white border-0 shadow-md text-xs font-bold' :
+                        selectedRecipe.phase === 2 ? 'bg-emerald-500 text-white border-0 shadow-md text-xs font-bold' :
+                        'bg-purple-500 text-white border-0 shadow-md text-xs font-bold'
+                      }
+                    >
+                      {phaseLabels[selectedRecipe.phase]?.[language]}
+                    </Badge>
+                  ) : null}
+                  {selectedRecipe.is_public_to_friends ? (
+                    <Badge className="bg-emerald-500 text-white border-0 shadow-md text-xs font-bold">
+                      <Users className="w-3 h-3 mr-1" />
+                      {language === 'ro' ? 'Public' : 'Public'}
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-gray-600 text-white border-0 shadow-md text-xs font-bold">
+                      <Lock className="w-3 h-3 mr-1" />
+                      {language === 'ro' ? 'Privat' : 'Private'}
+                    </Badge>
+                  )}
+                </div>
+
+                {/* Ingredients */}
+                {selectedRecipe.ingredients_text && (
+                  <div>
+                    <Label className="text-sm font-semibold mb-2">
+                      {language === 'ro' ? 'Ingrediente' : 'Ingredients'}
+                    </Label>
+                    <div className="bg-[rgb(var(--ios-bg-secondary))] rounded-lg p-4 border border-[rgb(var(--ios-border))]">
+                      <div className="space-y-1">
+                        {selectedRecipe.ingredients_text.split('\n').filter(i => i.trim()).map((ingredient, idx) => (
+                          <p key={idx} className="text-sm text-[rgb(var(--ios-text-primary))]">
+                            • {ingredient}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Instructions */}
+                {selectedRecipe.instructions_text && (
+                  <div>
+                    <Label className="text-sm font-semibold mb-2">
+                      {language === 'ro' ? 'Instrucțiuni' : 'Instructions'}
+                    </Label>
+                    <div className="bg-[rgb(var(--ios-bg-secondary))] rounded-lg p-4 border border-[rgb(var(--ios-border))]">
+                      <div className="space-y-2">
+                        {selectedRecipe.instructions_text.split('\n').filter(i => i.trim()).map((instruction, idx) => (
+                          <p key={idx} className="text-sm text-[rgb(var(--ios-text-primary))]">
+                            {instruction}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Nutritional Values */}
+                {(selectedRecipe.calories || selectedRecipe.protein || selectedRecipe.carbs || selectedRecipe.fat) && (
+                  <div className="bg-blue-50 dark:bg-blue-950/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+                    <Label className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <Flame className="w-4 h-4 text-orange-600 dark:text-orange-400" />
+                      {language === 'ro' ? 'Valori Nutriționale' : 'Nutritional Values'}
+                    </Label>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      <div>
+                        <p className="text-xs text-[rgb(var(--ios-text-secondary))] mb-1">
+                          {language === 'ro' ? 'Calorii' : 'Calories'}
+                        </p>
+                        <p className="text-lg font-bold text-[rgb(var(--ios-text-primary))]">
+                          {selectedRecipe.calories || 0}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[rgb(var(--ios-text-secondary))] mb-1">
+                          {language === 'ro' ? 'Proteine (g)' : 'Protein (g)'}
+                        </p>
+                        <p className="text-lg font-bold text-[rgb(var(--ios-text-primary))]">
+                          {selectedRecipe.protein || 0}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[rgb(var(--ios-text-secondary))] mb-1">
+                          {language === 'ro' ? 'Carbohidrați (g)' : 'Carbs (g)'}
+                        </p>
+                        <p className="text-lg font-bold text-[rgb(var(--ios-text-primary))]">
+                          {selectedRecipe.carbs || 0}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-[rgb(var(--ios-text-secondary))] mb-1">
+                          {language === 'ro' ? 'Grăsimi (g)' : 'Fat (g)'}
+                        </p>
+                        <p className="text-lg font-bold text-[rgb(var(--ios-text-primary))]">
+                          {selectedRecipe.fat || 0}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Actions */}
+                <div className="flex gap-3 pt-4 border-t border-[rgb(var(--ios-border))]">
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowDetailsDialog(false);
+                      setSelectedRecipe(null);
+                    }}
+                    className="flex-1"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    {language === 'ro' ? 'Închide' : 'Close'}
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      setShowDetailsDialog(false);
+                      handleEdit(selectedRecipe);
+                    }}
+                    className="flex-1 bg-gradient-to-r from-purple-500 to-purple-600"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    {language === 'ro' ? 'Editează' : 'Edit'}
+                  </Button>
+                </div>
+              </div>
+            )}
           </DialogContent>
         </Dialog>
       </div>
