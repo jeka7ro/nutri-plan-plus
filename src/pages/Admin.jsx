@@ -306,7 +306,8 @@ export default function Admin() {
       protein: parseFloat(editingRecipe.protein) || 0,
       carbs: parseFloat(editingRecipe.carbs) || 0,
       fat: parseFloat(editingRecipe.fat) || 0,
-      phase: parseInt(editingRecipe.phase) || 1,
+      phase: editingRecipe.phases && editingRecipe.phases.length > 0 ? editingRecipe.phases[0] : (parseInt(editingRecipe.phase) || 1),
+      phases: editingRecipe.phases && editingRecipe.phases.length > 0 ? editingRecipe.phases : (editingRecipe.phase ? [parseInt(editingRecipe.phase)] : [1]),
       is_admin_recipe: editingRecipe.is_admin_recipe || false,
     };
 
@@ -1171,11 +1172,22 @@ export default function Admin() {
                   <div className="space-y-3">
                     {filteredRecipes.map((recipe) => (
                       <div key={recipe.id} className="flex items-center gap-4 p-4 border border-[rgb(var(--ios-border))] rounded-xl hover:bg-[rgb(var(--ios-bg-tertiary))] transition-colors">
-                        <img 
-                          src={recipe.image_url} 
-                          alt={recipe.name}
-                          className="w-20 h-20 rounded-lg object-cover"
-                        />
+                        <div className="relative w-32 h-32 flex-shrink-0 rounded-lg overflow-hidden border-2 border-[rgb(var(--ios-border))] shadow-md">
+                          {recipe.image_url ? (
+                            <img 
+                              src={recipe.image_url} 
+                              alt={recipe.name}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop';
+                              }}
+                            />
+                          ) : (
+                            <div className="w-full h-full bg-gradient-to-br from-orange-200 to-emerald-200 dark:from-orange-900/30 dark:to-emerald-900/30 flex items-center justify-center">
+                              <ChefHat className="w-12 h-12 text-gray-400 dark:text-gray-600" />
+                            </div>
+                          )}
+                        </div>
                         <div className="flex-1">
                           <div className="font-bold text-[rgb(var(--ios-text-primary))]">{recipe.name_ro}</div>
                           <div className="text-sm text-[rgb(var(--ios-text-secondary))]">{recipe.name}</div>
@@ -1983,15 +1995,48 @@ export default function Admin() {
 
                 <div className="grid md:grid-cols-3 gap-4">
                   <div>
-                    <Label>Faza</Label>
-                    <Select value={String(editingRecipe.phase)} onValueChange={(v) => setEditingRecipe({ ...editingRecipe, phase: parseInt(v) })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Faza 1</SelectItem>
-                        <SelectItem value="2">Faza 2</SelectItem>
-                        <SelectItem value="3">Faza 3</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <Label>Faze</Label>
+                    <div className="flex flex-col gap-3 mt-2 p-4 border border-[rgb(var(--ios-border))] rounded-lg bg-[rgb(var(--ios-bg-secondary))]">
+                      {[1, 2, 3].map((phaseNum) => {
+                        const phases = editingRecipe.phases || (editingRecipe.phase ? [editingRecipe.phase] : []);
+                        const isChecked = phases.includes(phaseNum);
+                        return (
+                          <div key={phaseNum} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`phase-${phaseNum}`}
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                const currentPhases = editingRecipe.phases || (editingRecipe.phase ? [editingRecipe.phase] : []);
+                                let newPhases;
+                                if (checked) {
+                                  newPhases = [...currentPhases, phaseNum].filter((v, i, a) => a.indexOf(v) === i).sort();
+                                } else {
+                                  newPhases = currentPhases.filter(p => p !== phaseNum);
+                                }
+                                setEditingRecipe({ 
+                                  ...editingRecipe, 
+                                  phases: newPhases,
+                                  phase: newPhases.length > 0 ? newPhases[0] : null // Keep phase for backward compatibility
+                                });
+                              }}
+                            />
+                            <Label 
+                              htmlFor={`phase-${phaseNum}`}
+                              className={`text-sm font-bold cursor-pointer ${
+                                phaseNum === 1 ? 'text-orange-600 dark:text-orange-400' :
+                                phaseNum === 2 ? 'text-emerald-600 dark:text-emerald-400' :
+                                'text-purple-600 dark:text-purple-400'
+                              }`}
+                            >
+                              Faza {phaseNum}
+                            </Label>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-2">
+                      💡 Selectează una sau mai multe faze pentru această rețetă
+                    </p>
                   </div>
                   <div>
                     <Label>Tip masă</Label>
