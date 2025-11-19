@@ -11,21 +11,19 @@ FROM base AS frontend-builder
 
 # Copy package files
 COPY package*.json ./
-
-# Copy config files (only if they exist)
-COPY vite.config.js* ./
-COPY tailwind.config.js* ./
-COPY postcss.config.js* ./
-COPY components.json* ./
-COPY jsconfig.json* ./
+COPY vite.config.js ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
+COPY components.json ./
+COPY jsconfig.json ./
 
 # Install ALL dependencies (including devDependencies for build)
 RUN npm ci
 
 # Copy frontend source
 COPY src/ ./src/
-COPY public/ ./public/ 2>/dev/null || mkdir -p ./public
-COPY index.html* ./
+COPY public/ ./public/
+COPY index.html ./
 
 # Build frontend
 RUN npm run build
