@@ -53,6 +53,29 @@ async function migrateTable(tableName, transformFn = null) {
       return;
     }
     
+    // Count images for recipes and users
+    if (tableName === 'recipes') {
+      const recipesWithImages = rows.filter(r => r.image_url && r.image_url.trim() !== '').length;
+      console.log(`   🖼️  Recipes with images: ${recipesWithImages}/${rows.length}`);
+    }
+    if (tableName === 'users') {
+      const usersWithProfilePics = rows.filter(u => 
+        (u.profile_picture && u.profile_picture.trim() !== '') || 
+        (u.profile_picture_url && u.profile_picture_url.trim() !== '')
+      ).length;
+      console.log(`   🖼️  Users with profile pictures: ${usersWithProfilePics}/${rows.length}`);
+    }
+    if (tableName === 'daily_checkins') {
+      const checkinsWithImages = rows.filter(c => 
+        (c.breakfast_image && c.breakfast_image.trim() !== '') ||
+        (c.lunch_image && c.lunch_image.trim() !== '') ||
+        (c.dinner_image && c.dinner_image.trim() !== '') ||
+        (c.snack1_image && c.snack1_image.trim() !== '') ||
+        (c.snack2_image && c.snack2_image.trim() !== '')
+      ).length;
+      console.log(`   🖼️  Check-ins with images: ${checkinsWithImages}/${rows.length}`);
+    }
+    
     // Transform data if needed
     const dataToInsert = transformFn ? rows.map(transformFn) : rows;
     
@@ -106,6 +129,8 @@ async function migrateTable(tableName, transformFn = null) {
             if (Array.isArray(row[col])) {
               return JSON.stringify(row[col]);
             }
+            // Handle TEXT fields (including images - base64 or URLs)
+            // These are already strings, so just return them
             return row[col];
           });
           
@@ -114,6 +139,12 @@ async function migrateTable(tableName, transformFn = null) {
             insertValues
           );
           inserted++;
+          
+          // Log image migration for recipes
+          if (tableName === 'recipes' && row.image_url && row.image_url.trim() !== '') {
+            const imageType = row.image_url.startsWith('data:') ? 'base64' : 'URL';
+            console.log(`      📸 Recipe #${row.id} image migrated (${imageType})`);
+          }
         }
       } catch (error) {
         console.error(`   ❌ Error inserting record ${row.id}:`, error.message);
@@ -132,11 +163,11 @@ async function migrateTable(tableName, transformFn = null) {
 }
 
 async function main() {
-  console.log('🚀 Starting migration to Render PostgreSQL...\n');
+    console.log('🚀 Starting migration to Render PostgreSQL...\n');
   console.log('📋 This will migrate TOATE datele:');
-  console.log('   - Users (toți userii - cu poze, profile_picture, etc.)');
-  console.log('   - Recipes (toate rețetele - admin și user - cu poze)');
-  console.log('   - Daily Check-ins (toate check-in-urile)');
+  console.log('   - Users (toți userii - cu poze: profile_picture, profile_picture_url)');
+  console.log('   - Recipes (toate rețetele - admin și user - cu poze: image_url)');
+  console.log('   - Daily Check-ins (toate check-in-urile - cu poze: breakfast_image, lunch_image, dinner_image, snack1_image, snack2_image)');
   console.log('   - Weight Entries (toate măsurătorile de greutate)');
   console.log('   - Progress Notes (toate notele)');
   console.log('   - Friendships (toate relațiile de prietenie)');
@@ -144,6 +175,7 @@ async function main() {
   console.log('   - Subscription Codes (toate codurile)');
   console.log('   - Backups (toate backup-urile)');
   console.log('   - Payment Processors (toate procesatoarele)\n');
+  console.log('🖼️  TOATE POZELE vor fi migrate (base64 sau URL-uri)!\n');
   
   try {
     // Test connections
