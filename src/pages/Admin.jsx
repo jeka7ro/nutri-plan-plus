@@ -276,16 +276,6 @@ export default function Admin() {
       return;
     }
 
-    // Validate file size (max 10MB)
-    if (file.size > 10 * 1024 * 1024) {
-      toast({
-        title: language === 'ro' ? '❌ Imagine prea mare' : '❌ Image too large',
-        description: language === 'ro' ? 'Imaginea este prea mare. Maxim 10MB' : 'Image is too large. Maximum 10MB',
-        variant: 'destructive',
-      });
-      return;
-    }
-
     setUploadingImage(true);
     try {
       // Convert to base64
