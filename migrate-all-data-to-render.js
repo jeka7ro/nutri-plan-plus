@@ -9,37 +9,44 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 // Connection strings
-const NEON_URL = process.env.NEON_POSTGRES_URL || process.env.NEON_DATABASE_URL;
-const RENDER_URL = process.env.RENDER_POSTGRES_URL || process.env.RENDER_DATABASE_URL;
+// SOURCE = baza de date existentă (de unde migrăm)
+// TARGET = Render PostgreSQL (unde migrăm)
+const SOURCE_URL = process.env.SOURCE_POSTGRES_URL || process.env.SOURCE_DATABASE_URL || process.env.POSTGRES_URL;
+const TARGET_URL = process.env.TARGET_POSTGRES_URL || process.env.TARGET_DATABASE_URL || process.env.RENDER_POSTGRES_URL;
 
-if (!NEON_URL || !RENDER_URL) {
+if (!SOURCE_URL || !TARGET_URL) {
   console.error('❌ Error: Missing connection strings!');
-  console.error('Set NEON_POSTGRES_URL and RENDER_POSTGRES_URL environment variables');
+  console.error('\nSet environment variables:');
+  console.error('  SOURCE_POSTGRES_URL = [connection string de la baza de date existentă]');
+  console.error('  TARGET_POSTGRES_URL = [connection string de la Render PostgreSQL]');
+  console.error('\nSAU:');
+  console.error('  POSTGRES_URL = [sursa]');
+  console.error('  RENDER_POSTGRES_URL = [destinația Render]');
   process.exit(1);
 }
 
-const neonPool = new Pool({
-  connectionString: NEON_URL,
+const sourcePool = new Pool({
+  connectionString: SOURCE_URL,
   ssl: { rejectUnauthorized: false }
 });
 
-const renderPool = new Pool({
-  connectionString: RENDER_URL,
+const targetPool = new Pool({
+  connectionString: TARGET_URL,
   ssl: { rejectUnauthorized: false }
 });
 
 async function migrateTable(tableName, transformFn = null) {
   console.log(`\n🔄 Migrating ${tableName}...`);
   
-  const neonClient = await neonPool.connect();
-  const renderClient = await renderPool.connect();
+  const sourceClient = await sourcePool.connect();
+  const targetClient = await targetPool.connect();
   
   try {
-    // Get all data from Neon
-    const result = await neonClient.query(`SELECT * FROM ${tableName} ORDER BY id`);
+    // Get all data from source database
+    const result = await sourceClient.query(`SELECT * FROM ${tableName} ORDER BY id`);
     const rows = result.rows;
     
-    console.log(`   📊 Found ${rows.length} records in Neon`);
+    console.log(`   📊 Found ${rows.length} records in source database`);
     
     if (rows.length === 0) {
       console.log(`   ⏭️  Skipping ${tableName} (no data)`);
@@ -62,7 +69,7 @@ async function migrateTable(tableName, transformFn = null) {
         const placeholders = values.join(', ');
         
         // Check if record already exists (by id)
-        const exists = await renderClient.query(
+        const exists = await targetClient.query(
           `SELECT id FROM ${tableName} WHERE id = $1`,
           [row.id]
         );
@@ -72,14 +79,18 @@ async function migrateTable(tableName, transformFn = null) {
           const setClause = columns.map((col, idx) => `${col} = $${idx + 1}`).join(', ');
           const updateValues = columns.map(col => {
             // Handle JSON fields
-            if (typeof row[col] === 'object' && row[col] !== null) {
+            if (typeof row[col] === 'object' && row[col] !== null && !Array.isArray(row[col])) {
+              return JSON.stringify(row[col]);
+            }
+            // Handle arrays (already JSON in PostgreSQL)
+            if (Array.isArray(row[col])) {
               return JSON.stringify(row[col]);
             }
             return row[col];
           });
           updateValues.push(row.id);
           
-          await renderClient.query(
+          await targetClient.query(
             `UPDATE ${tableName} SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${updateValues.length}`,
             updateValues
           );
@@ -88,13 +99,17 @@ async function migrateTable(tableName, transformFn = null) {
           // Insert new record
           const insertValues = columns.map(col => {
             // Handle JSON fields
-            if (typeof row[col] === 'object' && row[col] !== null) {
+            if (typeof row[col] === 'object' && row[col] !== null && !Array.isArray(row[col])) {
+              return JSON.stringify(row[col]);
+            }
+            // Handle arrays (already JSON in PostgreSQL)
+            if (Array.isArray(row[col])) {
               return JSON.stringify(row[col]);
             }
             return row[col];
           });
           
-          await renderClient.query(
+          await targetClient.query(
             `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders}) ON CONFLICT (id) DO NOTHING`,
             insertValues
           );
@@ -111,32 +126,32 @@ async function migrateTable(tableName, transformFn = null) {
     console.error(`   ❌ Error migrating ${tableName}:`, error.message);
     throw error;
   } finally {
-    neonClient.release();
-    renderClient.release();
+    sourceClient.release();
+    targetClient.release();
   }
 }
 
 async function main() {
-  console.log('🚀 Starting migration from Neon to Render PostgreSQL...\n');
-  console.log('📋 This will migrate:');
-  console.log('   - Users (toți userii)');
-  console.log('   - Recipes (toate rețetele - admin și user)');
-  console.log('   - Daily Check-ins');
-  console.log('   - Weight Entries');
-  console.log('   - Progress Notes');
-  console.log('   - Friendships');
-  console.log('   - Messages');
-  console.log('   - Subscription Codes');
-  console.log('   - Backups');
-  console.log('   - Payment Processors\n');
+  console.log('🚀 Starting migration to Render PostgreSQL...\n');
+  console.log('📋 This will migrate TOATE datele:');
+  console.log('   - Users (toți userii - cu poze, profile_picture, etc.)');
+  console.log('   - Recipes (toate rețetele - admin și user - cu poze)');
+  console.log('   - Daily Check-ins (toate check-in-urile)');
+  console.log('   - Weight Entries (toate măsurătorile de greutate)');
+  console.log('   - Progress Notes (toate notele)');
+  console.log('   - Friendships (toate relațiile de prietenie)');
+  console.log('   - Messages (toate mesajele)');
+  console.log('   - Subscription Codes (toate codurile)');
+  console.log('   - Backups (toate backup-urile)');
+  console.log('   - Payment Processors (toate procesatoarele)\n');
   
   try {
     // Test connections
     console.log('🔌 Testing connections...');
-    await neonPool.query('SELECT 1');
-    console.log('   ✅ Connected to Neon');
-    await renderPool.query('SELECT 1');
-    console.log('   ✅ Connected to Render PostgreSQL');
+    await sourcePool.query('SELECT 1');
+    console.log('   ✅ Connected to SOURCE database');
+    await targetPool.query('SELECT 1');
+    console.log('   ✅ Connected to RENDER PostgreSQL (TARGET)');
     
     // Migrate tables in order (respecting foreign keys)
     await migrateTable('users');
@@ -159,16 +174,17 @@ async function main() {
     
     console.log('\n✅ Migration completed successfully!');
     console.log('\n📝 Next steps:');
-    console.log('   1. Update Render environment variables to use Render PostgreSQL');
+    console.log('   1. Update Render environment variables to use Render PostgreSQL connection string');
     console.log('   2. Test login with existing users');
-    console.log('   3. Verify all data is accessible');
+    console.log('   3. Verify all data is accessible (poze, prietenii, greutate, etc.)');
+    console.log('   4. Verifică că toate rețetele (admin și user) sunt migrate');
     
   } catch (error) {
     console.error('\n❌ Migration failed:', error);
     process.exit(1);
   } finally {
-    await neonPool.end();
-    await renderPool.end();
+    await sourcePool.end();
+    await targetPool.end();
   }
 }
 

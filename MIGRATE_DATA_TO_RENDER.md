@@ -1,13 +1,13 @@
-# 🔄 Migrare Toate Datele de la Neon la Render PostgreSQL
+# 🔄 Migrare TOATE Datele în Render PostgreSQL
 
-## 📋 Ce va fi migrat:
+## 📋 Ce va fi migrat (TOTUL):
 
-- ✅ **Users** - toți userii (admin și user simplu)
-- ✅ **Recipes** - toate rețetele (admin și user)
-- ✅ **Daily Check-ins** - toate check-in-urile
+- ✅ **Users** - toți userii (admin și user simplu) - **CU POZE (profile_picture)**
+- ✅ **Recipes** - toate rețetele (admin și user) - **CU POZE (image_url)**
+- ✅ **Daily Check-ins** - toate check-in-urile - **CU POZE (breakfast_image, lunch_image, etc.)**
 - ✅ **Weight Entries** - toate măsurătorile de greutate
 - ✅ **Progress Notes** - toate notele de progres
-- ✅ **Friendships** - toate prieteniile
+- ✅ **Friendships** - toate relațiile de prietenie
 - ✅ **Messages** - toate mesajele
 - ✅ **Subscription Codes** - toate codurile de subscription
 - ✅ **Backups** - toate backup-urile
@@ -17,13 +17,11 @@
 
 ### 1. Pregătește Connection Strings
 
-**De la Neon:**
-1. Mergi pe https://console.neon.tech
-2. Selectează proiectul
-3. Click "Connection Details"
-4. Copiază connection string-ul
+**SOURCE (baza de date existentă - de unde migrăm):**
+- Poate fi Neon, Vercel, sau orice altă bază PostgreSQL
+- Găsește connection string-ul de la baza de date existentă
 
-**De la Render:**
+**TARGET (Render PostgreSQL - unde migrăm):**
 1. Mergi pe https://dashboard.render.com
 2. Selectează PostgreSQL Database (`nutriplan-db`)
 3. Click "Info" tab
@@ -37,8 +35,8 @@
 cd /Users/eugeniucazmal/dev/nutri-plan-plus-48ccfd0d
 
 # Setează environment variables
-export NEON_POSTGRES_URL="[connection string de la Neon]"
-export RENDER_POSTGRES_URL="[connection string de la Render]"
+export SOURCE_POSTGRES_URL="[connection string de la baza de date existentă]"
+export TARGET_POSTGRES_URL="[connection string de la Render PostgreSQL]"
 
 # Rulează migrarea
 node migrate-all-data-to-render.js
@@ -62,10 +60,10 @@ Script-ul va afișa:
 **IMPORTANT:** După migrare, actualizează Render să folosească Render PostgreSQL:
 
 1. Render Dashboard → serviciul tău → **Environment**
-2. **Șterge** sau **actualizează**:
-   - `POSTGRES_URL` = [connection string de la Render PostgreSQL]
-   - `DATABASE_URL` = [connection string de la Render PostgreSQL]
-3. **NU** folosi connection string-ul de la Neon!
+2. **Actualizează**:
+   - `POSTGRES_URL` = [connection string de la Render PostgreSQL - TARGET]
+   - `DATABASE_URL` = [connection string de la Render PostgreSQL - TARGET]
+3. **Șterge** connection string-ul vechi (dacă există)
 4. Click **"Save Changes"**
 5. Render va face automatic redeploy
 
