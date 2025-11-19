@@ -22,7 +22,7 @@ const PORT = config.port;
 const corsOrigins = process.env.FRONTEND_URL 
   ? [process.env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5173'] 
   : (config.nodeEnv === 'production' 
-      ? ['https://nutri-plan-plus.vercel.app', 'https://nutri-plan-plus.onrender.com']
+      ? ['https://nutri-plan-plus.vercel.app', 'https://nutri-plan-plus.onrender.com', 'https://eatnfit.onrender.com']
       : '*'); // Development: permite toate originile
 
 app.use(cors({
