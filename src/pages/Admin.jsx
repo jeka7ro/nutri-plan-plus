@@ -41,9 +41,11 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useToast } from "@/components/ui/use-toast";
 
 export default function Admin() {
   // VERSIUNE: 1.0.1 - FIX UTILIZATORI + NUME/PRENUME
+  const { toast } = useToast();
   const [user, setUser] = useState(null);
   const [selectedRequest, setSelectedRequest] = useState(null);
   const [response, setResponse] = useState("");
@@ -264,15 +266,79 @@ export default function Admin() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast({
+        title: language === 'ro' ? '❌ Eroare' : '❌ Error',
+        description: language === 'ro' ? 'Te rugăm să selectezi o imagine validă' : 'Please select a valid image',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // Validate file size (max 2MB pentru base64 - mai eficient)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({
+        title: language === 'ro' ? '❌ Imagine prea mare' : '❌ Image too large',
+        description: language === 'ro' ? 'Imaginea este prea mare. Maxim 2MB' : 'Image is too large. Maximum 2MB',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setUploadingImage(true);
     try {
-      // TODO: Implement file upload functionality
-      console.log('File upload not implemented yet:', file);
-      alert('File upload functionality not implemented yet');
+      // Convert to base64
+      const reader = new FileReader();
+      
+      reader.onloadend = () => {
+        try {
+          const base64Data = reader.result; // data:image/jpeg;base64,/9j/4AAQ...
+          
+          // Update recipe with base64 image
+          if (editingRecipe) {
+            setEditingRecipe({
+              ...editingRecipe,
+              image_url: base64Data
+            });
+          }
+          
+          toast({
+            title: language === 'ro' ? '✅ Imagine încărcată!' : '✅ Image uploaded!',
+            description: language === 'ro' 
+              ? 'Imaginea a fost încărcată cu succes' 
+              : 'Image uploaded successfully',
+          });
+        } catch (error) {
+          console.error('Error processing image:', error);
+          toast({
+            title: language === 'ro' ? '❌ Eroare' : '❌ Error',
+            description: language === 'ro' ? 'Eroare la procesarea imaginii' : 'Error processing image',
+            variant: 'destructive',
+          });
+        } finally {
+          setUploadingImage(false);
+        }
+      };
+      
+      reader.onerror = () => {
+        setUploadingImage(false);
+        toast({
+          title: language === 'ro' ? '❌ Eroare' : '❌ Error',
+          description: language === 'ro' ? 'Eroare la citirea fișierului' : 'Error reading file',
+          variant: 'destructive',
+        });
+      };
+      
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error uploading image:', error);
-    } finally {
       setUploadingImage(false);
+      toast({
+        title: language === 'ro' ? '❌ Eroare' : '❌ Error',
+        description: language === 'ro' ? 'Eroare la încărcarea imaginii' : 'Error uploading image',
+        variant: 'destructive',
+      });
     }
   };
 
