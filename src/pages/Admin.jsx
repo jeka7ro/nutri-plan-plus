@@ -276,11 +276,11 @@ export default function Admin() {
       return;
     }
 
-    // Validate file size (max 2MB pentru base64 - mai eficient)
-    if (file.size > 2 * 1024 * 1024) {
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
       toast({
         title: language === 'ro' ? '❌ Imagine prea mare' : '❌ Image too large',
-        description: language === 'ro' ? 'Imaginea este prea mare. Maxim 2MB' : 'Image is too large. Maximum 2MB',
+        description: language === 'ro' ? 'Imaginea este prea mare. Maxim 10MB' : 'Image is too large. Maximum 10MB',
         variant: 'destructive',
       });
       return;
