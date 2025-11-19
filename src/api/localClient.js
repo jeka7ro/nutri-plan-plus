@@ -171,6 +171,20 @@ export const localApi = {
       });
     },
     
+    forgotPassword: async (email) => {
+      return await request('/auth/forgot-password', {
+        method: 'POST',
+        body: JSON.stringify({ email }),
+      });
+    },
+    
+    resetPassword: async (token, newPassword) => {
+      return await request('/auth/reset-password', {
+        method: 'POST',
+        body: JSON.stringify({ token, newPassword }),
+      });
+    },
+    
     isAuthenticated: () => !!storage.getToken(),
     getCurrentUser: () => storage.getUser(),
   },

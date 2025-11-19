@@ -40,6 +40,9 @@ export default function IndexPage() {
   const [submitting, setSubmitting] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [forgotPasswordEmail, setForgotPasswordEmail] = useState('');
+  const [forgotPasswordSubmitting, setForgotPasswordSubmitting] = useState(false);
+  const [forgotPasswordSuccess, setForgotPasswordSuccess] = useState(false);
 
   useEffect(() => {
     const checkAuthAndRedirect = async () => {
@@ -417,38 +420,118 @@ export default function IndexPage() {
           </form>
 
           {/* Modal Recuperare Parolă */}
-          <Dialog open={showForgotPassword} onOpenChange={setShowForgotPassword}>
+          <Dialog open={showForgotPassword} onOpenChange={(open) => {
+            setShowForgotPassword(open);
+            if (!open) {
+              setForgotPasswordEmail('');
+              setForgotPasswordSuccess(false);
+            }
+          }}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>
-                  {language === 'ro' ? 'Recuperare Parolă' : 'Password Recovery'}
+                  {language === 'ro' ? '🔑 Recuperare Parolă' : '🔑 Password Recovery'}
                 </DialogTitle>
-                <DialogDescription className="space-y-4 pt-4">
-                  <p className="text-base">
-                    {language === 'ro' 
-                      ? 'Pentru a reseta parola, te rugăm să contactezi administratorul aplicației:'
-                      : 'To reset your password, please contact the application administrator:'}
-                  </p>
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                    <p className="font-semibold text-emerald-800 dark:text-emerald-200">
-                      📧 Email: jeka7ro@gmail.com
-                    </p>
-                  </div>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {language === 'ro'
-                      ? 'Administratorul îți va reseta parola și îți va trimite noua parolă pe email.'
-                      : 'The administrator will reset your password and send you the new password via email.'}
-                  </p>
+                <DialogDescription>
+                  {forgotPasswordSuccess ? (
+                    <div className="space-y-4 pt-4">
+                      <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
+                        <p className="text-emerald-800 dark:text-emerald-200 font-semibold">
+                          ✅ {language === 'ro' 
+                            ? 'Email trimis cu succes!' 
+                            : 'Email sent successfully!'}
+                        </p>
+                        <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-2">
+                          {language === 'ro'
+                            ? 'Dacă acest email există în sistem, vei primi un link de resetare a parolei. Verifică-ți inbox-ul și spam-ul.'
+                            : 'If this email exists in the system, you will receive a password reset link. Check your inbox and spam folder.'}
+                        </p>
+                      </div>
+                      <Button 
+                        onClick={() => {
+                          setShowForgotPassword(false);
+                          setForgotPasswordEmail('');
+                          setForgotPasswordSuccess(false);
+                        }}
+                        className="w-full bg-emerald-600 hover:bg-emerald-700"
+                      >
+                        {language === 'ro' ? 'Am înțeles' : 'Got it'}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4 pt-4">
+                      <p className="text-base text-[rgb(var(--ios-text-primary))]">
+                        {language === 'ro' 
+                          ? 'Introdu adresa ta de email și vei primi un link pentru resetarea parolei.'
+                          : 'Enter your email address and you will receive a link to reset your password.'}
+                      </p>
+                      <div className="space-y-2">
+                        <Label htmlFor="forgotEmail" className="text-[rgb(var(--ios-text-primary))]">
+                          {language === 'ro' ? 'Email' : 'Email'}
+                        </Label>
+                        <Input
+                          id="forgotEmail"
+                          type="email"
+                          placeholder={language === 'ro' ? 'email@exemplu.com' : 'email@example.com'}
+                          value={forgotPasswordEmail}
+                          onChange={(e) => setForgotPasswordEmail(e.target.value)}
+                          className="h-12 rounded-[12px] text-base"
+                          disabled={forgotPasswordSubmitting}
+                        />
+                      </div>
+                      <div className="flex gap-2 justify-end mt-4">
+                        <Button 
+                          variant="outline"
+                          onClick={() => {
+                            setShowForgotPassword(false);
+                            setForgotPasswordEmail('');
+                          }}
+                          disabled={forgotPasswordSubmitting}
+                        >
+                          {language === 'ro' ? 'Anulează' : 'Cancel'}
+                        </Button>
+                        <Button 
+                          onClick={async () => {
+                            if (!forgotPasswordEmail.trim()) {
+                              toast({
+                                title: language === 'ro' ? 'Eroare' : 'Error',
+                                description: language === 'ro' ? 'Introdu adresa de email' : 'Enter email address',
+                                variant: 'destructive',
+                              });
+                              return;
+                            }
+                            
+                            setForgotPasswordSubmitting(true);
+                            try {
+                              await localApi.auth.forgotPassword(forgotPasswordEmail);
+                              setForgotPasswordSuccess(true);
+                            } catch (error) {
+                              toast({
+                                title: language === 'ro' ? 'Eroare' : 'Error',
+                                description: error.message || (language === 'ro' ? 'A apărut o eroare' : 'An error occurred'),
+                                variant: 'destructive',
+                              });
+                            } finally {
+                              setForgotPasswordSubmitting(false);
+                            }
+                          }}
+                          disabled={forgotPasswordSubmitting || !forgotPasswordEmail.trim()}
+                          className="bg-emerald-600 hover:bg-emerald-700"
+                        >
+                          {forgotPasswordSubmitting ? (
+                            <>
+                              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                              {language === 'ro' ? 'Se trimite...' : 'Sending...'}
+                            </>
+                          ) : (
+                            language === 'ro' ? 'Trimite Link' : 'Send Link'
+                          )}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </DialogDescription>
               </DialogHeader>
-              <div className="flex justify-end mt-4">
-                <Button 
-                  onClick={() => setShowForgotPassword(false)}
-                  className="bg-emerald-600 hover:bg-emerald-700"
-                >
-                  {language === 'ro' ? 'Am înțeles' : 'Got it'}
-                </Button>
-              </div>
             </DialogContent>
           </Dialog>
 

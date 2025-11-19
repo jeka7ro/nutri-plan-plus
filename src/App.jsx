@@ -22,6 +22,7 @@ import Onboarding from "@/pages/Onboarding.jsx"
 import Recommendations from "@/pages/Recommendations.jsx"
 import Upgrade from "@/pages/Upgrade.jsx"
 import Landing from "@/pages/Landing.jsx"
+import ResetPassword from "@/pages/ResetPassword.jsx"
 
 function App() {
 
@@ -32,6 +33,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<IndexPage />} />
           <Route path="/app" element={<IndexPage />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route element={<Layout />}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/dailyplan" element={<DailyPlan />} />
