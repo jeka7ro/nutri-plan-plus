@@ -289,6 +289,114 @@ app.post('/api/recipes', authMiddleware, requireSubscription('premium'), async (
   }
 });
 
+// Update recipe (admin can update any, users can update their own)
+app.put('/api/recipes/:id', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if recipe exists
+    const recipeResult = await client.query('SELECT * FROM recipes WHERE id = $1', [req.params.id]);
+    
+    if (recipeResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Recipe not found' });
+    }
+    
+    const recipe = recipeResult.rows[0];
+    
+    // Check if user is admin or recipe owner
+    const userResult = await client.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+    const isAdmin = userResult.rows[0]?.role === 'admin';
+    const isOwner = recipe.user_id === req.userId;
+    
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    const updates = req.body;
+    const allowedFields = [
+      'name', 'name_ro', 'name_en', 'description', 'description_ro', 'description_en',
+      'ingredients_ro', 'ingredients_en', 'instructions_ro', 'instructions_en',
+      'calories', 'protein', 'carbs', 'fats', 'prep_time', 'cook_time', 'servings',
+      'phase', 'meal_type', 'image_url', 'tags', 'is_vegetarian', 'is_vegan', 
+      'allergens', 'is_public'
+    ];
+    
+    const fields = Object.keys(updates).filter(key => allowedFields.includes(key));
+    
+    if (fields.length === 0) {
+      return res.status(400).json({ error: 'No valid fields to update' });
+    }
+    
+    // Build UPDATE query
+    const setClause = fields.map((field, index) => {
+      // Handle JSON fields
+      if (['ingredients_ro', 'ingredients_en', 'tags', 'allergens'].includes(field)) {
+        return `${field} = $${index + 1}::jsonb`;
+      }
+      return `${field} = $${index + 1}`;
+    }).join(', ');
+    
+    const values = fields.map(field => {
+      // Stringify JSON fields
+      if (['ingredients_ro', 'ingredients_en', 'tags', 'allergens'].includes(field)) {
+        return JSON.stringify(updates[field]);
+      }
+      return updates[field];
+    });
+    values.push(req.params.id); // Add ID for WHERE clause
+    
+    await client.query(`
+      UPDATE recipes 
+      SET ${setClause}, updated_at = CURRENT_TIMESTAMP 
+      WHERE id = $${values.length}
+    `, values);
+    
+    // Get updated recipe
+    const result = await client.query('SELECT * FROM recipes WHERE id = $1', [req.params.id]);
+    
+    res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error updating recipe:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Delete recipe
+app.delete('/api/recipes/:id', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    // Check if recipe exists
+    const recipeResult = await client.query('SELECT * FROM recipes WHERE id = $1', [req.params.id]);
+    
+    if (recipeResult.rows.length === 0) {
+      return res.status(404).json({ error: 'Recipe not found' });
+    }
+    
+    const recipe = recipeResult.rows[0];
+    
+    // Check if user is admin or recipe owner
+    const userResult = await client.query('SELECT role FROM users WHERE id = $1', [req.userId]);
+    const isAdmin = userResult.rows[0]?.role === 'admin';
+    const isOwner = recipe.user_id === req.userId;
+    
+    if (!isAdmin && !isOwner) {
+      return res.status(403).json({ error: 'Unauthorized' });
+    }
+    
+    await client.query('DELETE FROM recipes WHERE id = $1', [req.params.id]);
+    
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting recipe:', error);
+    res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
 // ==================== DAILY CHECK-INS ENDPOINTS ====================
 
 // Get check-in for specific date
