@@ -17,6 +17,9 @@ COPY postcss.config.js ./
 COPY components.json ./
 COPY jsconfig.json ./
 
+# Copy scripts directory (needed for prebuild)
+COPY scripts/ ./scripts/
+
 # Install ALL dependencies (including devDependencies for build)
 RUN npm ci
 
