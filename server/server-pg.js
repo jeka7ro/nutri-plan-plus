@@ -16,6 +16,10 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = config.port;
 
+// Serve static files from dist/ (frontend build)
+const distPath = path.join(__dirname, '..', 'dist');
+app.use(express.static(distPath));
+
 // Middleware - CORS configurabil pentru acces global
 const corsOrigins = process.env.FRONTEND_URL 
   ? [process.env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5173'] 
@@ -1226,6 +1230,23 @@ app.post('/api/admin/payment-processors/:id/test', authMiddleware, async (req, r
   } finally {
     client.release();
   }
+});
+
+// SPA fallback - serve index.html for all non-API routes
+app.get('*', (req, res, next) => {
+  // Skip API routes
+  if (req.path.startsWith('/api/')) {
+    return next();
+  }
+  
+  // Serve index.html for all other routes (SPA routing)
+  const indexPath = path.join(distPath, 'index.html');
+  res.sendFile(indexPath, (err) => {
+    if (err) {
+      console.error('Error serving index.html:', err);
+      res.status(404).json({ error: 'Frontend not found. Please build the frontend first.' });
+    }
+  });
 });
 
 // Start server - permite acces extern

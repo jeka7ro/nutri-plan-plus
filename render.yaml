@@ -10,9 +10,9 @@ services:
       - name: nutriplan
         user: nutriplan
 
-  # Backend API
+  # Full Stack App (Frontend + Backend)
   - type: web
-    name: nutriplan-backend
+    name: nutriplan-app
     env: docker
     region: frankfurt
     plan: starter
@@ -31,5 +31,15 @@ services:
       - key: JWT_SECRET
         generateValue: true
       - key: FRONTEND_URL
+        sync: false
+      - key: POSTGRES_URL
+        fromDatabase:
+          name: nutriplan-db
+          property: connectionString
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: GMAIL_USER
+        sync: false
+      - key: GMAIL_APP_PASSWORD
         sync: false
 

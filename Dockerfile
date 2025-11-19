@@ -6,14 +6,43 @@ RUN apk add --no-cache postgresql-client
 
 WORKDIR /app
 
+# Stage 1: Build frontend
+FROM base AS frontend-builder
+
+# Copy package files
+COPY package*.json ./
+COPY vite.config.js ./
+COPY tailwind.config.js ./
+COPY postcss.config.js ./
+COPY components.json ./
+COPY tsconfig.json ./
+COPY jsconfig.json ./
+
+# Install ALL dependencies (including devDependencies for build)
+RUN npm ci
+
+# Copy frontend source
+COPY src/ ./src/
+COPY public/ ./public/
+COPY index.html ./
+
+# Build frontend
+RUN npm run build
+
+# Stage 2: Production image
+FROM base AS production
+
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
+# Install production dependencies only
 RUN npm ci --only=production
 
 # Copy server files
 COPY server/ ./server/
+
+# Copy built frontend from builder stage
+COPY --from=frontend-builder /app/dist ./dist
 
 # Expose port
 EXPOSE 3001
