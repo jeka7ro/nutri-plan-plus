@@ -34,14 +34,15 @@ RUN npm run build
 # Stage 2: Production image
 FROM base AS production
 
-# Copy package files
-COPY package*.json ./
+# Copy server files first (to get server/package.json)
+COPY server/ ./server/
 
-# Install production dependencies only
+# Install server dependencies
+WORKDIR /app/server
 RUN npm ci --only=production
 
-# Copy server files
-COPY server/ ./server/
+# Go back to app root
+WORKDIR /app
 
 # Copy built frontend from builder stage
 COPY --from=frontend-builder /app/dist ./dist
