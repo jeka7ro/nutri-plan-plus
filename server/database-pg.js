@@ -10,7 +10,7 @@ const pool = new Pool({
   database: config.database.url ? undefined : config.database.database,
   user: config.database.url ? undefined : config.database.user,
   password: config.database.url ? undefined : config.database.password,
-  ssl: config.nodeEnv === 'production' ? { rejectUnauthorized: false } : false,
+  ssl: (config.nodeEnv === 'production' || config.database.url) ? { rejectUnauthorized: false } : false,
   max: 20, // Maximum number of clients in the pool
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 2000,

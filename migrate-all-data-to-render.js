@@ -42,6 +42,20 @@ async function migrateTable(tableName, transformFn = null) {
   const targetClient = await targetPool.connect();
   
   try {
+    // Check if table exists in source
+    const tableExists = await sourceClient.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = $1
+      )
+    `, [tableName]);
+    
+    if (!tableExists.rows[0].exists) {
+      console.log(`   ⏭️  Table ${tableName} doesn't exist in source, skipping`);
+      return;
+    }
+    
     // Get all data from source database
     const result = await sourceClient.query(`SELECT * FROM ${tableName} ORDER BY id`);
     const rows = result.rows;
@@ -85,8 +99,40 @@ async function migrateTable(tableName, transformFn = null) {
     
     for (const row of dataToInsert) {
       try {
-        // Build INSERT query dynamically
-        const columns = Object.keys(row).filter(key => row[key] !== undefined);
+        // Build INSERT query dynamically - filter out columns that don't exist in target
+        const allColumns = Object.keys(row).filter(key => row[key] !== undefined);
+        
+        // Check which columns exist in target table
+        const tableInfo = await targetClient.query(`
+          SELECT column_name 
+          FROM information_schema.columns 
+          WHERE table_name = $1
+        `, [tableName]);
+        const existingColumns = new Set(tableInfo.rows.map(r => r.column_name));
+        
+        // Only include columns that exist in target table
+        // Exclude updated_at from insert (will be set automatically)
+        let columns = allColumns.filter(col => 
+          existingColumns.has(col) && col !== 'updated_at'
+        );
+        
+        // Special handling for recipes - if name is null but name_ro or name_en exists, use them
+        if (tableName === 'recipes' && (!row.name || row.name === null)) {
+          if (row.name_ro) row.name = row.name_ro;
+          else if (row.name_en) row.name = row.name_en;
+          else row.name = 'Untitled Recipe';
+          
+          // Add name to columns if it wasn't there
+          if (!columns.includes('name') && existingColumns.has('name')) {
+            columns.push('name');
+          }
+        }
+        
+        if (columns.length === 0) {
+          console.log(`   ⚠️  Skipping record ${row.id} - no matching columns`);
+          continue;
+        }
+        
         const values = columns.map((_, index) => `$${index + 1}`);
         const columnNames = columns.join(', ');
         const placeholders = values.join(', ');
@@ -97,42 +143,48 @@ async function migrateTable(tableName, transformFn = null) {
           [row.id]
         );
         
+        // Helper function to prepare value
+        const prepareValue = (col, val) => {
+          if (val === null || val === undefined) return null;
+          
+          // Check if column is JSONB type
+          const isJsonb = ['ingredients', 'ingredients_ro', 'ingredients_en', 'tags', 'allergens', 'exercises', 'backup_data', 'config'].some(name => col.includes(name));
+          
+          if (isJsonb) {
+            // If already a string, try to parse it first
+            if (typeof val === 'string') {
+              try {
+                JSON.parse(val); // Validate it's valid JSON
+                return val; // Return as string for JSONB
+              } catch {
+                return JSON.stringify(val);
+              }
+            }
+            // If object or array, stringify it
+            if (typeof val === 'object') {
+              return JSON.stringify(val);
+            }
+          }
+          
+          // For other types, return as is
+          return val;
+        };
+        
         if (exists.rows.length > 0) {
-          // Update existing record
-          const setClause = columns.map((col, idx) => `${col} = $${idx + 1}`).join(', ');
-          const updateValues = columns.map(col => {
-            // Handle JSON fields
-            if (typeof row[col] === 'object' && row[col] !== null && !Array.isArray(row[col])) {
-              return JSON.stringify(row[col]);
-            }
-            // Handle arrays (already JSON in PostgreSQL)
-            if (Array.isArray(row[col])) {
-              return JSON.stringify(row[col]);
-            }
-            return row[col];
-          });
+          // Update existing record - exclude updated_at from SET clause
+          const updateColumns = columns.filter(col => col !== 'updated_at');
+          const setClause = updateColumns.map((col, idx) => `${col} = $${idx + 1}`).join(', ');
+          const updateValues = updateColumns.map(col => prepareValue(col, row[col]));
           updateValues.push(row.id);
           
           await targetClient.query(
-            `UPDATE ${tableName} SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE id = $${updateValues.length}`,
+            `UPDATE ${tableName} SET ${setClause} WHERE id = $${updateValues.length}`,
             updateValues
           );
           skipped++;
         } else {
           // Insert new record
-          const insertValues = columns.map(col => {
-            // Handle JSON fields
-            if (typeof row[col] === 'object' && row[col] !== null && !Array.isArray(row[col])) {
-              return JSON.stringify(row[col]);
-            }
-            // Handle arrays (already JSON in PostgreSQL)
-            if (Array.isArray(row[col])) {
-              return JSON.stringify(row[col]);
-            }
-            // Handle TEXT fields (including images - base64 or URLs)
-            // These are already strings, so just return them
-            return row[col];
-          });
+          const insertValues = columns.map(col => prepareValue(col, row[col]));
           
           await targetClient.query(
             `INSERT INTO ${tableName} (${columnNames}) VALUES (${placeholders}) ON CONFLICT (id) DO NOTHING`,
@@ -202,6 +254,13 @@ async function main() {
       await migrateTable('password_resets');
     } catch (e) {
       console.log('   ⏭️  password_resets table doesn\'t exist, skipping');
+    }
+    
+    // Migrate payment_processors if exists
+    try {
+      await migrateTable('payment_processors');
+    } catch (e) {
+      console.log('   ⏭️  payment_processors table doesn\'t exist in source, skipping');
     }
     
     console.log('\n✅ Migration completed successfully!');

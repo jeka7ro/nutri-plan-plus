@@ -28,6 +28,7 @@ async function initDatabase() {
         name VARCHAR(255),
         role VARCHAR(50) DEFAULT 'user',
         subscription_tier VARCHAR(50) DEFAULT 'free',
+        subscription_plan VARCHAR(50),
         subscription_code VARCHAR(100),
         subscription_expires_at TIMESTAMP,
         start_date DATE,
@@ -75,6 +76,7 @@ async function initDatabase() {
         weight DECIMAL(5,2) NOT NULL,
         date DATE NOT NULL,
         notes TEXT,
+        mood VARCHAR(50),
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
@@ -101,6 +103,7 @@ async function initDatabase() {
         protein DECIMAL(5,1),
         carbs DECIMAL(5,1),
         fats DECIMAL(5,1),
+        fat DECIMAL(5,1),
         prep_time INTEGER,
         cook_time INTEGER,
         servings INTEGER DEFAULT 1,
@@ -157,6 +160,7 @@ async function initDatabase() {
         exercise_type VARCHAR(100),
         exercise_duration INTEGER,
         exercise_calories_burned INTEGER,
+        exercises JSONB,
         water_intake INTEGER DEFAULT 0,
         total_calories INTEGER DEFAULT 0,
         notes TEXT,
@@ -243,6 +247,7 @@ async function initDatabase() {
         filename VARCHAR(255) NOT NULL,
         filepath TEXT NOT NULL,
         size_bytes BIGINT,
+        backup_data JSONB,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `);
