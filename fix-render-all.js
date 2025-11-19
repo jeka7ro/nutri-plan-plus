@@ -172,24 +172,14 @@ async function checkSourceDatabase() {
   }
 }
 
-async function runMigration() {
-  if (!SOURCE_URL) {
-    log('\n⚠️  Nu pot rula migrarea - lipsește SOURCE_POSTGRES_URL', 'yellow');
-    return false;
-  }
-  
-  log('\n🚀 PASUL 3: Rulare migrare date...', 'bright');
-  log('   ⏳ Așteaptă... (poate dura 5-15 minute)', 'yellow');
-  
-  try {
-    // Import și rulează script-ul de migrare
-    const { default: migrate } = await import('./migrate-all-data-to-render.js');
-    // Script-ul se rulează automat când este importat
-    return true;
-  } catch (error) {
-    log(`   ❌ Eroare la migrare: ${error.message}`, 'red');
-    return false;
-  }
+function printMigrationInstructions() {
+  log('\n🚀 INSTRUCȚIUNI PENTRU MIGRARE:', 'bright');
+  log('═══════════════════════════════════════════════════', 'cyan');
+  log('\nRulează manual migrarea:', 'yellow');
+  log('   export SOURCE_POSTGRES_URL="[connection string sursă]"', 'cyan');
+  log('   export TARGET_POSTGRES_URL="[connection string Render]"', 'cyan');
+  log('   node migrate-all-data-to-render.js', 'cyan');
+  log('\n═══════════════════════════════════════════════════', 'cyan');
 }
 
 function printRenderInstructions(needsMigration, needsJWT) {
@@ -250,8 +240,7 @@ async function main() {
     log(`   - Migrare necesară: ${needsMigration ? '✅ DA' : '❌ NU'}`, needsMigration ? 'yellow' : 'green');
     
     if (needsMigration && sourceStatus) {
-      log('\n🔄 Vrei să rulez migrarea acum? (y/n)', 'yellow');
-      log('   (Rulează manual: node migrate-all-data-to-render.js)', 'cyan');
+      printMigrationInstructions();
     }
     
     // Print instructions
