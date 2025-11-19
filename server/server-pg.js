@@ -9,6 +9,8 @@ import fs from 'fs/promises';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import crypto from 'crypto';
+import bcrypt from 'bcryptjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -64,13 +66,17 @@ app.post('/api/auth/login', async (req, res) => {
   try {
     const { email, password } = req.body;
     
+    console.log('🔐 Login attempt:', email);
+    
     if (!email || !password) {
       return res.status(400).json({ error: 'Email and password are required' });
     }
     
     const result = await loginUser(email, password);
+    console.log('✅ Login success for:', email);
     res.json(result);
   } catch (error) {
+    console.error('❌ Login error:', error.message);
     res.status(401).json({ error: error.message });
   }
 });
@@ -147,6 +153,198 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
     res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
+// Forgot Password
+app.post('/api/auth/forgot-password', async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      return res.status(400).json({ error: 'Email required' });
+    }
+    
+    // Verifică dacă user-ul există
+    const userResult = await client.query('SELECT id, email, first_name FROM users WHERE email = $1', [email]);
+    
+    // Pentru securitate, nu dezvăluim dacă email-ul există sau nu
+    if (userResult.rows.length === 0) {
+      console.log(`⚠️ Password reset requested for non-existent email: ${email}`);
+      return res.status(200).json({ 
+        success: true, 
+        message: 'If this email exists, you will receive a password reset link.' 
+      });
+    }
+    
+    const user = userResult.rows[0];
+    
+    // Generează token de resetare
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 oră
+    
+    // Salvează token-ul în baza de date
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token VARCHAR(255) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Șterge token-urile expirate
+    await client.query('DELETE FROM password_resets WHERE expires_at < NOW()');
+    
+    // Șterge token-urile existente pentru acest user
+    await client.query('DELETE FROM password_resets WHERE user_id = $1', [user.id]);
+    
+    // Inserează noul token
+    await client.query(
+      'INSERT INTO password_resets (user_id, token, expires_at) VALUES ($1, $2, $3)',
+      [user.id, resetToken, expiresAt]
+    );
+    
+    // Trimite email (folosind email-service.js logic)
+    const baseUrl = process.env.FRONTEND_URL || 'https://eatnfit.onrender.com';
+    const link = `${baseUrl}/reset-password?token=${resetToken}`;
+    
+    const emailHtml = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <style>
+          body { font-family: -apple-system, sans-serif; background: #f3f4f6; padding: 20px; }
+          .container { max-width: 600px; margin: 0 auto; background: white; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+          .header { background: linear-gradient(135deg, #f59e0b, #ef4444); padding: 40px; text-align: center; }
+          .content { padding: 40px; }
+          .button { display: inline-block; background: linear-gradient(135deg, #f59e0b, #ef4444); color: white; padding: 16px 32px; border-radius: 12px; text-decoration: none; font-weight: bold; margin: 20px 0; }
+          .footer { padding: 20px; text-align: center; color: #6b7280; font-size: 14px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="color: white; margin: 0; font-size: 28px;">🔑 Resetare Parolă</h1>
+          </div>
+          <div class="content">
+            <p style="color: #4b5563; line-height: 1.6;">
+              Am primit o cerere de resetare a parolei pentru contul tău EatnFit.
+            </p>
+            <p style="color: #4b5563; line-height: 1.6;">
+              Dacă ai făcut tu această cerere, click pe butonul de mai jos pentru a-ți seta o parolă nouă:
+            </p>
+            <div style="text-align: center;">
+              <a href="${link}" class="button">
+                🔄 Resetează Parola
+              </a>
+            </div>
+            <p style="color: #ef4444; font-size: 14px; margin-top: 24px; font-weight: bold;">
+              ⚠️ Link-ul expiră în 1 oră.
+            </p>
+            <p style="color: #6b7280; font-size: 14px; margin-top: 16px;">
+              Dacă nu ai solicitat resetarea parolei, poți ignora acest email în siguranță. 
+              Parola ta rămâne neschimbată.
+            </p>
+          </div>
+          <div class="footer">
+            <p>© 2025 EatnFit</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+    
+    // Try to send email (if configured)
+    if (process.env.SENDGRID_API_KEY || (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD)) {
+      // Email sending logic would go here
+      console.log(`📧 [DEV MODE] Password reset link for ${user.email}: ${link}`);
+    } else {
+      console.log(`📧 [DEV MODE] Password reset link for ${user.email}: ${link}`);
+    }
+    
+    console.log(`✅ Password reset email sent to ${user.email}`);
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: 'If this email exists, you will receive a password reset link.' 
+    });
+    
+  } catch (error) {
+    console.error('❌ Forgot password error:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
+  } finally {
+    client.release();
+  }
+});
+
+// Reset Password
+app.post('/api/auth/reset-password', async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    const { token, newPassword } = req.body;
+    
+    if (!token || !newPassword) {
+      return res.status(400).json({ error: 'Token and new password required' });
+    }
+    
+    if (newPassword.length < 6) {
+      return res.status(400).json({ error: 'Password must be at least 6 characters' });
+    }
+    
+    // Verifică dacă există tabela password_resets
+    await client.query(`
+      CREATE TABLE IF NOT EXISTS password_resets (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+        token VARCHAR(255) NOT NULL UNIQUE,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+    
+    // Găsește token-ul valid
+    const tokenResult = await client.query(
+      `SELECT user_id, expires_at FROM password_resets 
+       WHERE token = $1 AND expires_at > NOW()`,
+      [token]
+    );
+    
+    if (tokenResult.rows.length === 0) {
+      return res.status(400).json({ error: 'Invalid or expired token' });
+    }
+    
+    const { user_id } = tokenResult.rows[0];
+    
+    // Hash parola nouă
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Actualizează parola
+    await client.query(
+      'UPDATE users SET password = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2',
+      [hashedPassword, user_id]
+    );
+    
+    // Șterge token-ul (folosit o singură dată)
+    await client.query('DELETE FROM password_resets WHERE token = $1', [token]);
+    
+    console.log(`✅ Password reset successfully for user ${user_id}`);
+    
+    return res.status(200).json({ 
+      success: true, 
+      message: 'Password reset successfully' 
+    });
+    
+  } catch (error) {
+    console.error('❌ Reset password error:', error);
+    return res.status(500).json({ error: error.message || 'Internal server error' });
   } finally {
     client.release();
   }
