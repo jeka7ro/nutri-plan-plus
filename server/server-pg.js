@@ -16,10 +16,6 @@ const __dirname = dirname(__filename);
 const app = express();
 const PORT = config.port;
 
-// Serve static files from dist/ (frontend build)
-const distPath = path.join(__dirname, '..', 'dist');
-app.use(express.static(distPath));
-
 // Middleware - CORS configurabil pentru acces global
 const corsOrigins = process.env.FRONTEND_URL 
   ? [process.env.FRONTEND_URL, 'http://localhost:3000', 'http://localhost:5173'] 
@@ -35,6 +31,10 @@ app.use(cors({
 }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+// Serve static files from dist/ (frontend build) - AFTER middleware, BEFORE API routes
+const distPath = path.join(__dirname, '..', 'dist');
+app.use(express.static(distPath));
 
 // Health check
 app.get('/api/health', (req, res) => {
