@@ -10,12 +10,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
 import {
   Users, MessageSquare, TrendingUp, TrendingDown, Activity, Shield, Crown, Calendar,
   CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings, Info, Menu
@@ -81,6 +81,7 @@ export default function Admin() {
   const [showGrantPremium, setShowGrantPremium] = useState(false);
   const [grantPremiumUser, setGrantPremiumUser] = useState(null);
   const [premiumDuration, setPremiumDuration] = useState('lifetime');
+  const [menuOpen, setMenuOpen] = useState(false);
   const queryClient = useQueryClient();
 
   useEffect(() => {
@@ -850,31 +851,150 @@ export default function Admin() {
           </Card>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          {/* HAMBURGER MENU - MOBIL ȘI DESKTOP */}
-          <div className="mb-6">
-            <Select value={activeTab} onValueChange={setActiveTab}>
-              <SelectTrigger className="glass-select w-full h-14 text-lg">
-                <div className="flex items-center gap-3">
-                  <Menu className="w-5 h-5 text-emerald-500" />
-                  <SelectValue placeholder="Selectează secțiune" />
-                </div>
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="crm">🎯 CRM</SelectItem>
-                <SelectItem value="sales">💰 Sales</SelectItem>
-                <SelectItem value="promos">🎁 Promoții</SelectItem>
-                <SelectItem value="email">📧 Email</SelectItem>
-                <SelectItem value="payments">💳 Plăți</SelectItem>
-                <SelectItem value="users">👥 Users</SelectItem>
-                <SelectItem value="recipes">🍽️ Rețete</SelectItem>
-                <SelectItem value="support">💬 Suport</SelectItem>
-                <SelectItem value="logs">📋 Logs</SelectItem>
-                <SelectItem value="backups">💾 Backup</SelectItem>
-                <SelectItem value="settings">⚙️ Setări</SelectItem>
-              </SelectContent>
-            </Select>
+        {/* PROFESIONAL BURGER MENU */}
+        <div className="mb-6 flex items-center justify-between">
+          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
+            <SheetTrigger asChild>
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="bg-gray-900/50 border-gray-700 hover:bg-gray-800 text-white font-medium"
+              >
+                <Menu className="w-5 h-5 mr-2" />
+                Meniu Admin
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-80 bg-gray-900 text-white border-gray-800 p-0">
+              <SheetHeader className="p-6 border-b border-gray-800">
+                <SheetTitle className="text-white text-xl font-bold">Admin Menu</SheetTitle>
+              </SheetHeader>
+              <nav className="p-4 space-y-1">
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start text-left h-12 px-4 ${
+                    activeTab === "users" 
+                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("users");
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Users className="w-5 h-5 mr-3" />
+                  Utilizatori
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start text-left h-12 px-4 ${
+                    activeTab === "recipes" 
+                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("recipes");
+                    setMenuOpen(false);
+                  }}
+                >
+                  <ChefHat className="w-5 h-5 mr-3" />
+                  Rețete
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start text-left h-12 px-4 ${
+                    activeTab === "support" 
+                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("support");
+                    setMenuOpen(false);
+                  }}
+                >
+                  <MessageSquare className="w-5 h-5 mr-3" />
+                  Suport
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start text-left h-12 px-4 ${
+                    activeTab === "backups" 
+                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("backups");
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Eye className="w-5 h-5 mr-3" />
+                  Backup-uri
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start text-left h-12 px-4 ${
+                    activeTab === "settings" 
+                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("settings");
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Settings className="w-5 h-5 mr-3" />
+                  Setări
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start text-left h-12 px-4 ${
+                    activeTab === "crm" 
+                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("crm");
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Activity className="w-5 h-5 mr-3" />
+                  CRM
+                </Button>
+                <Button
+                  variant="ghost"
+                  className={`w-full justify-start text-left h-12 px-4 ${
+                    activeTab === "logs" 
+                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
+                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                  }`}
+                  onClick={() => {
+                    setActiveTab("logs");
+                    setMenuOpen(false);
+                  }}
+                >
+                  <Info className="w-5 h-5 mr-3" />
+                  Logs
+                </Button>
+              </nav>
+            </SheetContent>
+          </Sheet>
+          
+          {/* Active Tab Indicator */}
+          <div className="text-sm text-gray-400">
+            {activeTab === "users" && "👥 Utilizatori"}
+            {activeTab === "recipes" && "🍽️ Rețete"}
+            {activeTab === "support" && "💬 Suport"}
+            {activeTab === "backups" && "💾 Backup-uri"}
+            {activeTab === "settings" && "⚙️ Setări"}
+            {activeTab === "crm" && "🎯 CRM"}
+            {activeTab === "logs" && "📋 Logs"}
+            {activeTab === "sales" && "💰 Sales"}
+            {activeTab === "promos" && "🎁 Promoții"}
+            {activeTab === "email" && "📧 Email"}
+            {activeTab === "payments" && "💳 Plăți"}
           </div>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 
           {/* ==================== TAB CRM ==================== */}
           <TabsContent value="crm" className="mt-6">
