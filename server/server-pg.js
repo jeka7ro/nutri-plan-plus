@@ -1021,6 +1021,18 @@ app.all('/api/social', authMiddleware, async (req, res) => {
       
       // GET ?friends=true - Get friends' recipes
       if (req.method === 'GET' && req.query.friends === 'true') {
+        // Try to create friends table if it doesn't exist (for compatibility with api/social.js)
+        await client.query(`
+          CREATE TABLE IF NOT EXISTS friends (
+            id SERIAL PRIMARY KEY,
+            user_id_1 INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            user_id_2 INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            UNIQUE(user_id_1, user_id_2),
+            CHECK (user_id_1 < user_id_2)
+          )
+        `);
+        
         const result = await client.query(`
           SELECT ur.*, u.first_name as author_first_name, u.last_name as author_last_name, u.email as author_email
           FROM user_recipes ur
