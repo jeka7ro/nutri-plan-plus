@@ -67,7 +67,12 @@ export default async function handler(req, res) {
     return handleFoodDatabase(req, res, pool, userId);
   }
   
-  return res.status(400).json({ error: 'Missing or invalid type parameter. Use ?type=friends|recipes|notifications|food' });
+  // Default error if type is missing
+  if (!type) {
+    return res.status(400).json({ error: 'Missing type parameter. Use ?type=friends|recipes|notifications|food' });
+  }
+  
+  return res.status(400).json({ error: 'Invalid type parameter. Use ?type=friends|recipes|notifications|food' });
 }
 
 // ==================== FRIENDS HANDLER ====================
@@ -866,5 +871,12 @@ async function handleNotifications(req, res, pool, userId) {
   }
   
   return res.status(405).json({ error: 'Method not allowed' });
+}
+
+// ==================== FOOD DATABASE HANDLER ====================
+async function handleFoodDatabase(req, res, pool, userId) {
+  // Placeholder for food database functionality
+  // This will be implemented when needed
+  return res.status(501).json({ error: 'Food database feature not yet implemented' });
 }
 

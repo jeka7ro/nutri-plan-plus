@@ -45,7 +45,7 @@ export default function WeightTracking() {
     if (weightEntries.length > 0) {
       // Folosește întotdeauna ultima greutate din istoric dacă există
       const lastWeight = weightEntries[0].weight;
-      setWeight(lastWeight.toFixed(1));
+      setWeight(parseFloat(lastWeight).toFixed(1));
       console.log('✅ Pre-populat greutate din istoric:', lastWeight);
     } else if (user?.current_weight) {
       // Fallback la current_weight doar dacă nu există înregistrări
@@ -169,15 +169,15 @@ export default function WeightTracking() {
   const latestWeight = weightEntries[0];
   const previousWeight = weightEntries[1];
   const weightChange = latestWeight && previousWeight 
-    ? (latestWeight.weight - previousWeight.weight).toFixed(1)
+    ? (parseFloat(latestWeight.weight) - parseFloat(previousWeight.weight)).toFixed(1)
     : 0;
 
   const totalWeightLost = user?.current_weight && latestWeight?.weight
-    ? (user.current_weight - latestWeight.weight).toFixed(1)
+    ? (parseFloat(user.current_weight) - parseFloat(latestWeight.weight)).toFixed(1)
     : 0;
 
   const remainingWeight = latestWeight?.weight && user?.target_weight
-    ? (latestWeight.weight - user.target_weight).toFixed(1)
+    ? (parseFloat(latestWeight.weight) - parseFloat(user.target_weight)).toFixed(1)
     : 0;
 
   const moodEmojis = {
@@ -206,7 +206,7 @@ export default function WeightTracking() {
                 <Scale className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-                {latestWeight?.weight || user?.current_weight || '-'} kg
+                {latestWeight?.weight ? parseFloat(latestWeight.weight).toFixed(1) : (user?.current_weight ? parseFloat(user.current_weight).toFixed(1) : '-')} kg
               </div>
               {weightChange !== 0 && (
                 <div className={`flex items-center gap-1 mt-2 text-sm ${
@@ -245,7 +245,7 @@ export default function WeightTracking() {
           {/* Card 3: IMC */}
           {(() => {
             const height = user?.height ? parseFloat(user.height) / 100 : null;
-            const currentWeight = latestWeight?.weight || user?.current_weight || null;
+            const currentWeight = latestWeight?.weight ? parseFloat(latestWeight.weight) : (user?.current_weight ? parseFloat(user.current_weight) : null);
             const bmi = height && currentWeight ? (currentWeight / (height * height)) : null;
             
             let bmiCategory = '';
@@ -327,7 +327,7 @@ export default function WeightTracking() {
                 <div className="flex items-center gap-2 px-3 py-2 bg-blue-100 dark:bg-blue-900/30 rounded-full">
                   <Scale className="w-4 h-4 text-blue-600 dark:text-blue-400" />
                   <span className="text-sm font-semibold text-blue-700 dark:text-blue-300">
-                    {latestWeight ? latestWeight.weight.toFixed(1) : user?.current_weight || '-'} kg
+                    {latestWeight ? parseFloat(latestWeight.weight).toFixed(1) : user?.current_weight || '-'} kg
                   </span>
                 </div>
               </div>
@@ -365,7 +365,7 @@ export default function WeightTracking() {
                 
                 const idealWeightMin = (minBMI * height * height).toFixed(1);
                 const idealWeightMax = (maxBMI * height * height).toFixed(1);
-                const currentWeight = latestWeight?.weight || user?.current_weight || 0;
+                const currentWeight = latestWeight?.weight ? parseFloat(latestWeight.weight) : (user?.current_weight ? parseFloat(user.current_weight) : 0);
                 const currentBMI = currentWeight / (height * height);
                 
                 let message = '';

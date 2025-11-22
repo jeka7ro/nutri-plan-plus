@@ -87,7 +87,9 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
   
   try {
     const result = await client.query(`
-      SELECT id, email, name, first_name, last_name, phone, role, subscription_tier, subscription_expires_at, 
+      SELECT id, email, name, first_name, last_name, phone, role, 
+             COALESCE(subscription_plan, subscription_tier, 'free') as subscription_plan,
+             subscription_tier, subscription_expires_at, 
              start_date, birth_date, current_weight, target_weight,
              height, age, gender, activity_level, dietary_preferences, allergies, profile_picture,
              country, city
@@ -105,6 +107,11 @@ app.get('/api/auth/me', authMiddleware, async (req, res) => {
     }
     if (user.allergies) {
       user.allergies = user.allergies.split(',');
+    }
+    
+    // Ensure subscription_plan has a default value
+    if (!user.subscription_plan) {
+      user.subscription_plan = user.subscription_tier || 'free';
     }
     
     res.json(user);
@@ -144,7 +151,9 @@ app.put('/api/auth/me', authMiddleware, async (req, res) => {
     
     // Get updated user
     const result = await client.query(`
-      SELECT id, email, name, role, subscription_tier, start_date, birth_date,
+      SELECT id, email, name, role, 
+             COALESCE(subscription_plan, subscription_tier, 'free') as subscription_plan,
+             subscription_tier, start_date, birth_date,
              current_weight, target_weight, height, age, gender, activity_level,
              dietary_preferences, allergies, profile_picture, country, city
       FROM users WHERE id = $1

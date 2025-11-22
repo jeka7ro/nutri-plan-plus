@@ -99,7 +99,7 @@ export default function Dashboard() {
   const currentPhase = getCurrentPhase(currentDay);
   const latestWeight = weightEntries[0];
   const weightLost = user?.current_weight && latestWeight?.weight 
-    ? (user.current_weight - latestWeight.weight).toFixed(1)
+    ? (parseFloat(user.current_weight) - parseFloat(latestWeight.weight)).toFixed(1)
     : 0;
 
   // FIXAT: Comparație de date cu conversie la timezone local

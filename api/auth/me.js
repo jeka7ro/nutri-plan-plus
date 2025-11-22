@@ -439,6 +439,11 @@ export default async function handler(req, res) {
     const user = result.rows[0];
     const { password, ...userData } = user;
     
+    // Ensure subscription_plan has a default value
+    if (!userData.subscription_plan) {
+      userData.subscription_plan = 'free';
+    }
+    
     // GET - return user data
     if (req.method === 'GET') {
       return res.status(200).json(userData);

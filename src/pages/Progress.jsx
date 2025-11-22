@@ -66,7 +66,7 @@ export default function Progress() {
 
   // Calculate Statistics
   const totalWeightLost = user?.current_weight && filteredWeightEntries[0]?.weight
-    ? (user.current_weight - filteredWeightEntries[0].weight).toFixed(1)
+    ? (parseFloat(user.current_weight) - parseFloat(filteredWeightEntries[0].weight)).toFixed(1)
     : 0;
 
   const averageWaterIntake = filteredCheckIns.length > 0
@@ -155,8 +155,8 @@ export default function Progress() {
     }
   }
 
-  const latestWeight = filteredWeightEntries[0]?.weight || user?.current_weight || 0;
-  const weightToGo = latestWeight && user?.target_weight ? (latestWeight - user.target_weight).toFixed(1) : 0;
+  const latestWeight = filteredWeightEntries[0]?.weight ? parseFloat(filteredWeightEntries[0].weight) : (user?.current_weight ? parseFloat(user.current_weight) : 0);
+  const weightToGo = latestWeight && user?.target_weight ? (latestWeight - parseFloat(user.target_weight)).toFixed(1) : 0;
 
   return (
     <div className="p-4 md:p-8 min-h-screen max-w-full overflow-x-hidden">
