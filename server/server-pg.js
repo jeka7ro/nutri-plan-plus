@@ -926,6 +926,184 @@ app.put('/api/messages/:id/read', authMiddleware, async (req, res) => {
   }
 });
 
+// ==================== SOCIAL ENDPOINTS (Combined: notifications, recipes) ====================
+// Matches Vercel serverless /api/social.js for compatibility
+
+app.all('/api/social', authMiddleware, async (req, res) => {
+  const client = await pool.connect();
+  
+  try {
+    const { type } = req.query; // type = 'friends' | 'recipes' | 'notifications' | 'food'
+    
+    // ========== NOTIFICATIONS ==========
+    if (type === 'notifications') {
+      // Ensure notifications table exists
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS notifications (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          type VARCHAR(50) NOT NULL,
+          related_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+          related_recipe_id INTEGER,
+          message TEXT NOT NULL,
+          action_url TEXT,
+          is_read BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_notifications_user_read ON notifications(user_id, is_read)`);
+      
+      // GET ?unread=true
+      if (req.method === 'GET' && req.query.unread === 'true') {
+        const result = await client.query(
+          'SELECT COUNT(*) as count FROM notifications WHERE user_id = $1 AND is_read = FALSE',
+          [req.userId]
+        );
+        return res.json({ count: parseInt(result.rows[0].count) });
+      }
+      
+      // PUT ?readAll=true
+      if (req.method === 'PUT' && req.query.readAll === 'true') {
+        await client.query('UPDATE notifications SET is_read = TRUE WHERE user_id = $1', [req.userId]);
+        return res.json({ success: true });
+      }
+      
+      // PUT ?id=X
+      if (req.method === 'PUT' && req.query.id) {
+        await client.query(
+          'UPDATE notifications SET is_read = TRUE WHERE id = $1 AND user_id = $2',
+          [req.query.id, req.userId]
+        );
+        return res.json({ success: true });
+      }
+      
+      // GET - List notifications
+      if (req.method === 'GET') {
+        const result = await client.query(`
+          SELECT n.*, u.first_name as related_user_first_name, u.last_name as related_user_last_name,
+                 u.email as related_user_email, u.profile_picture as related_user_picture
+          FROM notifications n
+          LEFT JOIN users u ON n.related_user_id = u.id
+          WHERE n.user_id = $1
+          ORDER BY n.created_at DESC
+          LIMIT 50
+        `, [req.userId]);
+        return res.json(result.rows);
+      }
+    }
+    
+    // ========== USER RECIPES ==========
+    if (type === 'recipes') {
+      // Ensure user_recipes table exists
+      await client.query(`
+        CREATE TABLE IF NOT EXISTS user_recipes (
+          id SERIAL PRIMARY KEY,
+          user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+          name VARCHAR(255) NOT NULL,
+          name_ro VARCHAR(255),
+          description TEXT,
+          ingredients_text TEXT,
+          instructions_text TEXT,
+          image_url TEXT,
+          meal_type VARCHAR(50) NOT NULL,
+          phase INTEGER,
+          phases INTEGER[],
+          calories INTEGER DEFAULT 0,
+          protein INTEGER DEFAULT 0,
+          carbs INTEGER DEFAULT 0,
+          fat INTEGER DEFAULT 0,
+          is_public_to_friends BOOLEAN DEFAULT FALSE,
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+      `);
+      await client.query(`CREATE INDEX IF NOT EXISTS idx_user_recipes_user ON user_recipes(user_id)`);
+      
+      // GET ?friends=true - Get friends' recipes
+      if (req.method === 'GET' && req.query.friends === 'true') {
+        const result = await client.query(`
+          SELECT ur.*, u.first_name as author_first_name, u.last_name as author_last_name, u.email as author_email
+          FROM user_recipes ur
+          JOIN users u ON ur.user_id = u.id
+          JOIN friends f ON (
+            (f.user_id_1 = $1 AND f.user_id_2 = ur.user_id) OR
+            (f.user_id_2 = $1 AND f.user_id_1 = ur.user_id)
+          )
+          WHERE ur.is_public_to_friends = TRUE
+          ORDER BY ur.created_at DESC
+        `, [req.userId]);
+        return res.json(result.rows);
+      }
+      
+      // GET - My recipes
+      if (req.method === 'GET') {
+        const result = await client.query(`
+          SELECT * FROM user_recipes 
+          WHERE user_id = $1 
+          ORDER BY created_at DESC
+        `, [req.userId]);
+        return res.json(result.rows);
+      }
+      
+      // POST - Create recipe
+      if (req.method === 'POST') {
+        const { name, name_ro, description, ingredients_text, instructions_text, image_url, meal_type, phase, phases, calories, protein, carbs, fat, is_public_to_friends } = req.body;
+        if (!name || !meal_type) {
+          return res.status(400).json({ error: 'Name and meal_type required' });
+        }
+        const result = await client.query(`
+          INSERT INTO user_recipes (
+            user_id, name, name_ro, description, ingredients_text, instructions_text, image_url, meal_type, phase, phases,
+            calories, protein, carbs, fat, is_public_to_friends
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+          RETURNING *
+        `, [
+          req.userId, name, name_ro || name, description || '', ingredients_text || '', instructions_text || '',
+          image_url || null, meal_type, phase || null, phases || null,
+          calories || 0, protein || 0, carbs || 0, fat || 0, is_public_to_friends || false
+        ]);
+        return res.json(result.rows[0]);
+      }
+      
+      // PUT - Update recipe
+      if (req.method === 'PUT') {
+        const { id, ...updates } = req.body;
+        if (!id) return res.status(400).json({ error: 'Recipe ID required' });
+        const setClause = Object.keys(updates).map((key, i) => `${key} = $${i + 1}`).join(', ');
+        const values = [...Object.values(updates), id, req.userId];
+        const result = await client.query(`
+          UPDATE user_recipes SET ${setClause}, updated_at = CURRENT_TIMESTAMP
+          WHERE id = $${values.length - 1} AND user_id = $${values.length}
+          RETURNING *
+        `, values);
+        if (result.rows.length === 0) {
+          return res.status(404).json({ error: 'Recipe not found or not owned by you' });
+        }
+        return res.json(result.rows[0]);
+      }
+      
+      // DELETE - Delete recipe
+      if (req.method === 'DELETE' && req.query.id) {
+        await client.query('DELETE FROM user_recipes WHERE id = $1 AND user_id = $2', [req.query.id, req.userId]);
+        return res.json({ success: true });
+      }
+    }
+    
+    // Default error if type is missing or invalid
+    if (!type) {
+      return res.status(400).json({ error: 'Missing type parameter. Use ?type=recipes|notifications' });
+    }
+    
+    return res.status(400).json({ error: 'Invalid type parameter. Use ?type=recipes|notifications' });
+    
+  } catch (error) {
+    console.error('❌ Social endpoint error:', error);
+    return res.status(500).json({ error: error.message });
+  } finally {
+    client.release();
+  }
+});
+
 // ==================== SUBSCRIPTION & ADMIN ENDPOINTS ====================
 
 // Redeem subscription code
