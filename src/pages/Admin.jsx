@@ -858,148 +858,164 @@ export default function Admin() {
           </Card>
         </div>
 
-        {/* PROFESIONAL BURGER MENU */}
-        <div className="mb-6 flex items-center justify-between">
-          <Sheet open={menuOpen} onOpenChange={setMenuOpen}>
-            <SheetTrigger asChild>
-              <Button 
-                variant="outline" 
-                size="lg"
-                className="bg-gray-900/50 border-gray-700 hover:bg-gray-800 text-white font-medium"
+        {/* PROFESIONAL FIXED SIDEBAR MENU */}
+        <div className="flex gap-6 mt-6">
+          {/* Sidebar Navigation - Fixed on desktop, toggleable on mobile */}
+          <aside className={`
+            ${menuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            fixed lg:sticky top-0 left-0 z-50
+            w-72 h-screen lg:h-auto lg:max-h-[calc(100vh-200px)]
+            bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950
+            border-r border-gray-800
+            transition-transform duration-300 ease-in-out
+            lg:transition-none
+            overflow-y-auto
+            shadow-2xl lg:shadow-none
+          `}>
+            <div className="p-6 border-b border-gray-800 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                <Shield className="w-6 h-6 text-emerald-400" />
+                Admin Menu
+              </h2>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden text-gray-400 hover:text-white"
+                onClick={() => setMenuOpen(false)}
               >
-                <Menu className="w-5 h-5 mr-2" />
-                Meniu Admin
+                <XCircle className="w-5 h-5" />
               </Button>
-            </SheetTrigger>
-            <SheetContent side="left" className="w-80 bg-gray-900 text-white border-gray-800 p-0">
-              <SheetHeader className="p-6 border-b border-gray-800">
-                <SheetTitle className="text-white text-xl font-bold">Admin Menu</SheetTitle>
-              </SheetHeader>
-              <nav className="p-4 space-y-1">
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start text-left h-12 px-4 ${
-                    activeTab === "users" 
-                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                  onClick={() => {
-                    setActiveTab("users");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <Users className="w-5 h-5 mr-3" />
-                  Utilizatori
-                </Button>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start text-left h-12 px-4 ${
-                    activeTab === "recipes" 
-                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                  onClick={() => {
-                    setActiveTab("recipes");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <ChefHat className="w-5 h-5 mr-3" />
-                  Rețete
-                </Button>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start text-left h-12 px-4 ${
-                    activeTab === "support" 
-                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                  onClick={() => {
-                    setActiveTab("support");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <MessageSquare className="w-5 h-5 mr-3" />
-                  Suport
-                </Button>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start text-left h-12 px-4 ${
-                    activeTab === "backups" 
-                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                  onClick={() => {
-                    setActiveTab("backups");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <Eye className="w-5 h-5 mr-3" />
-                  Backup-uri
-                </Button>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start text-left h-12 px-4 ${
-                    activeTab === "settings" 
-                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                  onClick={() => {
-                    setActiveTab("settings");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <Settings className="w-5 h-5 mr-3" />
-                  Setări
-                </Button>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start text-left h-12 px-4 ${
-                    activeTab === "crm" 
-                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                  onClick={() => {
-                    setActiveTab("crm");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <Activity className="w-5 h-5 mr-3" />
-                  CRM
-                </Button>
-                <Button
-                  variant="ghost"
-                  className={`w-full justify-start text-left h-12 px-4 ${
-                    activeTab === "logs" 
-                      ? "bg-gray-800 text-white border-l-4 border-blue-500" 
-                      : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                  }`}
-                  onClick={() => {
-                    setActiveTab("logs");
-                    setMenuOpen(false);
-                  }}
-                >
-                  <Info className="w-5 h-5 mr-3" />
-                  Logs
-                </Button>
-              </nav>
-            </SheetContent>
-          </Sheet>
-          
-          {/* Active Tab Indicator */}
-          <div className="text-sm text-gray-400">
-            {activeTab === "users" && "👥 Utilizatori"}
-            {activeTab === "recipes" && "🍽️ Rețete"}
-            {activeTab === "support" && "💬 Suport"}
-            {activeTab === "backups" && "💾 Backup-uri"}
-            {activeTab === "settings" && "⚙️ Setări"}
-            {activeTab === "crm" && "🎯 CRM"}
-            {activeTab === "logs" && "📋 Logs"}
-            {activeTab === "sales" && "💰 Sales"}
-            {activeTab === "promos" && "🎁 Promoții"}
-            {activeTab === "email" && "📧 Email"}
-            {activeTab === "payments" && "💳 Plăți"}
-          </div>
-        </div>
+            </div>
+            <nav className="p-4 space-y-2">
+              <Button
+                variant="ghost"
+                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
+                  activeTab === "users" 
+                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/50" 
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+                onClick={() => {
+                  setActiveTab("users");
+                  setMenuOpen(false);
+                }}
+              >
+                <Users className="w-5 h-5 mr-3" />
+                <span className="font-medium">Utilizatori</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
+                  activeTab === "recipes" 
+                    ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/50" 
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+                onClick={() => {
+                  setActiveTab("recipes");
+                  setMenuOpen(false);
+                }}
+              >
+                <ChefHat className="w-5 h-5 mr-3" />
+                <span className="font-medium">Rețete</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
+                  activeTab === "support" 
+                    ? "bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg shadow-orange-500/50" 
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+                onClick={() => {
+                  setActiveTab("support");
+                  setMenuOpen(false);
+                }}
+              >
+                <MessageSquare className="w-5 h-5 mr-3" />
+                <span className="font-medium">Suport</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
+                  activeTab === "backups" 
+                    ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/50" 
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+                onClick={() => {
+                  setActiveTab("backups");
+                  setMenuOpen(false);
+                }}
+              >
+                <Eye className="w-5 h-5 mr-3" />
+                <span className="font-medium">Backup-uri</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
+                  activeTab === "settings" 
+                    ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg shadow-gray-500/50" 
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+                onClick={() => {
+                  setActiveTab("settings");
+                  setMenuOpen(false);
+                }}
+              >
+                <Settings className="w-5 h-5 mr-3" />
+                <span className="font-medium">Setări</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
+                  activeTab === "crm" 
+                    ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-500/50" 
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+                onClick={() => {
+                  setActiveTab("crm");
+                  setMenuOpen(false);
+                }}
+              >
+                <Activity className="w-5 h-5 mr-3" />
+                <span className="font-medium">CRM</span>
+              </Button>
+              <Button
+                variant="ghost"
+                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
+                  activeTab === "logs" 
+                    ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/50" 
+                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
+                }`}
+                onClick={() => {
+                  setActiveTab("logs");
+                  setMenuOpen(false);
+                }}
+              >
+                <Info className="w-5 h-5 mr-3" />
+                <span className="font-medium">Logs</span>
+              </Button>
+            </nav>
+          </aside>
+
+          {/* Mobile Burger Button */}
+          <Button
+            variant="outline"
+            size="lg"
+            className="lg:hidden fixed top-4 left-4 z-50 bg-gray-900/90 border-gray-700 hover:bg-gray-800 text-white shadow-lg"
+            onClick={() => setMenuOpen(true)}
+          >
+            <Menu className="w-5 h-5 mr-2" />
+            Meniu
+          </Button>
+
+          {/* Overlay for mobile */}
+          {menuOpen && (
+            <div
+              className="lg:hidden fixed inset-0 bg-black/50 z-40"
+              onClick={() => setMenuOpen(false)}
+            />
+          )}
+
+          {/* Main Content Area */}
+          <div className="flex-1 min-w-0">
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 
@@ -2095,7 +2111,8 @@ export default function Admin() {
             </Card>
           </TabsContent>
         </Tabs>
-      </div>
+          </div>
+        </div>
 
       {/* Recipe Editor Dialog */}
       <Dialog open={!!editingRecipe} onOpenChange={() => setEditingRecipe(null)}>
