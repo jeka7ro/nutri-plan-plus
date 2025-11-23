@@ -373,6 +373,9 @@ app.get('/api/weight', authMiddleware, async (req, res) => {
     `, [req.userId]);
     
     res.json(result.rows);
+  } catch (error) {
+    console.error('Error fetching weight entries:', error);
+    res.status(500).json({ error: 'Failed to fetch weight entries', details: error.message });
   } finally {
     client.release();
   }
@@ -385,13 +388,33 @@ app.post('/api/weight', authMiddleware, async (req, res) => {
   try {
     const { weight, date, notes } = req.body;
     
+    // Validate weight
+    if (!weight || isNaN(parseFloat(weight))) {
+      return res.status(400).json({ error: 'Weight is required and must be a number' });
+    }
+    
+    const weightValue = parseFloat(weight);
+    if (weightValue <= 0 || weightValue > 1000) {
+      return res.status(400).json({ error: 'Weight must be between 0 and 1000 kg' });
+    }
+    
     const result = await client.query(`
       INSERT INTO weight_entries (user_id, weight, date, notes)
       VALUES ($1, $2, $3, $4)
       RETURNING *
-    `, [req.userId, weight, date || new Date().toISOString().split('T')[0], notes]);
+    `, [req.userId, weightValue, date || new Date().toISOString().split('T')[0], notes || null]);
+    
+    // Update user's current_weight
+    await client.query(`
+      UPDATE users 
+      SET current_weight = $1 
+      WHERE id = $2
+    `, [weightValue, req.userId]);
     
     res.json(result.rows[0]);
+  } catch (error) {
+    console.error('Error adding weight entry:', error);
+    res.status(500).json({ error: 'Failed to add weight entry', details: error.message });
   } finally {
     client.release();
   }
