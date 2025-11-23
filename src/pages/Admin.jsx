@@ -696,326 +696,236 @@ export default function Admin() {
   });
 
   return (
-    <div className="admin-page p-4 md:p-8 min-h-screen text-white">
+    <div className="min-h-screen bg-[#0a0a0a] flex">
       <style>{`
-        .admin-page {
-          background: radial-gradient(circle at top, rgba(147, 197, 253, 0.18), transparent 55%),
-                      radial-gradient(circle at 20% 20%, rgba(16, 185, 129, 0.18), transparent 40%),
-                      radial-gradient(circle at 80% 0%, rgba(236, 72, 153, 0.15), transparent 45%),
-                      #050714;
+        .admin-sidebar {
+          background: #111111;
+          border-right: 1px solid #1f1f1f;
         }
-        .admin-page .ios-card {
-          background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(15,23,42,0.55));
-          border: 1px solid rgba(255,255,255,0.12);
-          border-radius: 28px;
-          box-shadow: 0 25px 65px rgba(3,7,18,0.55);
-          backdrop-filter: blur(28px);
-          color: #f8fafc;
+        .admin-main {
+          background: #0a0a0a;
         }
-        .admin-page .ios-card h3,
-        .admin-page .ios-card p,
-        .admin-page .ios-card span,
-        .admin-page .ios-card div {
-          color: inherit;
+        .admin-card {
+          background: #111111;
+          border: 1px solid #1f1f1f;
+          border-radius: 8px;
         }
-        .admin-page .glass-pill {
-          background: linear-gradient(135deg, rgba(79, 209, 197, 0.8), rgba(99, 102, 241, 0.85));
-          border: 1px solid rgba(255,255,255,0.25);
-          color: #fff;
-          padding: 0.55rem 1.25rem;
-          border-radius: 999px;
-          box-shadow: 0 15px 35px rgba(59, 130, 246, 0.35);
+        .admin-table {
+          background: #111111;
+          border: 1px solid #1f1f1f;
         }
-        .admin-page .glass-select {
-          background: rgba(15,23,42,0.55);
-          border: 1px solid rgba(255,255,255,0.15);
-          backdrop-filter: blur(20px);
-          color: #f8fafc;
-          border-radius: 18px;
+        .admin-table th {
+          background: #0f0f0f;
+          color: #888;
+          font-weight: 500;
+          font-size: 12px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
         }
-        .admin-page .glass-select svg,
-        .admin-page .glass-select span {
-          color: inherit;
+        .admin-table td {
+          color: #e5e5e5;
+          font-size: 14px;
         }
-        .admin-page table {
-          color: #f8fafc;
-        }
-        .admin-page .glass-button {
-          background: linear-gradient(135deg, #5de0e6, #004aad);
-          border: none;
-          color: #fff;
-          box-shadow: 0 15px 35px rgba(0, 74, 173, 0.35);
-        }
-        .admin-page .glass-button:hover {
-          opacity: 0.9;
+        .admin-table tr:hover {
+          background: #1a1a1a;
         }
       `}</style>
-      <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold flex items-center gap-3">
-              <Shield className="w-8 h-8 text-emerald-300" />
-              Admin Dashboard
-            </h1>
-            <p className="text-white/70 mt-1">Gestionează aplicația</p>
-          </div>
-          <Badge className="glass-pill text-sm font-semibold tracking-wide">
-            <Crown className="w-4 h-4 mr-1" />
-            Administrator
-          </Badge>
-        </div>
-
-        {/* Build Info Card */}
-        {buildInfo && (
-          <Card className="ios-card border-2 border-blue-500/50 bg-gradient-to-r from-blue-900/30 to-purple-900/30">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-lg flex items-center justify-center shadow-lg">
-                    <Settings className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <div className="text-xs text-white/60 mb-1">Deploy Number</div>
-                    <div className="text-3xl font-bold text-white">
-                      #{buildInfo.buildNumber || 0}
-                    </div>
-                    <div className="text-xs text-white/50 mt-1">
-                      Commit: {buildInfo.gitCommit || 'N/A'}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-white/60 mb-1">Deployed</div>
-                  <div className="text-base font-bold text-white">
-                    {buildInfo.buildDate 
-                      ? new Date(buildInfo.buildDate).toLocaleDateString('ro-RO', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric'
-                        })
-                      : 'N/A'}
-                  </div>
-                  <div className="text-sm text-white/80 mt-1 font-semibold">
-                    {buildInfo.buildTime || 'N/A'}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-          <Card 
-            className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
-            onClick={() => setActiveTab("users")}
-          >
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <Users className="w-6 h-6 md:w-8 md:h-8 text-sky-300" />
-              </div>
-              <div className="text-2xl md:text-3xl font-bold">{stats.totalUsers}</div>
-              <div className="text-xs md:text-sm text-white/70 mt-1">Utilizatori</div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
-            onClick={() => setActiveTab("users")}
-          >
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <Activity className="w-6 h-6 md:w-8 md:h-8 text-emerald-300" />
-              </div>
-              <div className="text-2xl md:text-3xl font-bold">{stats.activeUsers}</div>
-              <div className="text-xs md:text-sm text-white/70 mt-1">Activi (ultim 7 zile)</div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
-            onClick={() => setActiveTab("support")}
-          >
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <MessageSquare className="w-6 h-6 md:w-8 md:h-8 text-orange-300" />
-              </div>
-              <div className="text-2xl md:text-3xl font-bold">{stats.pendingSupport}</div>
-              <div className="text-xs md:text-sm text-white/70 mt-1">Suport</div>
-            </CardContent>
-          </Card>
-
-          <Card 
-            className="ios-card cursor-pointer hover:shadow-[0_35px_90px_rgba(2,6,23,0.55)] transition-all hover:scale-[1.02]"
-            onClick={() => setActiveTab("recipes")}
-          >
-            <CardContent className="p-4 md:p-6">
-              <div className="flex items-center justify-between mb-2">
-                <ChefHat className="w-6 h-6 md:w-8 md:h-8 text-purple-300" />
-              </div>
-              <div className="text-2xl md:text-3xl font-bold">{stats.totalRecipes}</div>
-              <div className="text-xs md:text-sm text-white/70 mt-1">Rețete</div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* PROFESIONAL FIXED SIDEBAR MENU */}
-        <div className="flex gap-6 mt-6">
-          {/* Sidebar Navigation - Fixed on desktop, toggleable on mobile */}
-          <aside className={`
-            ${menuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-            fixed lg:sticky top-0 left-0 z-50
-            w-72 h-screen lg:h-auto lg:max-h-[calc(100vh-200px)]
-            bg-gradient-to-b from-gray-900 via-gray-900 to-gray-950
-            border-r border-gray-800
-            transition-transform duration-300 ease-in-out
-            lg:transition-none
-            overflow-y-auto
-            shadow-2xl lg:shadow-none
-          `}>
-            <div className="p-6 border-b border-gray-800 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                <Shield className="w-6 h-6 text-emerald-400" />
-                Admin Menu
-              </h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="lg:hidden text-gray-400 hover:text-white"
-                onClick={() => setMenuOpen(false)}
-              >
-                <XCircle className="w-5 h-5" />
-              </Button>
+      {/* Sidebar - Professional Minimalist */}
+      <aside className={`
+        ${menuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+        fixed lg:sticky top-0 left-0 z-50
+        w-64 h-screen
+        admin-sidebar
+        transition-transform duration-200
+        flex flex-col
+      `}>
+        <div className="p-6 border-b border-[#1f1f1f]">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Shield className="w-5 h-5 text-[#888]" />
+              <h1 className="text-sm font-semibold text-white">Admin</h1>
             </div>
-            <nav className="p-4 space-y-2">
-              <Button
-                variant="ghost"
-                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
-                  activeTab === "users" 
-                    ? "bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg shadow-blue-500/50" 
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-                onClick={() => {
-                  setActiveTab("users");
-                  setMenuOpen(false);
-                }}
-              >
-                <Users className="w-5 h-5 mr-3" />
-                <span className="font-medium">Utilizatori</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
-                  activeTab === "recipes" 
-                    ? "bg-gradient-to-r from-purple-600 to-purple-700 text-white shadow-lg shadow-purple-500/50" 
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-                onClick={() => {
-                  setActiveTab("recipes");
-                  setMenuOpen(false);
-                }}
-              >
-                <ChefHat className="w-5 h-5 mr-3" />
-                <span className="font-medium">Rețete</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
-                  activeTab === "support" 
-                    ? "bg-gradient-to-r from-orange-600 to-orange-700 text-white shadow-lg shadow-orange-500/50" 
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-                onClick={() => {
-                  setActiveTab("support");
-                  setMenuOpen(false);
-                }}
-              >
-                <MessageSquare className="w-5 h-5 mr-3" />
-                <span className="font-medium">Suport</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
-                  activeTab === "backups" 
-                    ? "bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-500/50" 
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-                onClick={() => {
-                  setActiveTab("backups");
-                  setMenuOpen(false);
-                }}
-              >
-                <Eye className="w-5 h-5 mr-3" />
-                <span className="font-medium">Backup-uri</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
-                  activeTab === "settings" 
-                    ? "bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-lg shadow-gray-500/50" 
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-                onClick={() => {
-                  setActiveTab("settings");
-                  setMenuOpen(false);
-                }}
-              >
-                <Settings className="w-5 h-5 mr-3" />
-                <span className="font-medium">Setări</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
-                  activeTab === "crm" 
-                    ? "bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-500/50" 
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-                onClick={() => {
-                  setActiveTab("crm");
-                  setMenuOpen(false);
-                }}
-              >
-                <Activity className="w-5 h-5 mr-3" />
-                <span className="font-medium">CRM</span>
-              </Button>
-              <Button
-                variant="ghost"
-                className={`w-full justify-start text-left h-14 px-4 rounded-lg transition-all ${
-                  activeTab === "logs" 
-                    ? "bg-gradient-to-r from-red-600 to-red-700 text-white shadow-lg shadow-red-500/50" 
-                    : "text-gray-300 hover:bg-gray-800 hover:text-white"
-                }`}
-                onClick={() => {
-                  setActiveTab("logs");
-                  setMenuOpen(false);
-                }}
-              >
-                <Info className="w-5 h-5 mr-3" />
-                <span className="font-medium">Logs</span>
-              </Button>
-            </nav>
-          </aside>
-
-          {/* Mobile Burger Button */}
-          <Button
-            variant="outline"
-            size="lg"
-            className="lg:hidden fixed top-4 left-4 z-50 bg-gray-900/90 border-gray-700 hover:bg-gray-800 text-white shadow-lg"
-            onClick={() => setMenuOpen(true)}
-          >
-            <Menu className="w-5 h-5 mr-2" />
-            Meniu
-          </Button>
-
-          {/* Overlay for mobile */}
-          {menuOpen && (
-            <div
-              className="lg:hidden fixed inset-0 bg-black/50 z-40"
+            <Button
+              variant="ghost"
+              size="icon"
+              className="lg:hidden h-8 w-8 text-[#888] hover:text-white"
               onClick={() => setMenuOpen(false)}
-            />
-          )}
+            >
+              <XCircle className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+          <Button
+            variant="ghost"
+            className={`w-full justify-start h-9 px-3 text-sm ${
+              activeTab === "users" 
+                ? "bg-[#1a1a1a] text-white" 
+                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+            }`}
+            onClick={() => {
+              setActiveTab("users");
+              setMenuOpen(false);
+            }}
+          >
+            <Users className="w-4 h-4 mr-2" />
+            Utilizatori
+          </Button>
+          <Button
+            variant="ghost"
+            className={`w-full justify-start h-9 px-3 text-sm ${
+              activeTab === "recipes" 
+                ? "bg-[#1a1a1a] text-white" 
+                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+            }`}
+            onClick={() => {
+              setActiveTab("recipes");
+              setMenuOpen(false);
+            }}
+          >
+            <ChefHat className="w-4 h-4 mr-2" />
+            Rețete
+          </Button>
+          <Button
+            variant="ghost"
+            className={`w-full justify-start h-9 px-3 text-sm ${
+              activeTab === "support" 
+                ? "bg-[#1a1a1a] text-white" 
+                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+            }`}
+            onClick={() => {
+              setActiveTab("support");
+              setMenuOpen(false);
+            }}
+          >
+            <MessageSquare className="w-4 h-4 mr-2" />
+            Suport
+          </Button>
+          <Button
+            variant="ghost"
+            className={`w-full justify-start h-9 px-3 text-sm ${
+              activeTab === "backups" 
+                ? "bg-[#1a1a1a] text-white" 
+                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+            }`}
+            onClick={() => {
+              setActiveTab("backups");
+              setMenuOpen(false);
+            }}
+          >
+            <Eye className="w-4 h-4 mr-2" />
+            Backup-uri
+          </Button>
+          <Button
+            variant="ghost"
+            className={`w-full justify-start h-9 px-3 text-sm ${
+              activeTab === "settings" 
+                ? "bg-[#1a1a1a] text-white" 
+                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+            }`}
+            onClick={() => {
+              setActiveTab("settings");
+              setMenuOpen(false);
+            }}
+          >
+            <Settings className="w-4 h-4 mr-2" />
+            Setări
+          </Button>
+          <Button
+            variant="ghost"
+            className={`w-full justify-start h-9 px-3 text-sm ${
+              activeTab === "crm" 
+                ? "bg-[#1a1a1a] text-white" 
+                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+            }`}
+            onClick={() => {
+              setActiveTab("crm");
+              setMenuOpen(false);
+            }}
+          >
+            <Activity className="w-4 h-4 mr-2" />
+            CRM
+          </Button>
+          <Button
+            variant="ghost"
+            className={`w-full justify-start h-9 px-3 text-sm ${
+              activeTab === "logs" 
+                ? "bg-[#1a1a1a] text-white" 
+                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
+            }`}
+            onClick={() => {
+              setActiveTab("logs");
+              setMenuOpen(false);
+            }}
+          >
+            <Info className="w-4 h-4 mr-2" />
+            Logs
+          </Button>
+        </nav>
+      </aside>
 
-          {/* Main Content Area */}
-          <div className="flex-1 min-w-0">
+      {/* Mobile Burger Button */}
+      <Button
+        variant="ghost"
+        size="icon"
+        className="lg:hidden fixed top-4 left-4 z-50 bg-[#111111] border border-[#1f1f1f] text-white hover:bg-[#1a1a1a]"
+        onClick={() => setMenuOpen(true)}
+      >
+        <Menu className="w-5 h-5" />
+      </Button>
+
+      {/* Overlay for mobile */}
+      {menuOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/80 z-40"
+          onClick={() => setMenuOpen(false)}
+        />
+      )}
+
+      {/* Main Content Area */}
+      <main className="admin-main flex-1 min-w-0 overflow-y-auto">
+        <div className="p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <h1 className="text-2xl font-semibold text-white mb-2">
+              {activeTab === "users" && "Utilizatori"}
+              {activeTab === "recipes" && "Rețete"}
+              {activeTab === "support" && "Suport"}
+              {activeTab === "backups" && "Backup-uri"}
+              {activeTab === "settings" && "Setări"}
+              {activeTab === "crm" && "CRM"}
+              {activeTab === "logs" && "Logs"}
+            </h1>
+            <p className="text-sm text-[#888]">
+              {activeTab === "users" && "Gestionează utilizatorii aplicației"}
+              {activeTab === "recipes" && "Gestionează rețetele"}
+              {activeTab === "support" && "Mesaje și cereri de suport"}
+              {activeTab === "backups" && "Backup-uri și restaurare"}
+              {activeTab === "settings" && "Setări aplicație"}
+              {activeTab === "crm" && "Customer Relationship Management"}
+              {activeTab === "logs" && "Jurnale și evenimente"}
+            </p>
+          </div>
+
+          {/* Stats Cards - Minimalist */}
+          <div className="grid grid-cols-4 gap-4 mb-8">
+            <div className="admin-card p-4">
+              <div className="text-xs text-[#888] mb-1">Utilizatori</div>
+              <div className="text-2xl font-semibold text-white">{stats.totalUsers}</div>
+            </div>
+            <div className="admin-card p-4">
+              <div className="text-xs text-[#888] mb-1">Activi (7 zile)</div>
+              <div className="text-2xl font-semibold text-white">{stats.activeUsers}</div>
+            </div>
+            <div className="admin-card p-4">
+              <div className="text-xs text-[#888] mb-1">Suport</div>
+              <div className="text-2xl font-semibold text-white">{stats.pendingSupport}</div>
+            </div>
+            <div className="admin-card p-4">
+              <div className="text-xs text-[#888] mb-1">Rețete</div>
+              <div className="text-2xl font-semibold text-white">{stats.totalRecipes}</div>
+            </div>
+          </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
 
@@ -2111,8 +2021,8 @@ export default function Admin() {
             </Card>
           </TabsContent>
         </Tabs>
-          </div>
         </div>
+      </main>
 
       {/* Recipe Editor Dialog */}
       <Dialog open={!!editingRecipe} onOpenChange={() => setEditingRecipe(null)}>
