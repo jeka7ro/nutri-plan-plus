@@ -412,7 +412,7 @@ export default function Admin() {
   // Funcție pentru căutare online (similar cu MyRecipes.jsx)
   const handleSearchOnline = async () => {
     if (!editingRecipe?.name_ro?.trim() && !editingRecipe?.name?.trim()) {
-      alert('⚠️ Introdu numele rețetei mai întâi');
+      alert('Introdu numele rețetei mai întâi');
       return;
     }
 
@@ -740,11 +740,11 @@ export default function Admin() {
         flex flex-col
       `}>
         <div className="p-6 border-b border-[#1f1f1f]">
-          <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <Shield className="w-5 h-5 text-[#888]" />
               <h1 className="text-sm font-semibold text-white">Admin</h1>
-            </div>
+          </div>
             <Button
               variant="ghost"
               size="icon"
@@ -753,8 +753,8 @@ export default function Admin() {
             >
               <XCircle className="w-4 h-4" />
             </Button>
-          </div>
         </div>
+                  </div>
         <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           <Button
             variant="ghost"
@@ -905,22 +905,22 @@ export default function Admin() {
               {activeTab === "crm" && "Customer Relationship Management"}
               {activeTab === "logs" && "Jurnale și evenimente"}
             </p>
-          </div>
+              </div>
 
           {/* Stats Cards - Minimalist */}
           <div className="grid grid-cols-4 gap-4 mb-8">
             <div className="admin-card p-4">
               <div className="text-xs text-[#888] mb-1">Utilizatori</div>
               <div className="text-2xl font-semibold text-white">{stats.totalUsers}</div>
-            </div>
+              </div>
             <div className="admin-card p-4">
               <div className="text-xs text-[#888] mb-1">Activi (7 zile)</div>
               <div className="text-2xl font-semibold text-white">{stats.activeUsers}</div>
-            </div>
+        </div>
             <div className="admin-card p-4">
               <div className="text-xs text-[#888] mb-1">Suport</div>
               <div className="text-2xl font-semibold text-white">{stats.pendingSupport}</div>
-            </div>
+                </div>
             <div className="admin-card p-4">
               <div className="text-xs text-[#888] mb-1">Rețete</div>
               <div className="text-2xl font-semibold text-white">{stats.totalRecipes}</div>
@@ -993,7 +993,7 @@ export default function Admin() {
           <TabsContent value="recommendations" className="mt-6">
             <Card className="ios-card border-none ios-shadow-lg">
               <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📖 Editare Recomandări Dietă</CardTitle>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">Editare Recomandări Dietă</CardTitle>
                 <p className="text-sm text-gray-500 mt-2">
                   Acestea apar în pagina "Recomandări" pentru toți utilizatorii
                 </p>
@@ -1003,7 +1003,7 @@ export default function Admin() {
                   <div className="flex items-start gap-3">
                     <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
                     <div className="text-sm text-gray-700 dark:text-gray-300">
-                      <p className="font-semibold mb-2">ℹ️ Cum să editezi:</p>
+                      <p className="font-semibold mb-2">Cum să editezi:</p>
                       <ul className="list-disc list-inside space-y-1">
                         <li>Modifică textele direct în fișierul <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">src/pages/Recommendations.jsx</code></li>
                         <li>Carbohidrații permisi sunt în array-ul <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">allowedCarbs.items</code></li>
@@ -1011,7 +1011,7 @@ export default function Admin() {
                         <li>Fiecare fază are <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">meals[]</code> și <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">note</code></li>
                       </ul>
                       <p className="mt-3 font-semibold text-emerald-700 dark:text-emerald-300">
-                        🚀 După editare, fă commit și push pentru a actualiza!
+                        După editare, fă commit și push pentru a actualiza!
                       </p>
                     </div>
                   </div>
@@ -1025,7 +1025,7 @@ export default function Admin() {
                     <CardContent className="text-xs space-y-2">
                       <p><strong>Focus:</strong> Carbohidrați + Fructe</p>
                       <p><strong>Interzis:</strong> Grăsimi, uleiuri</p>
-                      <p className="text-orange-600 dark:text-orange-400 font-semibold">⚠️ Gătește pe apă!</p>
+                      <p className="text-orange-600 dark:text-orange-400 font-semibold">Gătește pe apă!</p>
                     </CardContent>
                   </Card>
 
@@ -1181,7 +1181,7 @@ export default function Admin() {
                 )}
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-                  <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">💡 Sfat</h4>
+                  <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">Sfat</h4>
                   <p className="text-sm text-blue-700 dark:text-blue-300">
                     Cartea oficială este sursa principală pentru toate regulile și rețetele din aplicație. Consultă-o pentru informații detaliate despre fiecare fază.
                   </p>
@@ -1248,7 +1248,7 @@ export default function Admin() {
                       htmlFor="admin-filter" 
                       className="text-base font-bold cursor-pointer text-purple-400 dark:text-purple-300 hover:text-purple-300 dark:hover:text-purple-200"
                     >
-                      👑 Doar Rețete Admin
+                      Doar Rețete Admin
                     </Label>
                     {showOnlyAdminRecipes && (
                       <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-4 py-2 text-base font-bold">
@@ -1311,9 +1311,9 @@ export default function Admin() {
                             <Badge className="bg-blue-500 text-white border-0 shadow-md text-xs font-bold">{recipe.meal_type}</Badge>
                             <Badge className="bg-gray-600 text-white border-0 shadow-md text-xs font-bold">{recipe.calories} cal</Badge>
                             {recipe.is_admin_recipe && (
-                              <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1 text-sm font-bold">
-                                👑 ADMIN
-                              </Badge>
+                              <span className="bg-[#1a1a1a] text-white border border-[#2a2a2a] px-3 py-1 text-sm">
+                                ADMIN
+                              </span>
                             )}
                           </div>
                         </div>
@@ -1321,10 +1321,8 @@ export default function Admin() {
                           <Button
                             size="sm"
                             onClick={() => handleEditRecipe(recipe)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg border-0"
-                            style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
+                            className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a]"
                           >
-                            <Edit className="w-4 h-4 mr-1" />
                             Edit
                           </Button>
                           <Button
@@ -1334,10 +1332,8 @@ export default function Admin() {
                                 deleteRecipeMutation.mutate(recipe.id);
                               }
                             }}
-                            className="bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg border-0"
-                            style={{ backgroundColor: '#dc2626', color: '#ffffff' }}
+                            className="bg-[#1a1a1a] hover:bg-red-900 text-white border border-[#2a2a2a]"
                           >
-                            <Trash2 className="w-4 h-4 mr-1" />
                             Șterge
                           </Button>
                         </div>
@@ -1513,12 +1509,11 @@ export default function Admin() {
                                 {u.city && <p className="text-xs text-gray-500 dark:text-gray-400">🏙️ {u.city}</p>}
                                 <div className="pt-1">
                                   {u.role === 'admin' ? (
-                                    <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300 dark:bg-red-900/30 dark:text-red-300">
-                                      <Crown className="w-3 h-3 mr-1" />
+                                    <span className="bg-[#1a1a1a] text-white border border-[#2a2a2a] px-2 py-1 text-xs">
                                       Admin
-                                    </Badge>
+                                    </span>
                                   ) : (
-                                    <Badge variant="outline" className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300">User</Badge>
+                                    <span className="bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] px-2 py-1 text-xs">User</span>
                                   )}
                                 </div>
                               </div>
@@ -1531,24 +1526,23 @@ export default function Admin() {
                                     <>
                                       {isPremium ? (
                                         <div className="flex items-center gap-2">
-                                          <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1.5 text-sm font-bold">
-                                            <Crown className="w-4 h-4 mr-1.5" />
-                                            👑 PREMIUM
-                                          </Badge>
+                                          <span className="bg-[#1a1a1a] text-white border border-[#2a2a2a] px-3 py-1.5 text-sm">
+                                            PREMIUM
+                                          </span>
                                         </div>
                                       ) : (
-                                        <Badge className="bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm">
+                                        <span className="bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] px-3 py-1.5 text-sm">
                                           FREE
-                                        </Badge>
+                                        </span>
                                       )}
                                       {isPremium && u.subscription_expires_at && (
-                                        <p className="text-xs font-semibold text-purple-600 dark:text-purple-400">
-                                          ⏰ Expiră: {new Date(u.subscription_expires_at).toLocaleDateString('ro-RO')}
+                                        <p className="text-xs text-[#888] mt-1">
+                                          Expiră: {new Date(u.subscription_expires_at).toLocaleDateString('ro-RO')}
                                         </p>
                                       )}
                                       {isPremium && u.subscription_code && (
-                                        <p className="text-xs text-blue-600 dark:text-blue-400 font-mono bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded">
-                                          🔑 Cod: {u.subscription_code}
+                                        <p className="text-xs text-[#888] font-mono bg-[#1a1a1a] border border-[#2a2a2a] px-2 py-1 rounded mt-1">
+                                          Cod: {u.subscription_code}
                                         </p>
                                       )}
                                     </>
@@ -1642,9 +1636,9 @@ export default function Admin() {
                                   }}
                                   disabled={u.id === user?.id}
                                   title="Resetează parola"
-                                  className="text-xs px-2 py-1"
+                                  className="text-xs px-3 py-1 bg-[#1a1a1a] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
                                 >
-                                  🔑
+                                  Reset
                                 </Button>
                                 <Button
                                   variant={(u.subscription_tier || u.subscription_plan) === 'premium' ? "secondary" : "default"}
@@ -1655,9 +1649,9 @@ export default function Admin() {
                                   }}
                                   disabled={u.id === user?.id}
                                   title={(u.subscription_tier || u.subscription_plan) === 'premium' ? 'Deja Premium' : 'Acordă Premium'}
-                                  className="text-xs px-2 py-1"
+                                  className="text-xs px-3 py-1 bg-[#1a1a1a] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
                                 >
-                                  👑
+                                  Premium
                                 </Button>
                                 <Button
                                   variant="destructive"
@@ -1666,11 +1660,11 @@ export default function Admin() {
                                     e.stopPropagation();
                                     handleDeleteUser(u);
                                   }}
-                                  disabled={u.id === user?.id} // Nu poate șterge pe el însuși
+                                  disabled={u.id === user?.id}
                                   title="Șterge utilizatorul"
-                                  className="text-xs px-2 py-1"
+                                  className="text-xs px-3 py-1 bg-[#1a1a1a] border-[#2a2a2a] text-white hover:bg-red-900"
                                 >
-                                  <Trash2 className="w-4 h-4" />
+                                  Șterge
                                 </Button>
                               </div>
                             </TableCell>
@@ -1989,7 +1983,7 @@ export default function Admin() {
                     </div>
 
                     <div>
-                      <Label>🔑 Netopia API Key</Label>
+                      <Label>Netopia API Key</Label>
                       <Input 
                         type="password"
                         placeholder="API Key Netopia"
@@ -2014,14 +2008,14 @@ export default function Admin() {
 
                 <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
                   <p className="text-sm text-[rgb(var(--ios-text-secondary))]">
-                    <strong>ℹ️ Notă:</strong> După salvare, prețurile se vor actualiza automat pe pagina /upgrade și în toate locurile unde sunt afișate.
+                    <strong>Notă:</strong> După salvare, prețurile se vor actualiza automat pe pagina /upgrade și în toate locurile unde sunt afișate.
                   </p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
         </Tabs>
-        </div>
+      </div>
       </main>
 
       {/* Recipe Editor Dialog */}
@@ -2077,7 +2071,7 @@ export default function Admin() {
                     </label>
                   </div>
                   <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
-                    💡 Poți edita imaginea ulterior - schimbă URL-ul sau încarcă o imagine nouă
+                    Poți edita imaginea ulterior - schimbă URL-ul sau încarcă o imagine nouă
                   </p>
                 </div>
 
@@ -2145,7 +2139,7 @@ export default function Admin() {
                       })}
                     </div>
                     <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-2">
-                      💡 Selectează una sau mai multe faze pentru această rețetă
+                      Selectează una sau mai multe faze pentru această rețetă
                     </p>
                   </div>
                   <div>
@@ -2280,7 +2274,7 @@ export default function Admin() {
                       checked={editingRecipe.is_admin_recipe}
                       onCheckedChange={(checked) => setEditingRecipe({ ...editingRecipe, is_admin_recipe: checked })}
                     />
-                    <Label htmlFor="admin_recipe" className="text-purple-600 dark:text-purple-400 font-semibold">👑 Rețetă Admin</Label>
+                    <Label htmlFor="admin_recipe" className="text-purple-600 dark:text-purple-400 font-semibold">Rețetă Admin</Label>
                   </div>
                   <div>
                     <Label>Keywords (separă cu virgulă)</Label>
@@ -2423,7 +2417,7 @@ export default function Admin() {
                               </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="user">👤 User</SelectItem>
-                                <SelectItem value="admin">👑 Admin</SelectItem>
+                                <SelectItem value="admin">Admin</SelectItem>
                               </SelectContent>
                             </Select>
                           </div>
@@ -2473,14 +2467,13 @@ export default function Admin() {
                             <p>
                               <strong>Abonament:</strong>{' '}
                               {isPremium ? (
-                                <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1.5 text-sm font-bold">
-                                  <Crown className="w-4 h-4 mr-1.5" />
-                                  👑 PREMIUM
-                                </Badge>
+                                <span className="bg-[#1a1a1a] text-white border border-[#2a2a2a] px-3 py-1.5 text-sm">
+                                  PREMIUM
+                                </span>
                               ) : (
-                                <Badge className="bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-400 border border-gray-300 dark:border-gray-600 px-3 py-1.5 text-sm">
+                                <span className="bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] px-3 py-1.5 text-sm">
                                   FREE
-                                </Badge>
+                                </span>
                               )}
                             </p>
                           );
@@ -2860,7 +2853,7 @@ export default function Admin() {
                   </div>
                 ) : (
                   <div className="text-center text-gray-500 py-8">
-                    <p>⚠️ Conținutul backup-ului nu este disponibil</p>
+                    <p>Conținutul backup-ului nu este disponibil</p>
                     <p className="text-xs mt-2">Backup-ul poate fi de tip SQL sau fișier extern</p>
                   </div>
                 )}
@@ -2905,7 +2898,7 @@ export default function Admin() {
       <Dialog open={showResetPassword} onOpenChange={setShowResetPassword}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>🔑 Resetează Parola</DialogTitle>
+            <DialogTitle>Resetează Parola</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -2953,7 +2946,7 @@ export default function Admin() {
           <div className="space-y-4">
             <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
               <p className="text-red-800 dark:text-red-200 font-semibold mb-2">
-                ⚠️ ATENȚIE: Această acțiune NU poate fi anulată!
+                ATENȚIE: Această acțiune NU poate fi anulată!
               </p>
               <p className="text-sm text-red-700 dark:text-red-300">
                 Vei șterge PERMANENT utilizatorul:
@@ -3003,7 +2996,7 @@ export default function Admin() {
       >
         <DialogContent aria-describedby="grant-premium-description">
           <DialogHeader>
-            <DialogTitle>👑 Acordă Premium</DialogTitle>
+            <DialogTitle>Acordă Premium</DialogTitle>
             <DialogDescription id="grant-premium-description">
               Activează manual abonamentul Premium pentru utilizatorul selectat. După confirmare, starea lui devine „Premium activ”.
             </DialogDescription>
@@ -3019,9 +3012,9 @@ export default function Admin() {
                   : grantPremiumUser?.name} ({grantPremiumUser?.email})
               </p>
               {((grantPremiumUser?.subscription_tier || grantPremiumUser?.subscription_plan) === 'premium') && (
-                <div className="mt-2 p-2 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded">
-                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
-                    ⚠️ Utilizatorul are deja Premium activ
+                <div className="mt-2 p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded">
+                  <p className="text-sm text-[#888]">
+                    Utilizatorul are deja Premium activ
                   </p>
                 </div>
               )}
@@ -3041,11 +3034,11 @@ export default function Admin() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-lg">
-              <p className="text-sm text-emerald-800 dark:text-emerald-200">
-                <strong>✨ Premium include:</strong>
+            <div className="p-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg">
+              <p className="text-sm text-white">
+                <strong>Premium include:</strong>
               </p>
-              <ul className="text-xs text-emerald-700 dark:text-emerald-300 mt-1 list-disc list-inside">
+              <ul className="text-xs text-[#888] mt-1 list-disc list-inside">
                 <li>Rețete nelimitate</li>
                 <li>Funcționalitate prieteni</li>
                 <li>Baza de date alimente</li>
@@ -3054,15 +3047,15 @@ export default function Admin() {
               </ul>
             </div>
             <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowGrantPremium(false)}>
+              <Button variant="outline" onClick={() => setShowGrantPremium(false)} className="bg-[#1a1a1a] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]">
                 Anulează
               </Button>
               <Button 
                 onClick={confirmGrantPremium}
                 disabled={grantPremiumMutation.isPending}
-                className="bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700"
+                className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a]"
               >
-                {grantPremiumMutation.isPending ? 'Se acordă...' : '👑 Acordă Premium'}
+                {grantPremiumMutation.isPending ? 'Se acordă...' : 'Acordă Premium'}
               </Button>
             </div>
           </div>
