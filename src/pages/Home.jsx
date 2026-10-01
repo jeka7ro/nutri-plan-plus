@@ -14,7 +14,7 @@ export default function HomePage() {
         const user = await base44.auth.me();
         
         // Verifică dacă user-ul are datele complete
-        if (!user.start_date || !user.current_weight || !user.target_weight) {
+        if ((!user.start_date && user.program_status !== 'abandoned') || !user.current_weight || !user.target_weight) {
           // User autentificat dar nu a completat onboarding
           navigate(createPageUrl("Onboarding"));
         } else {

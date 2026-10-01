@@ -110,3 +110,4 @@ echo ""
 echo -e "${GREEN}✅ GATA! După ce faci pașii de mai sus, totul va funcționa!${NC}"
 echo ""
 
+

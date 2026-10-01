@@ -45,7 +45,7 @@ export default function FriendsNew() {
   if (user && user.subscription_plan === 'free') {
     return (
       <Paywall 
-        title={language === 'ro' ? '👥 Prieteni - Premium Feature' : '👥 Friends - Premium Feature'}
+        title={language === 'ro' ? 'Prieteni - Funcționalitate Premium' : 'Friends - Premium Feature'}
         description={language === 'ro' 
           ? 'Conectează-te cu prieteni, partajează rețete și urmărește progresul împreună!' 
           : 'Connect with friends, share recipes and track progress together!'}
@@ -71,15 +71,15 @@ export default function FriendsNew() {
     queryKey: ['friendsProgress'],
     queryFn: async () => {
       try {
-        console.log('📊 Fetching friends progress...');
-        console.log('📊 Current friends count:', friends.length);
-        console.log('📊 User plan:', user?.subscription_plan);
+        console.log('Fetching friends progress...');
+        console.log('Current friends count:', friends.length);
+        console.log('User plan:', user?.subscription_plan);
         const result = await localApi.friends.getProgress();
-        console.log('📊 Friends progress result:', result);
-        console.log('📊 Progress array length:', result?.length);
+        console.log('Friends progress result:', result);
+        console.log('Progress array length:', result?.length);
         return result || [];
       } catch (error) {
-        console.error('❌ Friends progress error:', error);
+        console.error('Friends progress error:', error);
         return [];
       }
     },
@@ -211,7 +211,7 @@ export default function FriendsNew() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
               <Search className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              {language === 'ro' ? '🔍 Caută Prieteni' : '🔍 Search Friends'}
+              {language === 'ro' ? 'Caută Prieteni' : 'Search Friends'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -311,8 +311,8 @@ export default function FriendsNew() {
           <Card className="ios-card ios-shadow-lg rounded-[20px] border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
-                <UserPlus className="w-5 h-5" />
-                📬 {language === 'ro' ? `Cereri Primite (${requests.received.length})` : `Received Requests (${requests.received.length})`}
+                <UserPlus className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                {language === 'ro' ? `Cereri Primite (${requests.received.length})` : `Received Requests (${requests.received.length})`}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -368,7 +368,7 @@ export default function FriendsNew() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        console.log('✅ ACCEPT friend request:', req.id);
+                        console.log('ACCEPT friend request:', req.id);
                       acceptMutation.mutate({
                         requestId: req.id,
                         shareWeight: !!shareWeightChoices[req.id],
@@ -383,7 +383,7 @@ export default function FriendsNew() {
                     <button
                       onClick={(e) => {
                         e.preventDefault();
-                        console.log('❌ REJECT friend request:', req.id);
+                        console.log('REJECT friend request:', req.id);
                         rejectMutation.mutate(req.id);
                       }}
                       disabled={rejectMutation.isPending}
@@ -405,7 +405,7 @@ export default function FriendsNew() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
                 <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                📤 {language === 'ro' ? `Cereri Trimise (${requests.sent.length})` : `Sent Requests (${requests.sent.length})`}
+                {language === 'ro' ? `Cereri Trimise (${requests.sent.length})` : `Sent Requests (${requests.sent.length})`}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -447,7 +447,7 @@ export default function FriendsNew() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
               <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              👥 {language === 'ro' ? `Prietenii Mei (${friends.length})` : `My Friends (${friends.length})`}
+              {language === 'ro' ? `Prietenii Mei (${friends.length})` : `My Friends (${friends.length})`}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -553,12 +553,12 @@ export default function FriendsNew() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-emerald-900 dark:text-emerald-100">
                 <Flame className="w-5 h-5 text-orange-500" />
-                📊 {language === 'ro' ? 'Progresul Prietenilor' : 'Friends Progress'}
+                {language === 'ro' ? 'Progresul Prietenilor' : 'Friends Progress'}
               </CardTitle>
               <p className="text-sm text-[rgb(var(--ios-text-secondary))] mt-2">
                 {language === 'ro' 
-                  ? '🔒 Datele sunt private. Vezi greutatea doar dacă prietenul îți acordă acces.'
-                  : '🔒 Data is private. You only see weight if your friend grants access.'}
+                  ? 'Datele sunt private. Vezi greutatea doar dacă prietenul îți acordă acces.'
+                  : 'Data is private. You only see weight if your friend grants access.'}
               </p>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -618,8 +618,8 @@ export default function FriendsNew() {
                         ) : (
                           <span>
                             {language === 'ro'
-                              ? 'Greutatea este privată 🔒'
-                              : 'Weight is private 🔒'}
+                              ? 'Greutatea este confidențială'
+                              : 'Weight is private'}
                           </span>
                         )}
                     </div>
@@ -640,7 +640,7 @@ export default function FriendsNew() {
                     {friend.recent_recipes && friend.recent_recipes.length > 0 && (
                       <div className="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-800">
                         <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mb-2">
-                          {language === 'ro' ? '🍽️ Rețete recente:' : '🍽️ Recent recipes:'}
+                          {language === 'ro' ? 'Rețete recente:' : 'Recent recipes:'}
                         </div>
                         <div className="flex flex-wrap gap-2">
                           {friend.recent_recipes.slice(0, 3).map((recipe, idx) => (

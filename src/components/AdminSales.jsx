@@ -60,7 +60,7 @@ export default function AdminSales() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-white">💰 Sales Dashboard</h2>
+        <h2 className="text-2xl font-bold text-white">Sales Dashboard</h2>
         <div className="flex gap-3">
           <Select value={period} onValueChange={setPeriod}>
             <SelectTrigger className="w-40">
@@ -131,7 +131,7 @@ export default function AdminSales() {
         {/* Line Chart - Daily Revenue */}
         <Card className="ios-card border-none ios-shadow-lg">
           <CardHeader>
-            <CardTitle className="text-[rgb(var(--ios-text-primary))]">📈 Venit Zilnic</CardTitle>
+            <CardTitle className="text-[rgb(var(--ios-text-primary))]">Venit Zilnic</CardTitle>
           </CardHeader>
           <CardContent>
             {dailyRevenue.length > 0 ? (
@@ -179,7 +179,7 @@ export default function AdminSales() {
         {/* Bar Chart - Transactions per Day */}
         <Card className="ios-card border-none ios-shadow-lg">
           <CardHeader>
-            <CardTitle className="text-[rgb(var(--ios-text-primary))]">📊 Tranzacții Zilnice</CardTitle>
+            <CardTitle className="text-[rgb(var(--ios-text-primary))]">Tranzacții Zilnice</CardTitle>
           </CardHeader>
           <CardContent>
             {dailyRevenue.length > 0 ? (
@@ -225,7 +225,7 @@ export default function AdminSales() {
       {/* Transactions Table */}
       <Card className="ios-card border-none ios-shadow-lg">
         <CardHeader>
-          <CardTitle className="text-[rgb(var(--ios-text-primary))]">🧾 Istoric Tranzacții</CardTitle>
+          <CardTitle className="text-[rgb(var(--ios-text-primary))]">Istoric Tranzacții</CardTitle>
         </CardHeader>
         <CardContent>
           {transactions.length === 0 ? (

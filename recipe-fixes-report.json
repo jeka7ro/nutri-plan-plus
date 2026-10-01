@@ -1,0 +1,470 @@
+{
+  "timestamp": "2025-11-25T10:32:36.774Z",
+  "fixed": [
+    {
+      "id": 4,
+      "name": "FRIGANELE CU CAPSUNE",
+      "phase": 1,
+      "meal_type": "breakfast",
+      "fixes": [
+        "Grăsimi: 10.0g → 5g"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "FRUCTE și OVAZ DATE PRIN BLENDER",
+      "phase": 1,
+      "meal_type": "breakfast",
+      "fixes": [
+        "Grăsimi: 6.0g → 5g"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "TERCI DE OVAZ",
+      "phase": 1,
+      "meal_type": "breakfast",
+      "fixes": [
+        "Grăsimi: 7.0g → 5g"
+      ]
+    },
+    {
+      "id": 13,
+      "name": "CARNATI DE PUI CU PASTE FUSILLI DIN OREZ BRUN",
+      "phase": 1,
+      "meal_type": "dinner",
+      "fixes": [
+        "Grăsimi: 12.0g → 5g"
+      ]
+    },
+    {
+      "id": 9,
+      "name": "CHILI CU CURCAN",
+      "phase": 1,
+      "meal_type": "dinner",
+      "fixes": [
+        "Grăsimi: 14.0g → 5g"
+      ]
+    },
+    {
+      "id": 16,
+      "name": "FILE MIGNON",
+      "phase": 1,
+      "meal_type": "dinner",
+      "fixes": [
+        "Grăsimi: 13.0g → 5g"
+      ]
+    },
+    {
+      "id": 15,
+      "name": "FILE MIGNON CU OREZ BRUN",
+      "phase": 1,
+      "meal_type": "dinner",
+      "fixes": [
+        "Grăsimi: 12.0g → 5g"
+      ]
+    },
+    {
+      "id": 17,
+      "name": "MUSCHIULET DE PORC CU BROCCOLI",
+      "phase": 1,
+      "meal_type": "dinner",
+      "fixes": [
+        "Calorii: 527 → 500",
+        "Grăsimi: 18.0g → 5g"
+      ]
+    },
+    {
+      "id": 12,
+      "name": "PUI CU BROCCOLI",
+      "phase": 1,
+      "meal_type": "dinner",
+      "fixes": [
+        "Grăsimi: 13.0g → 5g"
+      ]
+    },
+    {
+      "id": 7,
+      "name": "CURCAN INVELIT IN LIPIE DE GRAU GERMINAT",
+      "phase": 1,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 13.0g → 5g"
+      ]
+    },
+    {
+      "id": 78,
+      "name": "LISTA PRINCIPALA DE ALIMENTE",
+      "phase": 1,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 13.0g → 5g"
+      ]
+    },
+    {
+      "id": 14,
+      "name": "PUL ITALIAN CU OREZ SALBATIC",
+      "phase": 1,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 13.0g → 5g"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "SALATA DE TON, MAR VERDE $1 SPANAC",
+      "phase": 1,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 8.0g → 5g"
+      ]
+    },
+    {
+      "id": 11,
+      "name": "SOS DE SALATA",
+      "phase": 1,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 8.0g → 5g"
+      ]
+    },
+    {
+      "id": 10,
+      "name": "SUPA DE CURCAN, FASOLE ALBA Sși VARZA KALE",
+      "phase": 1,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 7.0g → 5g"
+      ]
+    },
+    {
+      "id": 8,
+      "name": "SUPA DE PUI CU ORZ",
+      "phase": 1,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 7.0g → 5g"
+      ]
+    },
+    {
+      "id": 6,
+      "name": "TARTINA DE CURCAN",
+      "phase": 1,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 12.0g → 5g"
+      ]
+    },
+    {
+      "id": 21,
+      "name": "PEPENE VERDE DAT PRIN BLENDER",
+      "phase": 1,
+      "meal_type": "snack1",
+      "fixes": [
+        "Calorii: 153 → 150"
+      ]
+    },
+    {
+      "id": 35,
+      "name": "PESTE CONDIMENTAT CU ARDEI IUTI $I KALE CU LAMAIE",
+      "phase": 2,
+      "meal_type": "lunch",
+      "fixes": [
+        "Eliminat ingredient interzis: \"pasta\""
+      ]
+    },
+    {
+      "id": 31,
+      "name": "RULOURI DE PUI",
+      "phase": 2,
+      "meal_type": "lunch",
+      "fixes": [
+        "Eliminat ingredient interzis: \"pasta\""
+      ]
+    },
+    {
+      "id": 26,
+      "name": "SALATA DE TON CU CASTRAVETI",
+      "phase": 2,
+      "meal_type": "lunch",
+      "fixes": [
+        "Eliminat ingredient interzis: \"pasta\""
+      ]
+    },
+    {
+      "id": 29,
+      "name": "SUNCA DE VITA $1 MUSTAR INVELITE IN FRUNZE",
+      "phase": 2,
+      "meal_type": "lunch",
+      "fixes": [
+        "Eliminat ingredient interzis: \"pasta\""
+      ]
+    },
+    {
+      "id": 88,
+      "name": "Piept de Pui la Grătar",
+      "phase": 2,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 165 → 150"
+      ]
+    },
+    {
+      "id": 119,
+      "name": "Piept de Pui la Grătar",
+      "phase": 2,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 165 → 150"
+      ]
+    },
+    {
+      "id": 53,
+      "name": "TERCI DE OVAZ CU ALUNE, SEMINTE și FRUCTE DE",
+      "phase": 3,
+      "meal_type": "breakfast",
+      "fixes": [
+        "Grăsimi: 7.0g → 10g"
+      ]
+    },
+    {
+      "id": 134,
+      "name": "Somon la Grătar cu Quinoa și Legume",
+      "phase": 3,
+      "meal_type": "dinner",
+      "fixes": [
+        "Calorii: 520 → 500"
+      ]
+    },
+    {
+      "id": 156,
+      "name": "Somon la Grătar cu Quinoa și Legume",
+      "phase": 3,
+      "meal_type": "dinner",
+      "fixes": [
+        "Calorii: 520 → 500"
+      ]
+    },
+    {
+      "id": 178,
+      "name": "Somon la Grătar cu Quinoa și Legume",
+      "phase": 3,
+      "meal_type": "dinner",
+      "fixes": [
+        "Calorii: 520 → 500"
+      ]
+    },
+    {
+      "id": 80,
+      "name": "$1 SUPLIMENTE",
+      "phase": 3,
+      "meal_type": "lunch",
+      "fixes": [
+        "Calorii: 536 → 500"
+      ]
+    },
+    {
+      "id": 71,
+      "name": "CU ANGHINARE $I SOS",
+      "phase": 3,
+      "meal_type": "lunch",
+      "fixes": [
+        "Calorii: 536 → 500"
+      ]
+    },
+    {
+      "id": 61,
+      "name": "MANCARE DE LINTE",
+      "phase": 3,
+      "meal_type": "lunch",
+      "fixes": [
+        "Calorii: 526 → 500"
+      ]
+    },
+    {
+      "id": 55,
+      "name": "SALATA DE CREVETI",
+      "phase": 3,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 9.0g → 10g"
+      ]
+    },
+    {
+      "id": 57,
+      "name": "SALATA DE MASLINE $I ROSI!",
+      "phase": 3,
+      "meal_type": "lunch",
+      "fixes": [
+        "Grăsimi: 9.0g → 10g"
+      ]
+    },
+    {
+      "id": 72,
+      "name": "ULE! DE MASLINE",
+      "phase": 3,
+      "meal_type": "lunch",
+      "fixes": [
+        "Calorii: 518 → 500"
+      ]
+    },
+    {
+      "id": 52,
+      "name": "AMESTEC PRIN MIXER DE ALUNE, SEMINTE, OVAZ, FRUCTE",
+      "phase": 3,
+      "meal_type": "snack1",
+      "fixes": [
+        "Calorii: 273 → 150",
+        "Grăsimi: 9.0g → 10g"
+      ]
+    },
+    {
+      "id": 176,
+      "name": "Migdale Crude",
+      "phase": 3,
+      "meal_type": "snack1",
+      "fixes": [
+        "Calorii: 170 → 150"
+      ]
+    },
+    {
+      "id": 154,
+      "name": "Migdale Crude",
+      "phase": 3,
+      "meal_type": "snack1",
+      "fixes": [
+        "Calorii: 170 → 150"
+      ]
+    },
+    {
+      "id": 132,
+      "name": "Migdale Crude",
+      "phase": 3,
+      "meal_type": "snack1",
+      "fixes": [
+        "Calorii: 170 → 150"
+      ]
+    },
+    {
+      "id": 51,
+      "name": "PAINE PRAJITA CU OU, ROSIE $1 CEAPA ROSIE",
+      "phase": 3,
+      "meal_type": "snack1",
+      "fixes": [
+        "Calorii: 222 → 150",
+        "Grăsimi: 7.0g → 10g"
+      ]
+    },
+    {
+      "id": 76,
+      "name": "GUACAMOLE CREMOS",
+      "phase": 3,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 374 → 150"
+      ]
+    },
+    {
+      "id": 77,
+      "name": "HUMMUS DIN CARTOFI DULC! CU CASTRAVETI",
+      "phase": 3,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 516 → 150"
+      ]
+    },
+    {
+      "id": 133,
+      "name": "Hummus cu Țelină",
+      "phase": 3,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 210 → 150"
+      ]
+    },
+    {
+      "id": 177,
+      "name": "Hummus cu Țelină",
+      "phase": 3,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 210 → 150"
+      ]
+    },
+    {
+      "id": 155,
+      "name": "Hummus cu Țelină",
+      "phase": 3,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 210 → 150"
+      ]
+    },
+    {
+      "id": 74,
+      "name": "NAPI CU LIMETE",
+      "phase": 3,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 429 → 150"
+      ]
+    },
+    {
+      "id": 73,
+      "name": "TELINA CU UNT DE MIGDALE",
+      "phase": 3,
+      "meal_type": "snack2",
+      "fixes": [
+        "Calorii: 433 → 150"
+      ]
+    }
+  ],
+  "needsManualReview": [
+    {
+      "id": 78,
+      "name": "LISTA PRINCIPALA DE ALIMENTE",
+      "phase": 1,
+      "meal_type": "lunch",
+      "issue": "Ingredientele sunt incomplete sau lipsă."
+    },
+    {
+      "id": 19,
+      "name": "PARA CU CACAO",
+      "phase": 1,
+      "meal_type": "snack1",
+      "issue": "Ingredientele sunt incomplete sau lipsă."
+    },
+    {
+      "id": 87,
+      "name": "Ouă Fierte",
+      "phase": 2,
+      "meal_type": "snack2",
+      "issue": "Ingredientele sunt incomplete sau lipsă."
+    },
+    {
+      "id": 118,
+      "name": "Ouă Fierte",
+      "phase": 2,
+      "meal_type": "snack2",
+      "issue": "Ingredientele sunt incomplete sau lipsă."
+    },
+    {
+      "id": 80,
+      "name": "$1 SUPLIMENTE",
+      "phase": 3,
+      "meal_type": "lunch",
+      "issue": "Ingredientele sunt incomplete sau lipsă."
+    },
+    {
+      "id": 71,
+      "name": "CU ANGHINARE $I SOS",
+      "phase": 3,
+      "meal_type": "lunch",
+      "issue": "Ingredientele sunt incomplete sau lipsă."
+    }
+  ],
+  "summary": {
+    "totalFixed": 46,
+    "totalNeedsReview": 6
+  }
+}

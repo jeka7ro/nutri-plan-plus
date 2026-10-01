@@ -66,21 +66,21 @@ export default function Upgrade() {
     {
       icon: Users,
       title: language === 'ro' ? 'Prieteni' : 'Friends',
-      free: '❌ Blocat',
+      free: language === 'ro' ? 'Blocat' : 'Locked',
       premium: 'Nelimitați',
       color: 'text-blue-600 dark:text-blue-400'
     },
     {
       icon: Database,
       title: language === 'ro' ? 'Food Database' : 'Food Database',
-      free: '❌ Blocat',
+      free: language === 'ro' ? 'Blocat' : 'Locked',
       premium: '200+ ingrediente',
       color: 'text-green-600 dark:text-green-400'
     },
     {
       icon: Sparkles,
       title: language === 'ro' ? 'AI Analyzer' : 'AI Analyzer',
-      free: '❌ Blocat',
+      free: language === 'ro' ? 'Blocat' : 'Locked',
       premium: 'Scor & Feedback',
       color: 'text-pink-600 dark:text-pink-400'
     },
@@ -94,7 +94,7 @@ export default function Upgrade() {
     {
       icon: Bell,
       title: language === 'ro' ? 'Notificări' : 'Notifications',
-      free: '❌ Blocat',
+      free: language === 'ro' ? 'Blocat' : 'Locked',
       premium: 'Notificări instant',
       color: 'text-orange-600 dark:text-orange-400'
     },
@@ -194,7 +194,7 @@ export default function Upgrade() {
               </div>
 
               <Button
-                className="w-full h-14 text-lg bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600 text-white font-bold shadow-2xl"
+                className="w-full h-14 text-lg bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600 text-white font-bold shadow-2xl flex items-center justify-center gap-2"
                 onClick={() => {
                   // TODO: Integrate Netopia Payments
                   alert(language === 'ro' 
@@ -202,14 +202,14 @@ export default function Upgrade() {
                     : 'Payment integration coming soon! Contact admin to activate Premium.');
                 }}
               >
-                <Zap className="w-5 h-5 mr-2" />
-                {language === 'ro' ? '🚀 Activează Premium Acum!' : '🚀 Activate Premium Now!'}
+                <Zap className="w-5 h-5" />
+                <span>{language === 'ro' ? 'Activează Premium Acum!' : 'Activate Premium Now!'}</span>
               </Button>
 
               <p className="text-xs text-center text-[rgb(var(--ios-text-tertiary))] mt-4">
                 {language === 'ro' 
-                  ? '⚡ Activare instant • Anulare oricând • Suport prioritar' 
-                  : '⚡ Instant activation • Cancel anytime • Priority support'}
+                  ? 'Activare instant • Anulare oricând • Suport prioritar' 
+                  : 'Instant activation • Cancel anytime • Priority support'}
               </p>
             </CardContent>
           </Card>

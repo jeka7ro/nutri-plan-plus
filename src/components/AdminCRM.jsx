@@ -178,7 +178,7 @@ export default function AdminCRM() {
       <Card className="ios-card border-none ios-shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between mb-4">
-            <CardTitle className="text-[rgb(var(--ios-text-primary))]">🎯 CRM Leads</CardTitle>
+            <CardTitle className="text-[rgb(var(--ios-text-primary))]">CRM Leads</CardTitle>
             <Button 
               size="sm" 
               className="bg-emerald-500 hover:bg-emerald-600"
@@ -308,7 +308,7 @@ export default function AdminCRM() {
       <Dialog open={showAddLead} onOpenChange={setShowAddLead}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>➕ Adaugă Lead Nou</DialogTitle>
+            <DialogTitle>Adaugă Lead Nou</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -376,7 +376,7 @@ export default function AdminCRM() {
               disabled={!newLead.email || createLeadMutation.isLoading}
               className="w-full bg-emerald-500 hover:bg-emerald-600"
             >
-              {createLeadMutation.isLoading ? 'Se salvează...' : '✅ Adaugă Lead'}
+              {createLeadMutation.isLoading ? 'Se salvează...' : 'Adaugă Lead'}
             </Button>
           </div>
         </DialogContent>
@@ -388,7 +388,7 @@ export default function AdminCRM() {
           <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
-                👤 {selectedLead.first_name} {selectedLead.last_name}
+                {selectedLead.first_name} {selectedLead.last_name}
               </DialogTitle>
             </DialogHeader>
             

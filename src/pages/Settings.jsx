@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import localApi from "@/api/localClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings as SettingsIcon, ArrowLeft, Loader2 } from "lucide-react";
+import { Settings as SettingsIcon, ArrowLeft, Loader2, Lightbulb, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "../components/LanguageContext";
 import DietaryPreferencesModal from "../components/DietaryPreferencesModal";
@@ -84,13 +84,13 @@ export default function Settings() {
         <DietaryPreferencesModal
           isOpen={showModal}
           onClose={() => {
-            console.log('🔙 Settings: Closing modal, navigating back');
+            console.log('Settings: Closing modal, navigating back');
             setShowModal(false);
             setTimeout(() => navigate(-1), 100); // Delay pentru animație smooth
           }}
           user={user}
           onSave={() => {
-            console.log('✅ Settings: Preferences saved!');
+            console.log('Settings: Preferences saved!');
             localApi.auth.me().then(setUser);
           }}
         />
@@ -98,14 +98,15 @@ export default function Settings() {
         {/* Tips */}
         <Card className="ios-card ios-shadow-lg rounded-[20px] border-[rgb(var(--ios-border))]">
           <CardHeader>
-            <CardTitle className="text-[rgb(var(--ios-text-primary))]">
-              💡 {language === 'ro' ? 'Sfaturi' : 'Tips'}
+            <CardTitle className="text-[rgb(var(--ios-text-primary))] flex items-center gap-2">
+              <Lightbulb className="w-5 h-5 text-amber-500" />
+              <span>{language === 'ro' ? 'Sfaturi' : 'Tips'}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2 text-sm text-[rgb(var(--ios-text-secondary))]">
               <li className="flex items-start gap-2">
-                <span className="text-emerald-500 flex-shrink-0">✓</span>
+                <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <span>
                   {language === 'ro' 
                     ? 'Bifează "Vegetarian" sau "Vegan" pentru a filtra rețetele cu carne/produse animale' 
@@ -113,7 +114,7 @@ export default function Settings() {
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-500 flex-shrink-0">✓</span>
+                <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <span>
                   {language === 'ro' 
                     ? 'Adaugă toate alergiile tale pentru siguranța ta' 
@@ -121,7 +122,7 @@ export default function Settings() {
                 </span>
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-emerald-500 flex-shrink-0">✓</span>
+                <Check className="w-4 h-4 text-emerald-500 flex-shrink-0 mt-0.5" />
                 <span>
                   {language === 'ro' 
                     ? 'Lista de mâncăruri preferate ne ajută să-ți sugerăm rețete similare' 

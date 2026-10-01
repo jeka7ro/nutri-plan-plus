@@ -1,7 +1,7 @@
 import React from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Crown, Sparkles, Zap } from "lucide-react";
+import { Crown, Sparkles, Zap, Check } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 import { Link } from "react-router-dom";
 
@@ -36,7 +36,7 @@ export default function Paywall({ title, description, feature }) {
           <div className="grid md:grid-cols-2 gap-4 mb-8 text-left">
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-sm font-bold">✓</span>
+                <Check className="w-3.5 h-3.5 text-white" />
               </div>
               <div>
                 <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
@@ -50,7 +50,7 @@ export default function Paywall({ title, description, feature }) {
 
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-sm font-bold">✓</span>
+                <Check className="w-3.5 h-3.5 text-white" />
               </div>
               <div>
                 <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
@@ -64,7 +64,7 @@ export default function Paywall({ title, description, feature }) {
 
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-sm font-bold">✓</span>
+                <Check className="w-3.5 h-3.5 text-white" />
               </div>
               <div>
                 <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
@@ -78,7 +78,7 @@ export default function Paywall({ title, description, feature }) {
 
             <div className="flex items-start gap-3">
               <div className="w-6 h-6 bg-emerald-500 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                <span className="text-white text-sm font-bold">✓</span>
+                <Check className="w-3.5 h-3.5 text-white" />
               </div>
               <div>
                 <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
@@ -112,16 +112,16 @@ export default function Paywall({ title, description, feature }) {
             asChild
             className="w-full h-14 text-lg bg-gradient-to-r from-yellow-500 via-orange-500 to-red-500 hover:from-yellow-600 hover:via-orange-600 hover:to-red-600 text-white font-bold shadow-2xl"
           >
-            <Link to="/upgrade">
-              <Zap className="w-5 h-5 mr-2" />
-              {language === 'ro' ? '🚀 Upgrade la Premium' : '🚀 Upgrade to Premium'}
+            <Link to="/upgrade" className="flex items-center justify-center gap-2">
+              <Zap className="w-5 h-5" />
+              <span>{language === 'ro' ? 'Upgrade la Premium' : 'Upgrade to Premium'}</span>
             </Link>
           </Button>
 
-          <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-4">
+          <p className="text-xs text-center text-[rgb(var(--ios-text-tertiary))] mt-4">
             {language === 'ro' 
-              ? '⚡ Activare instant • Anulare oricând • Suport prioritar' 
-              : '⚡ Instant activation • Cancel anytime • Priority support'}
+              ? 'Activare instant • Anulare oricând • Suport prioritar' 
+              : 'Instant activation • Cancel anytime • Priority support'}
           </p>
         </CardContent>
       </Card>

@@ -26,28 +26,28 @@ export default function NotificationBell() {
   React.useEffect(() => {
     localApi.auth.me()
       .then(userData => {
-        console.log('🔔 NotificationBell user loaded:', userData);
-        console.log('🔔 Subscription plan:', userData?.subscription_plan);
+        console.log('NotificationBell user loaded:', userData);
+        console.log('Subscription plan:', userData?.subscription_plan);
         setUser(userData);
       })
       .catch((error) => {
-        console.error('❌ NotificationBell user error:', error);
+        console.error('NotificationBell user error:', error);
       });
   }, []);
 
   // ALWAYS SHOW on DESKTOP, hide doar pe MOBIL pentru FREE
   // Lăsăm clopotelul vizibil pentru toată lumea (fix problema "iconița lipsește pe desktop")
-  console.log('🔔 NotificationBell rendering, user:', user?.email, 'plan:', user?.subscription_plan);
+  console.log('NotificationBell rendering, user:', user?.email, 'plan:', user?.subscription_plan);
 
   const { data: unreadCount = { count: 0 } } = useQuery({
     queryKey: ['notificationsUnread'],
     queryFn: async () => {
       try {
         const result = await localApi.notifications.getUnreadCount();
-        console.log('🔔 Unread count:', result);
+        console.log('Unread count:', result);
         return result;
       } catch (error) {
-        console.error('❌ Unread count error:', error);
+        console.error('Unread count error:', error);
         return { count: 0 };
       }
     },
@@ -60,10 +60,10 @@ export default function NotificationBell() {
     queryFn: async () => {
       try {
         const result = await localApi.notifications.list();
-        console.log('🔔 Notifications list:', result);
+        console.log('Notifications list:', result);
         return result;
       } catch (error) {
-        console.error('❌ Notifications list error:', error);
+        console.error('Notifications list error:', error);
         return [];
       }
     },
@@ -89,12 +89,12 @@ export default function NotificationBell() {
   // Friend request mutations - Accept/Decline direct din NotificationBell!
   const acceptRequestMutation = useMutation({
     mutationFn: async ({ requestId, notificationId }) => {
-      console.log('✅ ACCEPT request:', { requestId, notificationId });
+      console.log('ACCEPT request:', { requestId, notificationId });
       await localApi.friends.acceptRequest(requestId);
       await localApi.notifications.markAsRead(notificationId);
     },
     onSuccess: () => {
-      console.log('✅ Friend request ACCEPTED! Refreshing...');
+      console.log('Friend request ACCEPTED! Refreshing...');
       queryClient.invalidateQueries(['friendRequests']);
       queryClient.invalidateQueries(['friends']);
       queryClient.invalidateQueries(['notifications']);
@@ -105,12 +105,12 @@ export default function NotificationBell() {
 
   const rejectRequestMutation = useMutation({
     mutationFn: async ({ requestId, notificationId }) => {
-      console.log('❌ REJECT request:', { requestId, notificationId });
+      console.log('REJECT request:', { requestId, notificationId });
       await localApi.friends.rejectRequest(requestId);
       await localApi.notifications.markAsRead(notificationId);
     },
     onSuccess: () => {
-      console.log('❌ Friend request REJECTED! Refreshing...');
+      console.log('Friend request REJECTED! Refreshing...');
       queryClient.invalidateQueries(['friendRequests']);
       queryClient.invalidateQueries(['notifications']);
       queryClient.invalidateQueries(['notificationsUnread']);
@@ -151,7 +151,7 @@ export default function NotificationBell() {
   };
 
   const handleBellClick = () => {
-    console.log('🔔 Bell clicked! Opening:', !isOpen, 'Unread:', unreadCount.count, 'User:', user?.email);
+    console.log('Bell clicked! Opening:', !isOpen, 'Unread:', unreadCount.count, 'User:', user?.email);
     setIsOpen(!isOpen);
   };
 
@@ -177,7 +177,7 @@ export default function NotificationBell() {
           <DialogHeader className="p-4 border-b">
             <DialogTitle className="flex items-center justify-between">
               <span className="flex items-center gap-2">
-                🔔 {language === 'ro' ? 'Notificări' : 'Notifications'}
+                {language === 'ro' ? 'Notificări' : 'Notifications'}
                 {unreadCount.count > 0 && (
                   <Badge className="bg-red-500 text-white">{unreadCount.count}</Badge>
                 )}
@@ -229,7 +229,7 @@ export default function NotificationBell() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log('✅ ACCEPT clicked!', notification.related_recipe_id);
+                            console.log('ACCEPT clicked!', notification.related_recipe_id);
                             acceptRequestMutation.mutate({ 
                               requestId: notification.related_recipe_id, 
                               notificationId: notification.id 
@@ -245,7 +245,7 @@ export default function NotificationBell() {
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
-                            console.log('❌ REJECT clicked!', notification.related_recipe_id);
+                            console.log('REJECT clicked!', notification.related_recipe_id);
                             rejectRequestMutation.mutate({ 
                               requestId: notification.related_recipe_id, 
                               notificationId: notification.id 

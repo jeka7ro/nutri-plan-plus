@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Coffee, Apple, UtensilsCrossed, Cookie, Moon,
   Droplets, Dumbbell, ChevronLeft, ChevronRight,
-  CheckCircle2, Circle, Settings, Leaf, Info, Star, Heart, Flame, ChefHat, Target, Activity, Pencil, X
+  CheckCircle2, Circle, Settings, Leaf, Info, Star, Heart, Flame, ChefHat, Target, Activity, Pencil, X, Check
 } from "lucide-react";
 import { format, differenceInDays, addDays } from "date-fns";
 import { ro, enUS } from "date-fns/locale";
@@ -34,7 +34,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import FoodIngredientPicker from "@/components/FoodIngredientPicker";
-import { getPhaseInfo, getCurrentPhase } from "../utils/phaseUtils";
+import { getPhaseInfo, getCurrentPhase, isRecipeValidForPhase } from "../utils/phaseUtils";
 
 
 // Use centralized phase info from utils
@@ -183,10 +183,14 @@ export default function DailyPlan() {
       setShowAddRecipeDialog(false);
       setNewRecipeData({ name: '', description: '', calories: 0, protein: 0, carbs: 0, fat: 0, phases: [] });
       setNewRecipeForMealType(null);
-      alert(language === 'ro' ? '✅ Rețeta a fost adăugată!' : '✅ Recipe added!');
+      toast({ title: language === 'ro' ? 'Rețetă salvată' : 'Recipe added', description: language === 'ro' ? 'Rețeta a fost adăugată în catalog.' : 'Recipe has been added.' });
     },
     onError: (error) => {
-      alert(language === 'ro' ? `❌ Eroare: ${error.message}` : `❌ Error: ${error.message}`);
+      toast({
+        title: language === 'ro' ? 'Eroare' : 'Error',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   });
 
@@ -248,7 +252,7 @@ export default function DailyPlan() {
   // CAUTĂ ONLINE nutriție + imagine
   const handleSearchOnline = async () => {
     if (!newRecipeData.name.trim()) {
-      alert(language === 'ro' ? '⚠️ Introdu mai întâi numele rețetei!' : '⚠️ Enter recipe name first!');
+      toast({ title: language === 'ro' ? 'Atenție' : 'Warning', description: language === 'ro' ? 'Introdu mai întâi numele rețetei!' : 'Enter recipe name first!', variant: 'destructive' });
       return;
     }
 
@@ -317,12 +321,12 @@ export default function DailyPlan() {
       }));
 
       alert(language === 'ro' 
-        ? '✅ Date estimate completate! Verifică și ajustează dacă e nevoie.' 
-        : '✅ Estimated data filled! Verify and adjust if needed.');
+        ? 'Date estimate completate! Verifică și ajustează dacă e nevoie.' 
+        : 'Estimated data filled! Verify and adjust if needed.');
 
     } catch (error) {
       console.error('Error searching online:', error);
-      alert(language === 'ro' ? '❌ Eroare la căutare online' : '❌ Error searching online');
+      toast({ title: language === 'ro' ? 'Eroare căutare' : 'Search error', description: language === 'ro' ? 'Nu s-au putut prelua datele online.' : 'Could not fetch online data.', variant: 'destructive' });
     } finally {
       setIsSearchingOnline(false);
     }
@@ -330,11 +334,11 @@ export default function DailyPlan() {
 
   const handleSaveNewRecipe = () => {
     if (!newRecipeData.name.trim()) {
-      alert(language === 'ro' ? '⚠️ Numele rețetei este obligatoriu!' : '⚠️ Recipe name is required!');
+      toast({ title: language === 'ro' ? 'Atenție' : 'Warning', description: language === 'ro' ? 'Numele rețetei este obligatoriu!' : 'Recipe name is required!', variant: 'destructive' });
       return;
     }
     if (newRecipeData.phases.length === 0) {
-      alert(language === 'ro' ? '⚠️ Selectează cel puțin o fază!' : '⚠️ Select at least one phase!');
+      toast({ title: language === 'ro' ? 'Atenție' : 'Warning', description: language === 'ro' ? 'Selectează cel puțin o fază!' : 'Select at least one phase!', variant: 'destructive' });
       return;
     }
     
@@ -387,13 +391,13 @@ export default function DailyPlan() {
   const updateCheckInMutation = useMutation({
     mutationFn: async (data) => {
       // FIXAT: folosește localApi.checkins.upsert() pentru PostgreSQL
-      console.log('📡 TRIMIT REQUEST LA BACKEND:', data);
+      console.log('TRIMIT REQUEST LA BACKEND:', data);
       try {
         const result = await localApi.checkins.upsert(data);
-        console.log('✅ BACKEND RĂSPUNS SUCCESS:', result);
+        console.log('BACKEND RĂSPUNS SUCCESS:', result);
         return result;
       } catch (error) {
-        console.error('❌ BACKEND RĂSPUNS ERROR:', error);
+        console.error('BACKEND RĂSPUNS ERROR:', error);
         throw error;
       }
     },
@@ -414,10 +418,10 @@ export default function DailyPlan() {
       // Invalidează explicit cache-ul pentru a forța refresh pe Dashboard
       queryClient.invalidateQueries(['allCheckIns']);
       
-      console.log('✅ CACHE ACTUALIZAT ȘI INVALIDAT:', newData);
+      console.log('CACHE ACTUALIZAT ȘI INVALIDAT:', newData);
     },
     onError: (error) => {
-      console.error('❌ MUTATION ERROR:', error);
+      console.error('MUTATION ERROR:', error);
       toast({
         title: language === 'ro' ? "Eroare" : "Error",
         description: error.message || (language === 'ro' ? "Nu s-a putut salva modificarea" : "Could not save changes"),
@@ -554,7 +558,7 @@ export default function DailyPlan() {
 
   // OPTIMIZED: Batch all updates together - selectarea unei opțiuni = marcarea ca FINALIZAT
   const handleMealSelection = useCallback((mealType, option) => {
-    console.log('🍽️ CLICK SELECȚIE MASĂ!', { mealType, optionName: option.name_ro });
+    console.log('CLICK SELECȚIE MASĂ!', { mealType, optionName: option.name_ro });
     
     const mealTypeMap = {
       'breakfast': { key: 'breakfast_option', imageKey: 'breakfast_image', caloriesKey: 'breakfast_calories', quantityKey: 'breakfast_quantity', completedKey: 'breakfast_completed' },
@@ -566,7 +570,7 @@ export default function DailyPlan() {
 
     const mapping = mealTypeMap[mealType];
     if (!mapping) {
-      console.error('❌ Mapping NU GĂSIT pentru:', mealType);
+      console.error('Mapping NU GĂSIT pentru:', mealType);
       return;
     }
 
@@ -578,7 +582,7 @@ export default function DailyPlan() {
       [mapping.imageKey]: option.image_url,
       [mapping.caloriesKey]: option.calories * quantity,
       [mapping.quantityKey]: quantity,
-      [mapping.completedKey]: true, // ✅ AUTO-FINALIZEAZĂ când selectezi rețetă!
+      [mapping.completedKey]: true, // AUTO-FINALIZEAZĂ când selectezi rețetă!
     };
 
     const tempCheckIn = { ...(checkIn || {}), ...updatedFields };
@@ -597,7 +601,7 @@ export default function DailyPlan() {
       total_calories: totalCalories
     };
     
-    console.log('📤 TRIMIT LA BACKEND:', dataToSend);
+    console.log('TRIMIT LA BACKEND:', dataToSend);
     updateCheckInMutation.mutate(dataToSend);
   }, [checkIn, updateCheckInMutation, meals, selectedDate, currentPhase, getOptionDisplayName]);
 
@@ -697,7 +701,7 @@ export default function DailyPlan() {
       water_intake: newValue
     };
     
-    console.log('💧 CLICK APĂ!', { current, newValue, dataToSend });
+    console.log('CLICK APĂ!', { current, newValue, dataToSend });
     updateCheckInMutation.mutate(dataToSend);
   }, [checkIn, updateCheckInMutation, selectedDate, currentPhase]);
 
@@ -727,7 +731,7 @@ export default function DailyPlan() {
       exercise_calories_burned: totalCaloriesBurned // Total calorii
     };
     
-    console.log('💪 ADAUG EXERCIȚIU!', { newExercise, updatedExercises, totalCaloriesBurned, dataToSend });
+    console.log('ADAUG EXERCIȚIU!', { newExercise, updatedExercises, totalCaloriesBurned, dataToSend });
     updateCheckInMutation.mutate(dataToSend);
     
     // Reset form pentru următorul exercițiu
@@ -747,7 +751,7 @@ export default function DailyPlan() {
       checkIn.dinner_completed
     ].filter(Boolean).length;
     
-    console.log('🔍 MESE COMPLETATE:', {
+    console.log('MESE COMPLETATE:', {
       breakfast: checkIn.breakfast_completed,
       snack1: checkIn.snack1_completed,
       lunch: checkIn.lunch_completed,
@@ -800,14 +804,14 @@ export default function DailyPlan() {
     <div className="p-4 md:p-8 min-h-screen max-w-full overflow-x-hidden">
       <div className="max-w-4xl mx-auto space-y-6">
         {/* Header with Date Navigation */}
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-[rgb(var(--ios-text-primary))]">{language === 'ro' ? 'Planul Zilei' : 'Daily Plan'}</h1>
-            <p className="text-[rgb(var(--ios-text-secondary))] mt-1">
+            <h1 className="text-2xl sm:text-3xl font-bold text-[rgb(var(--ios-text-primary))]">{language === 'ro' ? 'Planul Zilei' : 'Daily Plan'}</h1>
+            <p className="text-xs sm:text-sm text-[rgb(var(--ios-text-secondary))] mt-0.5 sm:mt-1 capitalize">
               {format(selectedDate, "EEEE, d MMMM yyyy", { locale: language === 'ro' ? ro : enUS })}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2 self-start sm:self-auto">
             <Button
               variant="outline"
               size="icon"
@@ -917,7 +921,7 @@ export default function DailyPlan() {
                 {/* Coloana 1: CE POȚI MÂNCA */}
                 <div>
                   <h3 className="font-semibold text-sm text-[rgb(var(--ios-text-primary))] mb-3">
-                    {language === 'ro' ? '✅ CE POȚI MÂNCA:' : '✅ WHAT YOU CAN EAT:'}
+                    {language === 'ro' ? 'ALIMENTE PERMISE:' : 'ALLOWED FOODS:'}
                   </h3>
                   <div className="space-y-1">
                     {phase.allowedFoods[language].yes.map((food, i) => (
@@ -932,7 +936,7 @@ export default function DailyPlan() {
                 {/* Coloana 2: CE TREBUIE EVITAT */}
                 <div>
                   <h3 className="font-semibold text-sm text-[rgb(var(--ios-text-primary))] mb-3">
-                    {language === 'ro' ? '❌ CE TREBUIE EVITAT:' : '❌ WHAT TO AVOID:'}
+                    {language === 'ro' ? 'ALIMENTE DE EVITAT:' : 'FOODS TO AVOID:'}
                   </h3>
                   <div className="space-y-1">
                     {phase.allowedFoods[language].no.map((food, i) => (
@@ -1057,12 +1061,12 @@ export default function DailyPlan() {
                 <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-[12px] flex items-center justify-center shadow-lg">
                   <Dumbbell className="w-5 h-5 text-white" />
                 </div>
-                <div className={`text-xs font-bold px-2 py-1 rounded-full ${
+                <div className={`text-xs font-bold px-2 py-1 rounded-full flex items-center justify-center ${
                   checkIn?.exercise_completed 
                     ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
                     : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                 }`}>
-                  {checkIn?.exercise_completed ? '✓' : '○'}
+                  {checkIn?.exercise_completed ? <Check className="w-3.5 h-3.5" /> : '○'}
                 </div>
               </div>
               <div className="space-y-1">
@@ -1075,7 +1079,7 @@ export default function DailyPlan() {
                       {language === 'ro' ? 'Minute active' : 'Active minutes'}
                     </div>
                     <div className="text-xs text-orange-600 dark:text-orange-400 font-bold mt-2">
-                      🔥 {checkIn.exercise_calories_burned || 0} cal
+                      {checkIn.exercise_calories_burned || 0} kcal
                     </div>
                   </>
                 ) : (
@@ -1229,7 +1233,7 @@ export default function DailyPlan() {
                   {consumed > 0 && (
                     <div className="mt-3 p-3 bg-orange-50 dark:bg-orange-900/10 rounded-[12px] border border-orange-200 dark:border-orange-800">
                       <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 mb-2">
-                        {language === 'ro' ? '📊 Breakdown calorii consumate:' : '📊 Consumed calories breakdown:'}
+                        {language === 'ro' ? 'Distribuție calorii consumate:' : 'Consumed calories breakdown:'}
                       </p>
                       <div className="space-y-1">
                         {checkIn?.breakfast_calories > 0 && (
@@ -1281,26 +1285,12 @@ export default function DailyPlan() {
             const MealIcon = meal.icon;
             const isCompleted = checkIn?.[meal.key];
             
-            // Filtrează rețete pe fază ȘI tip de masă - pentru TOATE cele 3 tab-uri
-            const standardRecipes = recipes.filter(r => r.phase === currentPhase && r.meal_type === meal.mealType);
+            // Filtrează rețete pe fază ȘI tip de masă cu validare strictă Fast Metabolism Diet
+            const standardRecipes = recipes.filter(r => r.meal_type === meal.mealType && isRecipeValidForPhase(r, currentPhase));
             
-            // Filtrare cu suport pentru phases array (nou) și phase integer (vechi)
-            const myFilteredRecipes = myRecipes.filter(r => {
-              if (r.meal_type !== meal.mealType) return false;
-              // Suport phases array (nou format)
-              if (r.phases && r.phases.length > 0) return r.phases.includes(currentPhase);
-              // Suport phase integer (vechi format - backwards compatibility)
-              if (r.phase) return r.phase === currentPhase;
-              // Dacă nu are fază specificată, e pentru toate fazele
-              return true;
-            });
+            const myFilteredRecipes = myRecipes.filter(r => r.meal_type === meal.mealType && isRecipeValidForPhase(r, currentPhase));
             
-            const friendsFilteredRecipes = friendsRecipes.filter(r => {
-              if (r.meal_type !== meal.mealType) return false;
-              if (r.phases && r.phases.length > 0) return r.phases.includes(currentPhase);
-              if (r.phase) return r.phase === currentPhase;
-              return true;
-            });
+            const friendsFilteredRecipes = friendsRecipes.filter(r => r.meal_type === meal.mealType && isRecipeValidForPhase(r, currentPhase));
             
             const filteredStandard = filterMealOptions(standardRecipes);
             const standardOptions = sortMealOptionsByFavorites(filteredStandard);
@@ -1361,7 +1351,7 @@ export default function DailyPlan() {
                             )}
                             <div className="flex-1">
                               <p className="text-sm font-bold text-emerald-800 dark:text-emerald-200 line-clamp-1">
-                                ✓ {selectedOptionName}
+                                {selectedOptionName}
                               </p>
                               <p className="text-xs text-emerald-600 dark:text-emerald-400">
                                 {selectedQuantity}x · {Math.round(selectedCalories)} cal
@@ -1470,14 +1460,14 @@ export default function DailyPlan() {
                         onClick={() => setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'standard' })}
                         className={currentTab === 'standard' ? 'bg-emerald-600 hover:bg-emerald-700' : ''}
                       >
-                        📖 {language === 'ro' ? 'Standard' : 'Standard'} ({standardOptions.length})
+                        {language === 'ro' ? 'Standard' : 'Standard'} ({standardOptions.length})
                       </Button>
                       <Button
                         size="sm"
                         variant={currentTab === 'mine' ? 'default' : 'outline'}
                         onClick={() => {
                           if (user?.subscription_plan === 'free') {
-                            alert(language === 'ro' ? '🔒 Rețete personalizate disponibile doar în Premium!' : '🔒 Custom recipes available only in Premium!');
+                            toast({ title: 'EatnFit Premium', description: language === 'ro' ? 'Rețetele personalizate sunt disponibile în abonamentul Premium.' : 'Custom recipes available in Premium.' });
                             return;
                           }
                           setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'mine' });
@@ -1485,15 +1475,15 @@ export default function DailyPlan() {
                         className={currentTab === 'mine' ? 'bg-purple-600 hover:bg-purple-700' : ''}
                         disabled={user?.subscription_plan === 'free'}
                       >
-                        🍽️ {language === 'ro' ? 'Ale Mele' : 'Mine'} ({myFilteredRecipes.length})
-                        {user?.subscription_plan === 'free' && ' 🔒'}
+                        {language === 'ro' ? 'Ale Mele' : 'Mine'} ({myFilteredRecipes.length})
+                        {user?.subscription_plan === 'free' && ' (PRO)'}
                       </Button>
                       <Button
                         size="sm"
                         variant={currentTab === 'friends' ? 'default' : 'outline'}
                         onClick={() => {
                           if (user?.subscription_plan === 'free') {
-                            alert(language === 'ro' ? '🔒 Rețete prieteni disponibile doar în Premium!' : '🔒 Friends recipes available only in Premium!');
+                            toast({ title: 'EatnFit Premium', description: language === 'ro' ? 'Rețetele prietenilor sunt disponibile în abonamentul Premium.' : 'Friends recipes available in Premium.' });
                             return;
                           }
                           setActiveRecipeTab({ ...activeRecipeTab, [meal.mealType]: 'friends' });
@@ -1501,8 +1491,8 @@ export default function DailyPlan() {
                         className={currentTab === 'friends' ? 'bg-blue-600 hover:bg-blue-700' : ''}
                         disabled={user?.subscription_plan === 'free'}
                       >
-                        👥 {language === 'ro' ? 'Prieteni' : 'Friends'} ({friendsFilteredRecipes.length})
-                        {user?.subscription_plan === 'free' && ' 🔒'}
+                        {language === 'ro' ? 'Prieteni' : 'Friends'} ({friendsFilteredRecipes.length})
+                        {user?.subscription_plan === 'free' && ' (PRO)'}
                       </Button>
                       {/* BUTON ADAUGĂ REȚETĂ DIRECT */}
                       <Button
@@ -1511,7 +1501,7 @@ export default function DailyPlan() {
                         onClick={() => handleOpenAddRecipeDialog(meal.mealType)}
                         className="ml-auto bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400 hover:bg-orange-500/20"
                       >
-                        ➕ {language === 'ro' ? 'Adaugă' : 'Add'}
+                        {language === 'ro' ? 'Adaugă' : 'Add'}
                       </Button>
                     </div>
                     <div className="grid md:grid-cols-3 gap-3 relative">
@@ -1532,7 +1522,7 @@ export default function DailyPlan() {
                           } ${isBlurred ? 'opacity-50' : ''}`}
                           onClick={() => {
                             if (isBlurred) {
-                              alert(language === 'ro' ? '🔒 Upgrade la Premium pentru mai multe opțiuni!' : '🔒 Upgrade to Premium for more options!');
+                              toast({ title: 'EatnFit Premium', description: language === 'ro' ? 'Deblochează toate opțiunile avansate cu Premium.' : 'Unlock all options with Premium.' });
                               return;
                             }
                             handleMealSelection(meal.mealType, option);
@@ -1541,7 +1531,7 @@ export default function DailyPlan() {
                           {isBlurred && (
                             <div className="absolute inset-0 z-20 bg-white/60 dark:bg-black/60 backdrop-blur-[2px] flex items-center justify-center">
                               <div className="bg-yellow-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-lg">
-                                🔒 PREMIUM
+                                PREMIUM
                               </div>
                             </div>
                           )}
@@ -1582,18 +1572,18 @@ export default function DailyPlan() {
                             <div className="flex items-center gap-2 text-xs text-[rgb(var(--ios-text-secondary))] mb-2">
                               <span className="font-semibold">{option.calories} cal</span>
                               <span>•</span>
-                              <span>P: {option.protein}g</span>
-                              <span>C: {option.carbs}g</span>
-                              <span>F: {option.fat}g</span>
+                              <span>P: {option.protein ?? 0}g</span>
+                              <span>C: {option.carbs ?? 0}g</span>
+                              <span>F: {option.fats ?? option.fat ?? 0}g</span>
                             </div>
                             <div className="flex gap-1 flex-wrap">
-                              {option.is_vegetarian && (
+                              {Boolean(option.is_vegetarian) && (
                                 <Badge variant="outline" className="text-xs border-[rgb(var(--ios-border))]">
                                   <Leaf className="w-3 h-3 mr-1 text-green-600 dark:text-green-400" />
                                   {language === 'ro' ? 'Veg' : 'Veg'}
                                 </Badge>
                               )}
-                              {option.is_vegan && (
+                              {Boolean(option.is_vegan) && (
                                 <Badge variant="outline" className="text-xs border-[rgb(var(--ios-border))]">
                                   <Leaf className="w-3 h-3 mr-1 text-green-600 dark:text-green-400" />
                                   {language === 'ro' ? 'Vegan' : 'Vegan'}
@@ -1767,7 +1757,7 @@ export default function DailyPlan() {
                       {language === 'ro' ? 'TOTAL' : 'TOTAL'}:
                     </span>
                     <span className="text-sm font-bold text-purple-700 dark:text-purple-300">
-                      {checkIn.exercise_duration || 0} {language === 'ro' ? 'min' : 'min'} • 🔥 {checkIn.exercise_calories_burned || 0} cal
+                      {checkIn.exercise_duration || 0} {language === 'ro' ? 'min' : 'min'} • {checkIn.exercise_calories_burned || 0} kcal
                     </span>
               </div>
                 </div>
@@ -2059,7 +2049,7 @@ export default function DailyPlan() {
                         <div className="text-xs text-[rgb(var(--ios-text-secondary))]">{language === 'ro' ? 'Carbohidrați' : 'Carbs'}</div>
                       </div>
                       <div>
-                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{selectedMealDetail.fat}g</div>
+                        <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">{selectedMealDetail.fats ?? selectedMealDetail.fat ?? 0}g</div>
                         <div className="text-xs text-[rgb(var(--ios-text-secondary))]">{language === 'ro' ? 'Grăsimi' : 'Fat'}</div>
                       </div>
                     </div>
@@ -2113,13 +2103,13 @@ export default function DailyPlan() {
 
                 {/* Tags */}
                 <div className="flex gap-2 flex-wrap">
-                  {selectedMealDetail.is_vegetarian && (
+                  {Boolean(selectedMealDetail.is_vegetarian) && (
                     <Badge className="bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">
                       <Leaf className="w-3 h-3 mr-1" />
                       {language === 'ro' ? 'Vegetarian' : 'Vegetarian'}
                     </Badge>
                   )}
-                  {selectedMealDetail.is_vegan && (
+                  {Boolean(selectedMealDetail.is_vegan) && (
                     <Badge className="bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-200">
                       <Leaf className="w-3 h-3 mr-1" />
                       {language === 'ro' ? 'Vegan' : 'Vegan'}
@@ -2149,7 +2139,7 @@ export default function DailyPlan() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              ➕ {language === 'ro' ? 'Adaugă Rețetă Nouă' : 'Add New Recipe'}
+              {language === 'ro' ? 'Adaugă Rețetă Nouă' : 'Add New Recipe'}
             </DialogTitle>
             <DialogDescription>
               {language === 'ro' 
@@ -2183,22 +2173,22 @@ export default function DailyPlan() {
                     </>
                   ) : (
                     <>
-                      🔍 {language === 'ro' ? 'Caută Online' : 'Search Online'}
+                      {language === 'ro' ? 'Caută Online' : 'Search Online'}
                     </>
                   )}
                 </Button>
               </div>
               <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
                 {language === 'ro' 
-                  ? '💡 Scrie numele și apasă "Caută Online" pentru macros + imagine automate' 
-                  : '💡 Type name and click "Search Online" for auto macros + image'}
+                  ? 'Scrie numele și apasă "Caută Online" pentru macros + imagine automate' 
+                  : 'Type name and click "Search Online" for auto macros + image'}
               </p>
             </div>
 
             {/* FOOD INGREDIENT PICKER - 200 ALIMENTE ROMÂNEȘTI */}
             <div className="border border-[rgb(var(--ios-border))] rounded-lg p-4 bg-[rgb(var(--ios-bg-tertiary))]">
               <h3 className="font-semibold mb-3 text-[rgb(var(--ios-text-primary))]">
-                {language === 'ro' ? '🍎 Adaugă Ingrediente (200+ alimente)' : '🍎 Add Ingredients (200+ foods)'}
+                {language === 'ro' ? 'Adaugă Ingrediente (200+ alimente)' : 'Add Ingredients (200+ foods)'}
               </h3>
               <FoodIngredientPicker onAddIngredient={handleAddIngredient} />
               
@@ -2318,7 +2308,7 @@ export default function DailyPlan() {
               >
                 {createRecipeMutation.isPending 
                   ? (language === 'ro' ? 'Se salvează...' : 'Saving...') 
-                  : (language === 'ro' ? '✅ Salvează' : '✅ Save')}
+                  : (language === 'ro' ? 'Salvează' : 'Save')}
               </Button>
             </div>
           </div>

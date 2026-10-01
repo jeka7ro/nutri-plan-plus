@@ -20,8 +20,8 @@ export default function LanguageSelector() {
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="ro">🇷🇴 RO</SelectItem>
-          <SelectItem value="en">🇬🇧 EN</SelectItem>
+          <SelectItem value="ro">Română (RO)</SelectItem>
+          <SelectItem value="en">English (EN)</SelectItem>
         </SelectContent>
       </Select>
     </div>

@@ -238,6 +238,7 @@ async function seedRecipes() {
           $23, $24,
           true, false
         )
+        ON CONFLICT DO NOTHING
       `, [
         recipe.name_en, recipe.name_ro, recipe.name_en,
         recipe.description_en, recipe.description_ro, recipe.description_en,

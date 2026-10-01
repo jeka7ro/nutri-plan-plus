@@ -6,7 +6,7 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   server: {
-    port: 3000,
+    port: 3003,
     host: true, // Permite acces extern (0.0.0.0)
     allowedHosts: true, // Permite toate hostname-urile
     strictPort: false,

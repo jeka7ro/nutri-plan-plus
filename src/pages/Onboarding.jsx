@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { createPageUrl } from "@/utils";
-import { TrendingDown, Target, Calendar, Ruler, Leaf, Heart, AlertCircle, Activity, Camera, Upload, X, Shield, User } from "lucide-react";
+import { TrendingDown, Target, Calendar, Ruler, Leaf, Heart, AlertCircle, Activity, Camera, Upload, X, Shield, User, Check, CheckCircle, Globe, Building2, Sparkles, Rocket } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "../components/LanguageContext";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -97,6 +97,14 @@ export default function Onboarding() {
     localApi.auth.me()
       .then(user => {
         setCurrentUser(user);
+        
+        // ADMINII nu au nevoie de onboarding - navigare directă la aplicație
+        if (user.role === 'admin') {
+          console.log('Admin detectat în Onboarding - navigare la DailyPlan');
+          navigate('/dailyplan');
+          return;
+        }
+
         const country = user.country || "";
         setFormData(prev => ({
           ...prev,
@@ -125,7 +133,7 @@ export default function Onboarding() {
         }
         
         if (user.current_weight && user.target_weight && user.height && user.birth_date && user.gender) {
-          console.log('✅ User are date complete - SKIP onboarding');
+          console.log('User are date complete - SKIP onboarding');
           navigate('/dashboard');
         }
       })
@@ -427,13 +435,8 @@ export default function Onboarding() {
   };
 
   const handleSkip = () => {
-    if (validateStep(1)) {
-      console.log('⏭️ SKIP onboarding - navigare la Dashboard');
-      navigate(createPageUrl("Dashboard"));
-    } else {
-      setStep(1);
-      alert(language === 'ro' ? 'Completează întâi datele obligatorii.' : 'Please fill in the required fields first.');
-    }
+    console.log('⏭️ SKIP onboarding - navigare la DailyPlan');
+    navigate(createPageUrl("DailyPlan"));
   };
 
   return (
@@ -444,10 +447,18 @@ export default function Onboarding() {
         className="w-full max-w-2xl"
       >
         <div className="text-center mb-8 relative">
+          {/* Back Button - Top Left */}
+          <button
+            onClick={() => navigate(createPageUrl("DailyPlan"))}
+            className="absolute top-0 left-0 text-sm font-semibold text-emerald-600 dark:text-emerald-400 hover:underline flex items-center gap-1 transition-colors"
+          >
+            ← {language === 'ro' ? 'Înapoi la aplicație' : 'Back to app'}
+          </button>
+
           {/* Skip Button - Absolute positioned in top right */}
           <button
             onClick={handleSkip}
-            className="absolute top-0 right-0 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 underline transition-colors"
+            className="absolute top-0 right-0 text-sm font-semibold text-gray-500 hover:text-emerald-600 dark:text-gray-400 dark:hover:text-emerald-400 transition-colors"
           >
             {language === 'ro' ? 'Sari peste →' : 'Skip →'}
           </button>
@@ -465,10 +476,13 @@ export default function Onboarding() {
           </p>
           
           {currentUser?.role === 'admin' && (
-            <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-xs font-medium">
-              <Shield className="w-3 h-3" />
-              Admin - {language === 'ro' ? 'Poți sări peste acest pas' : 'You can skip this step'}
-            </div>
+            <button
+              onClick={() => navigate(createPageUrl("Admin"))}
+              className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 bg-purple-100 hover:bg-purple-200 dark:bg-purple-900/40 dark:hover:bg-purple-900/60 text-purple-700 dark:text-purple-300 rounded-full text-xs font-bold transition-all shadow-sm cursor-pointer"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              {language === 'ro' ? 'Ești Admin → Intră direct în Panou Admin' : 'You are Admin → Go to Admin Panel'}
+            </button>
           )}
         </div>
 
@@ -482,7 +496,7 @@ export default function Onboarding() {
                     ? 'bg-emerald-500 text-white shadow-lg scale-110' 
                     : 'bg-gray-200 dark:bg-gray-700 text-gray-400'
               }`}>
-                {step > index + 1 ? '✓' : index + 1}
+                {step > index + 1 ? <Check className="w-4 h-4" /> : index + 1}
               </div>
               {index < steps.length - 1 && (
                 <div className={`w-20 h-1 mx-2 transition-all ${
@@ -655,7 +669,8 @@ export default function Onboarding() {
                 <div className="grid md:grid-cols-2 gap-4">
                   <div>
                     <Label className="flex items-center gap-2 mb-2">
-                      🌍 {language === 'ro' ? 'Țara' : 'Country'}
+                      <Globe className="w-4 h-4 text-emerald-600" />
+                      <span>{language === 'ro' ? 'Țara' : 'Country'}</span>
                     </Label>
                     <Select 
                       value={formData.country} 
@@ -679,7 +694,8 @@ export default function Onboarding() {
 
                   <div>
                     <Label className="flex items-center gap-2 mb-2">
-                      🏙️ {language === 'ro' ? 'Orașul' : 'City'}
+                      <Building2 className="w-4 h-4 text-emerald-600" />
+                      <span>{language === 'ro' ? 'Orașul' : 'City'}</span>
                     </Label>
                     <Select 
                       value={formData.city} 
@@ -783,8 +799,9 @@ export default function Onboarding() {
                 className="space-y-6"
               >
                 <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 dark:border-red-600 rounded-xl p-4">
-                  <p className="text-sm font-bold text-red-900 dark:text-red-100 mb-2">
-                    ⚠️ {language === 'ro' ? 'IMPORTANT!' : 'IMPORTANT!'}
+                  <p className="text-sm font-bold text-red-900 dark:text-red-100 mb-2 flex items-center gap-1.5">
+                    <AlertCircle className="w-4 h-4 text-red-600" />
+                    <span>{language === 'ro' ? 'IMPORTANT!' : 'IMPORTANT!'}</span>
                   </p>
                   <p className="text-sm text-red-800 dark:text-red-200">
                     {language === 'ro' 
@@ -796,8 +813,8 @@ export default function Onboarding() {
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
                   <p className="text-sm text-blue-900 dark:text-blue-100">
                     {language === 'ro' 
-                      ? 'ℹ️ Aceste preferințe ne vor ajuta să personalizăm rețetele și să prioritizăm ingredientele tale favorite.'
-                      : 'ℹ️ These preferences will help us personalize recipes and prioritize your favorite ingredients.'}
+                      ? 'Aceste preferințe ne vor ajuta să personalizăm rețetele și să prioritizăm ingredientele tale favorite.'
+                      : 'These preferences will help us personalize recipes and prioritize your favorite ingredients.'}
                   </p>
                 </div>
 
@@ -828,8 +845,9 @@ export default function Onboarding() {
                         <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                           {language === 'ro' ? 'Fără carne, pește sau pasăre' : 'No meat, fish, or poultry'}
                         </div>
-                        <div className="text-xs font-bold text-green-700 dark:text-green-400 mt-2 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded inline-block">
-                          {language === 'ro' ? '✓ 100% fără produse animale cu carne' : '✓ 100% no animal meat products'}
+                        <div className="text-xs font-bold text-green-700 dark:text-green-400 mt-2 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded inline-flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5" />
+                          <span>{language === 'ro' ? '100% fără produse animale cu carne' : '100% no animal meat products'}</span>
                         </div>
                       </label>
                     </div>
@@ -855,8 +873,9 @@ export default function Onboarding() {
                         <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                           {language === 'ro' ? 'Fără produse de origine animală' : 'No animal products'}
                         </div>
-                        <div className="text-xs font-bold text-green-700 dark:text-green-400 mt-2 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded inline-block">
-                          {language === 'ro' ? '✓ 100% fără ouă, lactate, miere, carne, pește' : '✓ 100% no eggs, dairy, honey, meat, fish'}
+                        <div className="text-xs font-bold text-green-700 dark:text-green-400 mt-2 bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded inline-flex items-center gap-1">
+                          <Check className="w-3.5 h-3.5" />
+                          <span>{language === 'ro' ? '100% fără ouă, lactate, miere, carne, pește' : '100% no eggs, dairy, honey, meat, fish'}</span>
                         </div>
                       </label>
                     </div>
@@ -865,8 +884,8 @@ export default function Onboarding() {
                       <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                         <p className="text-sm text-blue-900 dark:text-blue-100">
                           {language === 'ro' 
-                            ? 'ℹ️ Nu ai selectat restricții - vei vedea TOATE rețetele, inclusiv cele cu carne, pește și pasăre.'
-                            : 'ℹ️ No restrictions selected - you will see ALL recipes, including those with meat, fish, and poultry.'}
+                            ? 'Nu ai selectat restricții - vei vedea TOATE rețetele, inclusiv cele cu carne, pește și pasăre.'
+                            : 'No restrictions selected - you will see ALL recipes, including those with meat, fish, and poultry.'}
                         </p>
                       </div>
                     )}
@@ -923,8 +942,9 @@ export default function Onboarding() {
                 className="space-y-6"
               >
                 <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-6">
-                  <h3 className="font-bold text-lg text-emerald-900 dark:text-emerald-100 mb-4">
-                    {language === 'ro' ? '✓ Rezumatul profilului tău' : '✓ Your Profile Summary'}
+                  <h3 className="font-bold text-lg text-emerald-900 dark:text-emerald-100 mb-4 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-emerald-600" />
+                    <span>{language === 'ro' ? 'Rezumatul profilului tău' : 'Your Profile Summary'}</span>
                   </h3>
                   
                   <div className="space-y-3">
@@ -1010,14 +1030,15 @@ export default function Onboarding() {
                 </div>
 
                 <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-4">
-                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                    {language === 'ro' ? '🎉 Ce urmează?' : '🎉 What\'s Next?'}
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2 flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-blue-600" />
+                    <span>{language === 'ro' ? 'Ce urmează?' : 'What\'s Next?'}</span>
                   </h4>
                   <ul className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
-                    <li>✓ {language === 'ro' ? 'Începi cu 30 de zile de acces gratuit (perioadă de probă)' : 'Start with 30 days free trial access'}</li>
-                    <li>✓ {language === 'ro' ? 'Program personalizat de 28 de zile, adaptat preferințelor tale' : '28-day personalized program adapted to your preferences'}</li>
-                    <li>✓ {language === 'ro' ? 'Rețete delicioase pentru fiecare fază' : 'Delicious recipes for each phase'}</li>
-                    <li>✓ {language === 'ro' ? 'Monitorizare completă: greutate, mese, apă, exerciții' : 'Complete tracking: weight, meals, water, exercise'}</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" /> {language === 'ro' ? 'Începi cu 30 de zile de acces gratuit (perioadă de probă)' : 'Start with 30 days free trial access'}</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" /> {language === 'ro' ? 'Program personalizat de 28 de zile, adaptat preferințelor tale' : '28-day personalized program adapted to your preferences'}</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" /> {language === 'ro' ? 'Rețete delicioase pentru fiecare fază' : 'Delicious recipes for each phase'}</li>
+                    <li className="flex items-center gap-1.5"><Check className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" /> {language === 'ro' ? 'Monitorizare completă: greutate, mese, apă, exerciții' : 'Complete tracking: weight, meals, water, exercise'}</li>
                   </ul>
                 </div>
               </motion.div>
@@ -1046,11 +1067,14 @@ export default function Onboarding() {
               <Button
                 onClick={handleSubmit}
                 disabled={loading}
-                className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:opacity-90 shadow-lg"
+                className="flex-1 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:opacity-90 shadow-lg flex items-center justify-center gap-2"
               >
-                {loading 
-                  ? (language === 'ro' ? 'Se salvează...' : 'Saving...') 
-                  : (language === 'ro' ? '🚀 Începe Programul!' : '🚀 Start Program!')}
+                <Rocket className="w-4 h-4" />
+                <span>
+                  {loading 
+                    ? (language === 'ro' ? 'Se salvează...' : 'Saving...') 
+                    : (language === 'ro' ? 'Începe Programul!' : 'Start Program!')}
+                </span>
               </Button>
             )}
           </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Check, XCircle, Info, BookOpen } from "lucide-react";
+import { Check, XCircle, Info, BookOpen, AlertCircle, Droplets } from "lucide-react";
 import { useLanguage } from '../components/LanguageContext';
 
 export default function Recommendations() {
@@ -21,7 +21,7 @@ export default function Recommendations() {
             "Gustare: Fruct",
             "Cină: Carne + Carbohidrați + Legume"
           ],
-          note: "⚠️ Gătește totul pe apă, FĂRĂ ulei!"
+          note: "Gătește totul pe apă, FĂRĂ ulei!"
         },
         {
           title: "A Doua Etapă (2 zile)",
@@ -29,7 +29,7 @@ export default function Recommendations() {
           meals: [
             "Toate mesele: Carne + Legume"
           ],
-          note: "❌ FĂRĂ carbohidrați și uleiuri!"
+          note: "FĂRĂ carbohidrați și uleiuri!"
         },
         {
           title: "A Treia Etapă (3 zile)",
@@ -37,7 +37,7 @@ export default function Recommendations() {
           meals: [
             "Toate mesele: Carne + Carbohidrați + Legume + Grăsimi sănătoase și fructe"
           ],
-          note: "✅ Poți adăuga: avocado, humus, nuci, uleiuri, unt de arahide, cocos"
+          note: "Poți adăuga: avocado, humus, nuci, uleiuri, unt de arahide, cocos"
         }
       ],
       allowedCarbs: {
@@ -63,7 +63,7 @@ export default function Recommendations() {
             "Snack: Fruit",
             "Dinner: Meat + Carbs + Vegetables"
           ],
-          note: "⚠️ Cook everything with water, NO oil!"
+          note: "Cook everything with water, NO oil!"
         },
         {
           title: "Phase 2 (2 days)",
@@ -71,7 +71,7 @@ export default function Recommendations() {
           meals: [
             "All meals: Meat + Vegetables"
           ],
-          note: "❌ NO carbs or oils!"
+          note: "NO carbs or oils!"
         },
         {
           title: "Phase 3 (3 days)",
@@ -79,7 +79,7 @@ export default function Recommendations() {
           meals: [
             "All meals: Meat + Carbs + Vegetables + Healthy fats and fruits"
           ],
-          note: "✅ You can add: avocado, hummus, nuts, oils, peanut butter, coconut"
+          note: "You can add: avocado, hummus, nuts, oils, peanut butter, coconut"
         }
       ],
       allowedCarbs: {
@@ -126,8 +126,9 @@ export default function Recommendations() {
                   ))}
                 </ul>
                 {phase.note && (
-                  <p className="mt-4 p-3 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg text-sm italic">
-                    {phase.note}
+                  <p className="mt-4 p-3 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg text-sm italic flex items-center gap-2 text-amber-600 dark:text-amber-400">
+                    <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                    <span>{phase.note}</span>
                   </p>
                 )}
               </CardContent>
@@ -170,9 +171,10 @@ export default function Recommendations() {
               {currentLang.forbidden.items.map((item, index) => (
                 <span 
                   key={index}
-                  className="px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-full text-sm font-medium"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-200 rounded-full text-sm font-medium"
                 >
-                  ❌ {item}
+                  <XCircle className="w-3.5 h-3.5 text-red-600 dark:text-red-400" />
+                  <span>{item}</span>
                 </span>
               ))}
             </div>
@@ -186,17 +188,20 @@ export default function Recommendations() {
               <Info className="w-6 h-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
               <div className="space-y-2 text-sm text-[rgb(var(--ios-text-secondary))]">
                 <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                  {language === 'ro' ? '📌 Notă Importantă:' : '📌 Important Note:'}
+                  {language === 'ro' ? 'Notă Importantă:' : 'Important Note:'}
                 </p>
                 <p>
                   {language === 'ro' 
                     ? 'Acest program se repetă săptămânal: 2 zile Faza 1 → 2 zile Faza 2 → 3 zile Faza 3, și din nou!'
                     : 'This program repeats weekly: 2 days Phase 1 → 2 days Phase 2 → 3 days Phase 3, and repeat!'}
                 </p>
-                <p>
-                  {language === 'ro'
-                    ? '💧 Bea 8 pahare de apă zilnic, indiferent de fază!'
-                    : '💧 Drink 8 glasses of water daily, regardless of phase!'}
+                <p className="flex items-center gap-1.5">
+                  <Droplets className="w-4 h-4 text-blue-500 inline-block flex-shrink-0" />
+                  <span>
+                    {language === 'ro'
+                      ? 'Bea 8 pahare de apă zilnic, indiferent de fază!'
+                      : 'Drink 8 glasses of water daily, regardless of phase!'}
+                  </span>
                 </p>
               </div>
             </div>

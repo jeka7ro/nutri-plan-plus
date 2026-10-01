@@ -70,7 +70,7 @@ export default function FoodIngredientPicker({ onIngredientsChange }) {
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Calculator className="w-5 h-5" />
-          {language === 'ro' ? '🍴 Food Database' : '🍴 Food Database'}
+          {language === 'ro' ? 'Food Database' : 'Food Database'}
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">

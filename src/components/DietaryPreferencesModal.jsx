@@ -14,7 +14,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { Leaf, AlertTriangle, X, Heart } from "lucide-react";
+import { Leaf, AlertTriangle, X, Heart, Check } from "lucide-react";
 import { useLanguage } from "./LanguageContext";
 
 export default function DietaryPreferencesModal({ isOpen, onClose, user, onSave }) {
@@ -87,7 +87,7 @@ export default function DietaryPreferencesModal({ isOpen, onClose, user, onSave 
 
   const handleSave = async () => {
     try {
-      console.log('💾 SALVEZ Dietary Preferences:', {
+      console.log('SALVEZ Dietary Preferences:', {
         is_vegetarian: isVegetarian,
         is_vegan: isVegan,
         allergies,
@@ -107,7 +107,7 @@ export default function DietaryPreferencesModal({ isOpen, onClose, user, onSave 
         favorite_foods: favoriteFoods.join(',')
       });
       
-      console.log('✅ Dietary Preferences SALVATE!');
+      console.log('Dietary Preferences SALVATE!');
       
       toast({
         title: language === 'ro' ? "Preferințe salvate!" : "Preferences saved!",
@@ -118,7 +118,7 @@ export default function DietaryPreferencesModal({ isOpen, onClose, user, onSave 
       onSave();
       onClose();
     } catch (error) {
-      console.error('❌ Eroare salvare preferințe:', error);
+      console.error('Eroare salvare preferințe:', error);
       toast({
         title: language === 'ro' ? "Eroare" : "Error",
         description: error.message || (language === 'ro' ? "Nu s-au putut salva preferințele." : "Could not save preferences."),
@@ -147,7 +147,7 @@ export default function DietaryPreferencesModal({ isOpen, onClose, user, onSave 
           {/* IMPORTANT WARNING */}
           <div className="bg-red-50 dark:bg-red-900/20 border-2 border-red-500 dark:border-red-600 rounded-xl p-4">
             <p className="text-sm font-bold text-red-900 dark:text-red-100 mb-2">
-              ⚠️ {language === 'ro' ? 'ATENȚIE - Filtrare strictă!' : 'WARNING - Strict filtering!'}
+              {language === 'ro' ? 'Filtrare strictă activă' : 'WARNING - Strict filtering!'}
             </p>
             <p className="text-sm text-red-800 dark:text-red-200">
               {language === 'ro' 
@@ -183,10 +183,13 @@ export default function DietaryPreferencesModal({ isOpen, onClose, user, onSave 
                     ? 'Fără carne, pește sau pasăre'
                     : 'No meat, fish, or poultry'}
                 </p>
-                <p className="text-xs font-bold text-green-700 dark:text-green-400 mt-1">
-                  {language === 'ro' 
-                    ? '✓ Filtrează 100% produse cu carne'
-                    : '✓ Filters 100% meat products'}
+                <p className="text-xs font-bold text-green-700 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>
+                    {language === 'ro' 
+                      ? 'Filtrează 100% produse cu carne'
+                      : 'Filters 100% meat products'}
+                  </span>
                 </p>
               </Label>
             </div>
@@ -212,10 +215,13 @@ export default function DietaryPreferencesModal({ isOpen, onClose, user, onSave 
                     ? 'Fără produse de origine animală'
                     : 'No animal products'}
                 </p>
-                <p className="text-xs font-bold text-green-700 dark:text-green-400 mt-1">
-                  {language === 'ro' 
-                    ? '✓ Filtrează 100% carne, ouă, lactate, miere'
-                    : '✓ Filters 100% meat, eggs, dairy, honey'}
+                <p className="text-xs font-bold text-green-700 dark:text-green-400 mt-1 flex items-center gap-1">
+                  <Check className="w-3.5 h-3.5 flex-shrink-0" />
+                  <span>
+                    {language === 'ro' 
+                      ? 'Filtrează 100% carne, ouă, lactate, miere'
+                      : 'Filters 100% meat, eggs, dairy, honey'}
+                  </span>
                 </p>
               </Label>
             </div>
@@ -368,8 +374,8 @@ export default function DietaryPreferencesModal({ isOpen, onClose, user, onSave 
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <p className="text-sm text-blue-800">
               {language === 'ro' 
-                ? '💡 Aceste preferințe vor fi folosite pentru a filtra și prioritiza meniurile potrivite pentru tine. Le poți schimba oricând.'
-                : '💡 These preferences will be used to filter and prioritize meal plans suitable for you. You can change them anytime.'}
+                ? 'Aceste preferințe vor fi folosite pentru a filtra și prioritiza meniurile potrivite pentru tine. Le poți schimba oricând.'
+                : 'These preferences will be used to filter and prioritize meal plans suitable for you. You can change them anytime.'}
             </p>
           </div>
         </div>

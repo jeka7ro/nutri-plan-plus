@@ -124,7 +124,7 @@ export default function FriendsNew() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
               <Search className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              {language === 'ro' ? '🔍 Caută Prieteni' : '🔍 Search Friends'}
+              {language === 'ro' ? 'Caută Prieteni' : 'Search Friends'}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -224,8 +224,8 @@ export default function FriendsNew() {
           <Card className="ios-card ios-shadow-lg rounded-[20px] border-blue-500/50 bg-blue-50/50 dark:bg-blue-950/20">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-blue-900 dark:text-blue-100">
-                <UserPlus className="w-5 h-5" />
-                📬 {language === 'ro' ? `Cereri Primite (${requests.received.length})` : `Received Requests (${requests.received.length})`}
+                <UserPlus className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                {language === 'ro' ? `Cereri Primite (${requests.received.length})` : `Received Requests (${requests.received.length})`}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -289,7 +289,7 @@ export default function FriendsNew() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
                 <Clock className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-                📤 {language === 'ro' ? `Cereri Trimise (${requests.sent.length})` : `Sent Requests (${requests.sent.length})`}
+                {language === 'ro' ? `Cereri Trimise (${requests.sent.length})` : `Sent Requests (${requests.sent.length})`}
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
@@ -331,7 +331,7 @@ export default function FriendsNew() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
               <Users className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              👥 {language === 'ro' ? `Prietenii Mei (${friends.length})` : `My Friends (${friends.length})`}
+              {language === 'ro' ? `Prietenii Mei (${friends.length})` : `My Friends (${friends.length})`}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">

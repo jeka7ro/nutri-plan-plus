@@ -217,11 +217,11 @@ export default function Recipes() {
                   }}
                 >
                   {/* Recipe Image - FROM DATABASE */}
-                  <div className="relative overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center p-2" style={{ height: '280px' }}>
+                  <div className="relative overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center p-2 group" style={{ height: '280px' }}>
                     <img 
                       src={recipe.image_url} 
                       alt={language === 'ro' ? recipe.name_ro : recipe.name_en}
-                      className="max-w-full max-h-full object-contain hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute top-3 right-3">
                       <Badge className="bg-black/70 text-white border-none">
@@ -259,13 +259,13 @@ export default function Recipes() {
                   </CardHeader>
                   <CardContent className="p-4">
                     <div className="flex gap-2 flex-wrap">
-                      {recipe.is_vegetarian && (
+                      {Boolean(recipe.is_vegetarian) && (
                         <Badge variant="outline" className="text-xs border-[rgb(var(--ios-border))] text-[rgb(var(--ios-text-secondary))]">
                           <Leaf className="w-3 h-3 mr-1 text-green-600 dark:text-green-400" />
                           {language === 'ro' ? 'Vegetarian' : 'Vegetarian'}
                         </Badge>
                       )}
-                      {recipe.is_vegan && (
+                      {Boolean(recipe.is_vegan) && (
                         <Badge variant="outline" className="text-xs border-[rgb(var(--ios-border))] text-[rgb(var(--ios-text-secondary))]">
                           <Leaf className="w-3 h-3 mr-1 text-green-600 dark:text-green-400" />
                           {language === 'ro' ? 'Vegan' : 'Vegan'}
@@ -278,19 +278,19 @@ export default function Recipes() {
                           <div className="font-medium">
                             {language === 'ro' ? 'Proteine' : 'Protein'}
                           </div>
-                          <div className="font-bold text-[rgb(var(--ios-text-primary))]">{recipe.protein}g</div>
+                          <div className="font-bold text-[rgb(var(--ios-text-primary))]">{recipe.protein ?? 0}g</div>
                         </div>
                         <div>
                           <div className="font-medium">
                             {language === 'ro' ? 'Carbohidrați' : 'Carbs'}
                           </div>
-                          <div className="font-bold text-[rgb(var(--ios-text-primary))]">{recipe.carbs}g</div>
+                          <div className="font-bold text-[rgb(var(--ios-text-primary))]">{recipe.carbs ?? 0}g</div>
                         </div>
                         <div>
                           <div className="font-medium">
                             {language === 'ro' ? 'Grăsimi' : 'Fat'}
                           </div>
-                          <div className="font-bold text-[rgb(var(--ios-text-primary))]">{recipe.fat}g</div>
+                          <div className="font-bold text-[rgb(var(--ios-text-primary))]">{recipe.fats ?? recipe.fat ?? 0}g</div>
                         </div>
                       </div>
                     </div>
@@ -325,14 +325,14 @@ export default function Recipes() {
           {selectedRecipe && (
             <>
               {/* Recipe Image in Modal - FROM DATABASE */}
-              <div className="relative -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-4" style={{ height: '400px' }}>
+              <div className="relative -mx-6 -mt-6 mb-4 overflow-hidden rounded-t-lg bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-0 group" style={{ height: '400px' }}>
                 <img 
                   src={selectedRecipe.image_url} 
                   alt={language === 'ro' ? selectedRecipe.name_ro : selectedRecipe.name}
-                  className="max-w-full max-h-full object-contain"
+                  className="w-full h-full object-cover"
                 />
                 <div className="absolute bottom-4 left-6 right-6">
-                  <h2 id="recipe-description" className="text-3xl font-bold text-[rgb(var(--ios-text-primary))] drop-shadow-lg">
+                  <h2 id="recipe-description" className="text-3xl font-bold text-white drop-shadow-lg">
                     {language === 'ro' ? selectedRecipe.name_ro : selectedRecipe.name}
                   </h2>
                 </div>
@@ -389,42 +389,52 @@ export default function Recipes() {
                 </Card>
 
                 {/* Ingredients */}
-                {selectedRecipe.ingredients_en && selectedRecipe.ingredients_en.length > 0 && (
-                  <div>
-                    <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
-                      <UtensilsCrossed className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                      {language === 'ro' ? 'Ingrediente' : 'Ingredients'}
-                    </h3>
-                    <ul className="space-y-2">
-                      {(language === 'ro' ? selectedRecipe.ingredients_ro : selectedRecipe.ingredients_en).map((ingredient, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <span className="text-emerald-500 mt-1">•</span>
-                          <span className="text-[rgb(var(--ios-text-secondary))]">{ingredient}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+                {(() => {
+                  const currentIngredients = (language === 'ro' ? selectedRecipe.ingredients_ro : selectedRecipe.ingredients_en) || selectedRecipe.ingredients_ro || selectedRecipe.ingredients_en || [];
+                  const safeList = Array.isArray(currentIngredients) ? currentIngredients : (typeof currentIngredients === 'string' && currentIngredients.startsWith('[') ? JSON.parse(currentIngredients) : [currentIngredients]).filter(Boolean);
+                  if (!safeList || safeList.length === 0) return null;
+                  return (
+                    <div>
+                      <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
+                        <UtensilsCrossed className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+                        {language === 'ro' ? 'Ingrediente' : 'Ingredients'}
+                      </h3>
+                      <ul className="space-y-2">
+                        {safeList.map((ingredient, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <span className="text-emerald-500 mt-1">•</span>
+                            <span className="text-[rgb(var(--ios-text-secondary))]">{ingredient}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })()}
 
                 {/* Instructions */}
-                {selectedRecipe.instructions_en && selectedRecipe.instructions_en.length > 0 && (
-                  <div>
-                    <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
-                      <Star className="w-5 h-5 text-orange-600 dark:text-orange-400" />
-                      {language === 'ro' ? 'Mod de preparare' : 'Instructions'}
-                    </h3>
-                    <ol className="space-y-3">
-                      {(language === 'ro' ? selectedRecipe.instructions_ro : selectedRecipe.instructions_en).map((step, i) => (
-                        <li key={i} className="flex items-start gap-3">
-                          <span className={`flex-shrink-0 w-6 h-6 rounded-full ${phaseInfo[selectedPhase].bgColor} ${phaseInfo[selectedPhase].textColor} flex items-center justify-center text-sm font-bold`}>
-                            {i + 1}
-                          </span>
-                          <span className="text-[rgb(var(--ios-text-secondary))] pt-0.5">{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
+                {(() => {
+                  const currentInstructions = (language === 'ro' ? selectedRecipe.instructions_ro : selectedRecipe.instructions_en) || selectedRecipe.instructions_ro || selectedRecipe.instructions_en || [];
+                  const safeList = Array.isArray(currentInstructions) ? currentInstructions : (typeof currentInstructions === 'string' && currentInstructions.startsWith('[') ? JSON.parse(currentInstructions) : [currentInstructions]).filter(Boolean);
+                  if (!safeList || safeList.length === 0) return null;
+                  return (
+                    <div>
+                      <h3 className="font-bold text-lg mb-3 flex items-center gap-2 text-[rgb(var(--ios-text-primary))]">
+                        <Star className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                        {language === 'ro' ? 'Mod de preparare' : 'Instructions'}
+                      </h3>
+                      <ol className="space-y-3">
+                        {safeList.map((step, i) => (
+                          <li key={i} className="flex items-start gap-3">
+                            <span className={`flex-shrink-0 w-6 h-6 rounded-full ${phaseInfo[selectedPhase].bgColor} ${phaseInfo[selectedPhase].textColor} flex items-center justify-center text-sm font-bold`}>
+                              {i + 1}
+                            </span>
+                            <span className="text-[rgb(var(--ios-text-secondary))] pt-0.5">{step}</span>
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  );
+                })()}
 
                 {/* Benefits */}
                 {selectedRecipe.benefits_en && (

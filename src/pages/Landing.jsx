@@ -1,3 +1,4 @@
+import { Sparkles, Calendar, ChefHat, Star, Flame, Heart, Check, X } from 'lucide-react';
 import React, { useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -156,7 +157,7 @@ export default function Landing() {
             className="h-14 px-8 text-lg bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl shadow-2xl mb-8"
           >
             <Link to="/app" className="flex items-center gap-2">
-              <span>✨</span>
+              <Sparkles className="w-4 h-4 text-emerald-500 inline" />
               {t.hero.btnDashboard}
               <span>→</span>
             </Link>
@@ -165,15 +166,15 @@ export default function Landing() {
           {/* Features */}
           <div className="flex flex-col md:flex-row justify-center gap-8 text-sm text-gray-400">
             <div className="flex items-center gap-2">
-              <span className="text-emerald-500">📅</span>
+              <Calendar className="w-4 h-4 text-emerald-500 inline" />
               {language === 'ro' ? 'Program 28 zile' : '28-day program'}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-emerald-500">👨‍🍳</span>
+              <ChefHat className="w-4 h-4 text-emerald-500 inline" />
               {t.hero.feature2}
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-emerald-500">⭐</span>
+              <Star className="w-4 h-4 text-amber-500 inline" />
               {t.hero.feature3}
             </div>
           </div>
@@ -193,7 +194,7 @@ export default function Landing() {
             <Card className="bg-[#1A1F2E] border-gray-800 rounded-2xl shadow-2xl relative overflow-hidden backdrop-blur-sm">
               <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/10 rounded-full -mr-16 -mt-16"></div>
               <CardContent className="p-8 text-center relative z-10">
-                <div className="text-5xl mb-4">🔥</div>
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-amber-500/10 text-amber-500 flex items-center justify-center"><Flame className="w-8 h-8" /></div>
                 <div className="text-3xl font-bold text-orange-500 mb-2">{t.programNumbers.phase1}</div>
                 <div className="text-white font-semibold mb-2">{t.programNumbers.dailyUpdate}</div>
                 <div className="text-orange-500 text-sm">{t.programNumbers.phase1Desc}</div>
@@ -204,7 +205,7 @@ export default function Landing() {
             <Card className="bg-[#1A1F2E] border-gray-800 rounded-2xl shadow-2xl relative overflow-hidden backdrop-blur-sm">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full -mr-16 -mt-16"></div>
               <CardContent className="p-8 text-center relative z-10">
-                <div className="text-5xl mb-4">💚</div>
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><Heart className="w-8 h-8" /></div>
                 <div className="text-3xl font-bold text-emerald-500 mb-2">{t.programNumbers.phase2}</div>
                 <div className="text-white font-semibold mb-2">{t.programNumbers.dailyUpdate}</div>
                 <div className="text-emerald-500 text-sm">{t.programNumbers.phase2Desc}</div>
@@ -215,7 +216,7 @@ export default function Landing() {
             <Card className="bg-[#1A1F2E] border-gray-800 rounded-2xl shadow-2xl relative overflow-hidden backdrop-blur-sm">
               <div className="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full -mr-16 -mt-16"></div>
               <CardContent className="p-8 text-center relative z-10">
-                <div className="text-5xl mb-4">✨</div>
+                <div className="w-14 h-14 mx-auto mb-4 rounded-2xl bg-purple-500/10 text-purple-500 flex items-center justify-center"><Sparkles className="w-8 h-8" /></div>
                 <div className="text-3xl font-bold text-purple-500 mb-2">{t.programNumbers.phase3}</div>
                 <div className="text-white font-semibold mb-2">{t.programNumbers.dailyUpdate}</div>
                 <div className="text-purple-500 text-sm">{t.programNumbers.phase3Desc}</div>
@@ -256,14 +257,14 @@ export default function Landing() {
                 <h3 className="text-white font-bold mb-3">{t.recipes.recipe1}</h3>
                 <div className="flex items-center gap-4 text-sm text-gray-400 mb-3">
                   <span className="flex items-center gap-1">
-                    🔥 280 cal
+                    280 kcal
                   </span>
                   <span className="flex items-center gap-1">
-                    💪 10g protein
+                    10g proteine
                   </span>
                 </div>
                 <span className="inline-block bg-emerald-500/10 text-emerald-500 text-xs font-semibold px-3 py-1 rounded-full">
-                  🌱 {t.recipes.vegetarian}
+                  {t.recipes.vegetarian}
                 </span>
               </CardContent>
             </Card>
@@ -287,14 +288,14 @@ export default function Landing() {
                 <h3 className="text-white font-bold mb-3">{t.recipes.recipe2}</h3>
                 <div className="flex items-center gap-4 text-sm text-gray-400 mb-3">
                   <span className="flex items-center gap-1">
-                    🔥 320 cal
+                    320 kcal
                   </span>
                   <span className="flex items-center gap-1">
-                    💪 12g protein
+                    12g proteine
                   </span>
                 </div>
                 <span className="inline-block bg-emerald-500/10 text-emerald-500 text-xs font-semibold px-3 py-1 rounded-full">
-                  🌱 {t.recipes.vegetarian}
+                  {t.recipes.vegetarian}
                 </span>
               </CardContent>
             </Card>
@@ -318,10 +319,10 @@ export default function Landing() {
                 <h3 className="text-white font-bold mb-3">{t.recipes.recipe3}</h3>
                 <div className="flex items-center gap-4 text-sm text-gray-400">
                   <span className="flex items-center gap-1">
-                    🔥 395 cal
+                    395 kcal
                   </span>
                   <span className="flex items-center gap-1">
-                    💪 35g protein
+                    35g proteine
                   </span>
                 </div>
               </CardContent>
@@ -354,9 +355,9 @@ export default function Landing() {
                   <p className="text-gray-400 text-lg">{language === 'ro' ? 'Pentru totdeauna' : 'Forever'}</p>
                 </div>
                 <ul className="space-y-4 mb-8 text-lg">
-                  <li className="text-white">✓ {language === 'ro' ? 'Plan de bază' : 'Basic plan'}</li>
-                  <li className="text-white">✓ {language === 'ro' ? '1 rețetă personalizată' : '1 custom recipe'}</li>
-                  <li className="text-gray-600">✗ {language === 'ro' ? 'Features limitate' : 'Limited features'}</li>
+                  <li className="text-white flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500 shrink-0" />{language === 'ro' ? 'Plan de bază' : 'Basic plan'}</li>
+                  <li className="text-white flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500 shrink-0" />{language === 'ro' ? '1 rețetă personalizată' : '1 custom recipe'}</li>
+                  <li className="text-muted-foreground flex items-center gap-2"><X className="w-4 h-4 text-muted-foreground shrink-0" />{language === 'ro' ? 'Features limitate' : 'Limited features'}</li>
                 </ul>
                 <Button asChild variant="outline" size="lg" className="w-full h-14 text-lg border-gray-700 hover:bg-gray-800 text-white rounded-xl font-bold">
                   <Link to="/app">{language === 'ro' ? 'Începe Gratuit' : 'Start Free'}</Link>
@@ -385,11 +386,11 @@ export default function Landing() {
                   <p className="text-sm text-white/70">{language === 'ro' ? 'Apoi 20 RON/lună' : 'Then 20 RON/month'}</p>
                 </div>
                 <ul className="space-y-4 mb-8 text-lg font-semibold text-white">
-                  <li>✓ {language === 'ro' ? 'Rețete nelimitate' : 'Unlimited recipes'}</li>
-                  <li>✓ {language === 'ro' ? 'Food Database (200+ ingrediente)' : 'Food Database (200+ ingredients)'}</li>
-                  <li>✓ {language === 'ro' ? 'AI Assistant inteligent' : 'Smart AI Assistant'}</li>
-                  <li>✓ {language === 'ro' ? 'Prieteni & Sharing' : 'Friends & Sharing'}</li>
-                  <li>✓ {language === 'ro' ? 'Statistici complete' : 'Complete stats'}</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500 shrink-0" />{language === 'ro' ? 'Rețete nelimitate' : 'Unlimited recipes'}</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500 shrink-0" />{language === 'ro' ? 'Food Database (200+ ingrediente)' : 'Food Database (200+ ingredients)'}</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500 shrink-0" />{language === 'ro' ? 'AI Assistant inteligent' : 'Smart AI Assistant'}</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500 shrink-0" />{language === 'ro' ? 'Prieteni & Sharing' : 'Friends & Sharing'}</li>
+                  <li className="flex items-center gap-2"><Check className="w-4 h-4 text-emerald-500 shrink-0" />{language === 'ro' ? 'Statistici complete' : 'Complete stats'}</li>
                 </ul>
                 <Button asChild size="lg" className="w-full h-16 text-xl bg-white text-emerald-600 hover:bg-gray-100 font-bold rounded-xl shadow-2xl">
                   <Link to="/upgrade">{language === 'ro' ? 'Activează Premium' : 'Activate Premium'}</Link>
@@ -405,7 +406,7 @@ export default function Landing() {
         <div className="max-w-2xl mx-auto">
           <Card className="bg-[#1A1F2E] border-gray-800 rounded-3xl relative overflow-hidden">
             <CardContent className="p-12 text-center relative z-10">
-              <div className="text-6xl mb-6">📅</div>
+              <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center"><Calendar className="w-10 h-10" /></div>
               <h2 className="text-3xl md:text-4xl font-bold text-white mb-4">
                 {t.cta.title}
               </h2>
@@ -420,7 +421,7 @@ export default function Landing() {
                 className="h-14 px-8 text-lg bg-white text-emerald-600 hover:bg-gray-100 font-bold rounded-xl"
               >
                 <Link to="/app" className="flex items-center gap-2">
-                  <span className="text-emerald-500">✨</span>
+                  <Sparkles className="w-4 h-4 text-emerald-500 inline" />
                   {t.cta.btn}
                   <span className="text-emerald-600">→</span>
                 </Link>
@@ -441,7 +442,7 @@ export default function Landing() {
           className="w-16 h-16 rounded-full bg-gradient-to-br from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 shadow-2xl"
         >
           <Link to="/app">
-            <span className="text-2xl">✨</span>
+            <Sparkles className="w-5 h-5 text-emerald-500 inline" />
           </Link>
         </Button>
       </div>

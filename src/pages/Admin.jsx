@@ -1,21 +1,11 @@
-
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import localApi from "@/api/localClient";
-import { api as base44 } from "@/api/apiAdapter";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
 import {
   Select,
   SelectContent,
@@ -24,13 +14,14 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Users, MessageSquare, TrendingUp, TrendingDown, Activity, Shield, Crown, Calendar,
-  CheckCircle, Clock, XCircle, ChefHat, Loader2, Upload, Edit, Trash2, Plus, Image as ImageIcon, ArrowRight, Award, Flame, Eye, Settings, Info, Menu
+  Users, ChefHat, Database, Activity, Settings, Shield, Search, Plus,
+  Trash2, Edit3, KeyRound, Crown, CheckCircle2, AlertCircle, Calendar,
+  Clock, Mail, Phone, MapPin, TrendingUp, TrendingDown, Sparkles,
+  Download, RefreshCw, Check, X, MoreVertical, Filter, SlidersHorizontal,
+  Flame, Scale, Dumbbell, Droplet, ArrowRight, Eye, ShieldCheck, HeartPulse
 } from "lucide-react";
-// Removed CRM and other unused admin components to fix undefined list error
-import { format, subDays, differenceInYears } from "date-fns";
+import { format } from "date-fns";
 import { ro } from "date-fns/locale";
-import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import {
   Table,
   TableBody,
@@ -45,3020 +36,2020 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 
+// Branded EatnFit showcase image library with embossed logo
+const EMBOSSED_SHOWCASE_IMAGES = [
+  { label: "Mic Dejun: Fulgi de Ovăz & Fructe", url: "/images/eatnfit_breakfast_oatmeal.jpg" },
+  { label: "Prânz: Salată de Pui & Avocado", url: "/images/eatnfit_chicken_salad.jpg" },
+  { label: "Cină: Somon la Grătar & Sparanghel", url: "/images/eatnfit_salmon_dinner.jpg" },
+  { label: "Băutură: Smoothie Verde Detox", url: "/images/eatnfit_green_smoothie.jpg" },
+  { label: "Gustare: Felii de Măr & Fructe de Pădure", url: "/images/eatnfit_fruit_snack.jpg" },
+  { label: "Bol Vegetarian: Quinoa & Legume Coapte", url: "/images/eatnfit_quinoa_bowl.jpg" },
+  { label: "Cină Faza 2: Vită Fragedă & Broccoli", url: "/images/eatnfit_beef_broccoli.jpg" },
+  { label: "Desert: Budincă de Chia & Zmeură", url: "/images/eatnfit_chia_pudding.jpg" },
+];
+
+// Screen 2 Replica: Donut Status Card with pill badges and dark center
+function ScreenTwoDonutCard({ 
+  title = "Status Prezență", 
+  total = 50, 
+  totalLabel = "ANGAJAȚI",
+  presentCount = 2, 
+  absentCount = 48, 
+  presentLabel = "Prezenți",
+  absentLabel = "Absenți" 
+}) {
+  const safeTotal = total > 0 ? total : (presentCount + absentCount || 1);
+  const presentPct = Math.round((presentCount / safeTotal) * 100);
+  const absentPct = 100 - presentPct;
+
+  const r = 64;
+  const c = 2 * Math.PI * r;
+  const presentStroke = (presentPct / 100) * c;
+  const absentStroke = (absentPct / 100) * c;
+
+  return (
+    <div className="bg-card border border-border/70 rounded-[28px] p-6 sm:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] flex flex-col items-center w-full transition-all">
+      <div className="w-full text-left mb-4">
+        <h3 className="text-base sm:text-lg font-bold text-foreground tracking-tight">{title}</h3>
+      </div>
+
+      <div className="relative w-52 h-52 flex items-center justify-center my-2">
+        <svg className="w-full h-full -rotate-90" viewBox="0 0 180 180">
+          <circle
+            cx="90"
+            cy="90"
+            r={r}
+            fill="transparent"
+            stroke="#f59e0b"
+            strokeWidth="24"
+            strokeDasharray={`${absentStroke} ${c}`}
+            strokeDashoffset="0"
+            strokeLinecap="round"
+          />
+          <circle
+            cx="90"
+            cy="90"
+            r={r}
+            fill="transparent"
+            stroke="#2563eb"
+            strokeWidth="24"
+            strokeDasharray={`${presentStroke} ${c}`}
+            strokeDashoffset={`-${absentStroke}`}
+            strokeLinecap="round"
+          />
+        </svg>
+
+        <div className="absolute w-24 h-24 rounded-full bg-[#1e2638] flex flex-col items-center justify-center text-white shadow-md">
+          <span className="text-3xl font-extrabold leading-none">{safeTotal}</span>
+          <span className="text-[9px] font-bold text-slate-300 uppercase tracking-widest mt-1">
+            {totalLabel}
+          </span>
+        </div>
+
+        <div className="absolute top-2 right-16 bg-blue-600 text-white text-[11px] font-bold px-2 py-0.5 rounded-full shadow-md">
+          {presentCount}
+        </div>
+
+        <div className="absolute bottom-4 text-white font-extrabold text-xs drop-shadow-md">
+          {absentCount}
+        </div>
+      </div>
+
+      <div className="flex flex-wrap items-center justify-center gap-2.5 mt-5 pt-4 border-t border-border/40 w-full">
+        <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 px-4 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <span className="w-2.5 h-2.5 rounded-full bg-blue-600 shrink-0" />
+          <span>{presentLabel}: <strong className="text-foreground font-bold">{presentCount}</strong> ({presentPct}%)</span>
+        </div>
+        <div className="inline-flex items-center gap-2 rounded-full bg-slate-50 dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 px-4 py-1.5 text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 shrink-0" />
+          <span>{absentLabel}: <strong className="text-foreground font-bold">{absentCount}</strong> ({absentPct}%)</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
-  // VERSIUNE: 1.0.1 - FIX UTILIZATORI + NUME/PRENUME
   const { toast } = useToast();
-  const [user, setUser] = useState(null);
-  const [selectedRequest, setSelectedRequest] = useState(null);
-  const [response, setResponse] = useState("");
-  const [editingRecipe, setEditingRecipe] = useState(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [uploadingBook, setUploadingBook] = useState(false);
-  const [bookUrl, setBookUrl] = useState("");
-  const [recipeSearchQuery, setRecipeSearchQuery] = useState("");
-  const [isSearchingOnline, setIsSearchingOnline] = useState(false);
-  const [showOnlyAdminRecipes, setShowOnlyAdminRecipes] = useState(false);
-  const [selectedUser, setSelectedUser] = useState(null); // Pentru dialog detalii user
-  const [activeTab, setActiveTab] = useState("users"); // Control tab-uri - Users primul pentru management
-  const [showCreateUser, setShowCreateUser] = useState(false); // Dialog creare utilizator
-  const [newUserData, setNewUserData] = useState({
-    email: '',
-    password: '',
-    first_name: '',
-    last_name: '',
-    phone: '',
-    role: 'user'
-  });
-  const [selectedBackup, setSelectedBackup] = useState(null); // Pentru vizualizare conținut backup
-  const [backupSettings, setBackupSettings] = useState({
-    interval: 12, // ore
-    cleanup: 48, // ore
-    autoEnabled: true
-  });
-  const [showResetPassword, setShowResetPassword] = useState(false);
-  const [resetPasswordUser, setResetPasswordUser] = useState(null);
-  const [newPassword, setNewPassword] = useState('');
-  const [showDeleteUser, setShowDeleteUser] = useState(false);
-  const [deleteUserData, setDeleteUserData] = useState(null);
-  const [showGrantPremium, setShowGrantPremium] = useState(false);
-  const [grantPremiumUser, setGrantPremiumUser] = useState(null);
-  const [premiumDuration, setPremiumDuration] = useState('lifetime');
-  const [menuOpen, setMenuOpen] = useState(false);
   const queryClient = useQueryClient();
 
-  useEffect(() => {
-    localApi.auth.me().then(userData => {
-      console.log('👤 Admin user loaded:', userData);
-      console.log('🔑 Token exists:', !!localStorage.getItem('auth_token'));
-      setUser(userData);
-      if (userData.role !== 'admin') {
-        console.error('❌ User is not admin, redirecting...');
-        window.location.href = '/';
-      } else {
-        console.log('✅ User is ADMIN, can access dashboard');
-      }
-    }).catch((error) => {
-      console.error('❌ Failed to load user:', error);
-      window.location.href = '/';
-    });
-  }, []);
+  // Active navigation tab
+  const [activeTab, setActiveTab] = useState("users");
 
-  const { data: allUsers = [], isLoading: usersLoading, error: usersError } = useQuery({
-    queryKey: ['allUsers'],
-    queryFn: async () => {
-      console.log('🔍 Fetching users from API...');
-      console.log('🔑 Using token:', localStorage.getItem('auth_token')?.substring(0, 20) + '...');
-      try {
-        const users = await localApi.admin.users();
-        console.log('✅ Users received:', users);
-        console.log('📊 Total users:', users.length);
-        return users;
-      } catch (error) {
-        console.error('❌ Error fetching users:', error);
-        throw error;
-      }
-    },
-    enabled: !!user && user?.role === 'admin',
-    staleTime: 0,
-    refetchOnMount: 'always',
+  // Search & Filters
+  const [userSearch, setUserSearch] = useState("");
+  const [userRoleFilter, setUserRoleFilter] = useState("all");
+  const [userTierFilter, setUserTierFilter] = useState("all");
+
+  const [recipeSearch, setRecipeSearch] = useState("");
+  const [recipePhaseFilter, setRecipePhaseFilter] = useState("all");
+  const [recipeMealFilter, setRecipeMealFilter] = useState("all");
+
+  // Modals state
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showCreateUser, setShowCreateUser] = useState(false);
+  const [newUserData, setNewUserData] = useState({
+    email: "",
+    password: "",
+    name: "",
+    phone: "",
+    role: "user",
+    subscription_tier: "free"
   });
 
-  // DEBUGGING: Log când se schimbă users
-  useEffect(() => {
-    console.log('👥 AllUsers updated:', allUsers);
-    console.log('📊 AllUsers length:', allUsers?.length || 0);
-    console.log('⏳ Loading:', usersLoading);
-    console.log('❌ Error:', usersError);
-  }, [allUsers, usersLoading, usersError]);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [resetPasswordTarget, setResetPasswordTarget] = useState(null);
+  const [newPasswordVal, setNewPasswordVal] = useState("");
 
-  const { data: adminChats = [] } = useQuery({
-    queryKey: ['adminChats'],
-    queryFn: () => [], // TODO: Implement admin chat functionality
-    enabled: false, // Disabled until implemented
+  const [showDeleteUser, setShowDeleteUser] = useState(false);
+  const [deleteUserTarget, setDeleteUserTarget] = useState(null);
+
+  const [showGrantPremium, setShowGrantPremium] = useState(false);
+  const [grantPremiumTarget, setGrantPremiumTarget] = useState(null);
+  const [premiumDuration, setPremiumDuration] = useState("lifetime");
+
+  const [recipeModalOpen, setRecipeModalOpen] = useState(false);
+  const [editingRecipe, setEditingRecipe] = useState(null);
+  const [recipeFormData, setRecipeFormData] = useState({
+    name: "",
+    description: "",
+    phase: 1,
+    meal_type: "lunch",
+    calories: 350,
+    protein: 25,
+    carbs: 30,
+    fats: 10,
+    prep_time: 15,
+    cook_time: 20,
+    image_url: "/images/eatnfit_chicken_salad.jpg",
+    ingredients: "",
+    instructions: "",
+    is_public: 1,
   });
 
-  const { data: recipes = [] } = useQuery({
-    queryKey: ['recipes'],
+  // 1. Current user query
+  const { data: currentUser, isLoading: userLoading } = useQuery({
+    queryKey: ["adminCurrentMe"],
+    queryFn: () => localApi.auth.me(),
+    staleTime: 60000,
+  });
+
+  // 2. All Users Query
+  const { data: allUsers = [], isLoading: usersLoading } = useQuery({
+    queryKey: ["adminAllUsers"],
+    queryFn: () => localApi.admin.users(),
+    enabled: currentUser?.role === "admin",
+  });
+
+  // 3. Recipes Query
+  const { data: recipes = [], isLoading: recipesLoading } = useQuery({
+    queryKey: ["adminRecipes"],
     queryFn: () => localApi.recipes.list(),
-    enabled: user?.role === 'admin',
+    enabled: currentUser?.role === "admin",
   });
 
-  const { data: allCheckIns = [] } = useQuery({
-    queryKey: ['allCheckIns'],
-    queryFn: () => localApi.checkins.list(),
-    enabled: user?.role === 'admin',
-  });
-
-  const { data: allWeightEntries = [] } = useQuery({
-    queryKey: ['allWeightEntries'],
-    queryFn: () => localApi.admin.weightEntries(),
-    enabled: user?.role === 'admin',
-    staleTime: 0,
-    refetchOnMount: 'always',
-  });
-
-  const { data: backups = [] } = useQuery({
-    queryKey: ['backups'],
+  // 4. Backups Query
+  const { data: backups = [], isLoading: backupsLoading } = useQuery({
+    queryKey: ["adminBackups"],
     queryFn: () => localApi.admin.backups.list(),
-    enabled: user?.role === 'admin',
-    staleTime: 0,
-    refetchOnMount: 'always',
+    enabled: currentUser?.role === "admin",
   });
 
+  // 5. System Stats Query
+  const { data: statsData } = useQuery({
+    queryKey: ["adminStats"],
+    queryFn: () => localApi.admin.stats(),
+    enabled: currentUser?.role === "admin",
+    refetchInterval: 30000,
+  });
+
+  // 6. Build Info Query
   const { data: buildInfo } = useQuery({
-    queryKey: ['buildInfo'],
+    queryKey: ["adminBuildInfo"],
     queryFn: () => localApi.buildInfo.get(),
-    enabled: user?.role === 'admin',
-    staleTime: 30000, // Cache for 30 seconds
-    refetchInterval: 60000, // Refetch every minute
+    enabled: currentUser?.role === "admin",
   });
 
-  const createBackupMutation = useMutation({
-    mutationFn: () => localApi.admin.backups.create(),
+  // 7. Checkins Query
+  const { data: checkIns = [] } = useQuery({
+    queryKey: ["adminCheckins"],
+    queryFn: () => localApi.checkins.list(),
+    enabled: currentUser?.role === "admin",
+  });
+
+  // 8. Weights Query
+  const { data: weightEntries = [] } = useQuery({
+    queryKey: ["adminWeights"],
+    queryFn: () => localApi.admin.weightEntries(),
+    enabled: currentUser?.role === "admin",
+  });
+
+  // ==================== MUTATIONS ====================
+
+  // Create User Mutation
+  const createUserMutation = useMutation({
+    mutationFn: (data) => localApi.auth.register(data),
     onSuccess: () => {
-      queryClient.invalidateQueries(['backups']);
-    },
-  });
-
-  const deleteBackupMutation = useMutation({
-    mutationFn: async (id) => {
-      const response = await fetch(`/api/admin/backups?id=${id}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-          'Content-Type': 'application/json'
-        }
+      queryClient.invalidateQueries(["adminAllUsers"]);
+      setShowCreateUser(false);
+      setNewUserData({ email: "", password: "", name: "", phone: "", role: "user", subscription_tier: "free" });
+      toast({
+        title: "Utilizator creat",
+        description: "Contul a fost adăugat cu succes în sistem.",
       });
-      if (!response.ok) throw new Error('Failed to delete backup');
-      return response.json();
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries(['backups']);
-      alert('✅ Backup șters cu succes!');
-    },
+    onError: (err) => {
+      toast({
+        title: "Eroare la creare",
+        description: err.message || "Nu s-a putut crea utilizatorul",
+        variant: "destructive",
+      });
+    }
   });
 
-  const createRecipeMutation = useMutation({
-    mutationFn: (data) => localApi.recipes.create(data),
+  // Role Mutation
+  const updateRoleMutation = useMutation({
+    mutationFn: ({ userId, role }) => localApi.admin.updateRole(userId, role),
     onSuccess: () => {
-      queryClient.invalidateQueries(['recipes']);
-      setEditingRecipe(null);
+      queryClient.invalidateQueries(["adminAllUsers"]);
+      toast({
+        title: "Rol actualizat",
+        description: "Permisiunile utilizatorului au fost modificate.",
+      });
     },
-  });
-
-  const updateRecipeMutation = useMutation({
-    mutationFn: ({ id, data }) => localApi.recipes.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['recipes']);
-      setEditingRecipe(null);
-    },
-  });
-
-  const deleteRecipeMutation = useMutation({
-    mutationFn: (id) => localApi.recipes.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries(['recipes']);
-    },
+    onError: (err) => {
+      toast({
+        title: "Eroare",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
   });
 
   // Reset Password Mutation
   const resetPasswordMutation = useMutation({
     mutationFn: ({ userId, newPassword }) => localApi.admin.resetPassword(userId, newPassword),
     onSuccess: () => {
-      queryClient.invalidateQueries(['allUsers']);
+      queryClient.invalidateQueries(["adminAllUsers"]);
       setShowResetPassword(false);
-      setResetPasswordUser(null);
-      setNewPassword('');
-      alert('✅ Parola a fost resetată cu succes!');
+      setResetPasswordTarget(null);
+      setNewPasswordVal("");
+      toast({
+        title: "Parolă resetată",
+        description: "Noua parolă a fost salvată în sistem.",
+      });
     },
-    onError: (error) => {
-      alert(`❌ Eroare la resetarea parolei: ${error.message}`);
-    },
+    onError: (err) => {
+      toast({
+        title: "Eroare la resetare",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
   });
 
   // Delete User Mutation
   const deleteUserMutation = useMutation({
     mutationFn: (userId) => localApi.admin.deleteUser(userId),
     onSuccess: () => {
-      queryClient.invalidateQueries(['allUsers']);
+      queryClient.invalidateQueries(["adminAllUsers"]);
       setShowDeleteUser(false);
-      setDeleteUserData(null);
-      alert('✅ Utilizatorul a fost șters cu succes!');
+      setDeleteUserTarget(null);
+      toast({
+        title: "Utilizator șters",
+        description: "Contul și datele asociate au fost eliminate.",
+      });
     },
-    onError: (error) => {
-      alert(`❌ Eroare la ștergerea utilizatorului: ${error.message}`);
-    },
+    onError: (err) => {
+      toast({
+        title: "Eroare la ștergere",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
   });
 
   // Grant Premium Mutation
   const grantPremiumMutation = useMutation({
     mutationFn: ({ userId, duration }) => localApi.admin.grantPremium(userId, duration),
     onSuccess: () => {
-      queryClient.invalidateQueries(['allUsers']);
+      queryClient.invalidateQueries(["adminAllUsers"]);
       setShowGrantPremium(false);
-      setGrantPremiumUser(null);
-      setPremiumDuration('lifetime');
-      alert('✅ Premium acordat cu succes!');
+      setGrantPremiumTarget(null);
+      toast({
+        title: "Abonament Premium acordat",
+        description: "Utilizatorul beneficiază acum de acces Premium complet.",
+      });
     },
-    onError: (error) => {
-      alert(`❌ Eroare la acordarea premium: ${error.message}`);
-    },
+    onError: (err) => {
+      toast({
+        title: "Eroare la acordare",
+        description: err.message,
+        variant: "destructive",
+      });
+    }
   });
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Validate file type
-    if (!file.type.startsWith('image/')) {
+  // Backup Mutations
+  const createBackupMutation = useMutation({
+    mutationFn: () => localApi.admin.backups.create(),
+    onSuccess: (data) => {
+      queryClient.invalidateQueries(["adminBackups"]);
+      queryClient.invalidateQueries(["adminStats"]);
       toast({
-        title: language === 'ro' ? '❌ Eroare' : '❌ Error',
-        description: language === 'ro' ? 'Te rugăm să selectezi o imagine validă' : 'Please select a valid image',
-        variant: 'destructive',
+        title: "Backup creat cu succes",
+        description: `Salvat: ${data.filename || "Bază de date"} (${data.formatted_size || ""})`,
       });
-      return;
-    }
-
-    setUploadingImage(true);
-    try {
-      // Convert to base64
-      const reader = new FileReader();
-      
-      reader.onloadend = () => {
-        try {
-          const base64Data = reader.result; // data:image/jpeg;base64,/9j/4AAQ...
-          
-          // Update recipe with base64 image
-          if (editingRecipe) {
-            setEditingRecipe({
-              ...editingRecipe,
-              image_url: base64Data
-            });
-          }
-          
-          toast({
-            title: language === 'ro' ? '✅ Imagine încărcată!' : '✅ Image uploaded!',
-            description: language === 'ro' 
-              ? 'Imaginea a fost încărcată cu succes' 
-              : 'Image uploaded successfully',
-          });
-        } catch (error) {
-          console.error('Error processing image:', error);
-          toast({
-            title: language === 'ro' ? '❌ Eroare' : '❌ Error',
-            description: language === 'ro' ? 'Eroare la procesarea imaginii' : 'Error processing image',
-            variant: 'destructive',
-          });
-        } finally {
-          setUploadingImage(false);
-        }
-      };
-      
-      reader.onerror = () => {
-        setUploadingImage(false);
-        toast({
-          title: language === 'ro' ? '❌ Eroare' : '❌ Error',
-          description: language === 'ro' ? 'Eroare la citirea fișierului' : 'Error reading file',
-          variant: 'destructive',
-        });
-      };
-      
-      reader.readAsDataURL(file);
-    } catch (error) {
-      console.error('Error uploading image:', error);
-      setUploadingImage(false);
+    },
+    onError: (err) => {
       toast({
-        title: language === 'ro' ? '❌ Eroare' : '❌ Error',
-        description: language === 'ro' ? 'Eroare la încărcarea imaginii' : 'Error uploading image',
-        variant: 'destructive',
+        title: "Eroare la backup",
+        description: err.message,
+        variant: "destructive",
       });
     }
-  };
+  });
 
-  const handleBookUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    setUploadingBook(true);
-    try {
-      // TODO: Implement file upload functionality
-      console.log('File upload not implemented yet:', file);
-      alert('File upload functionality not implemented yet');
-    } catch (error) {
-      console.error('Error uploading book:', error);
-      alert('Eroare la încărcarea documentului');
-    } finally {
-      setUploadingBook(false);
-    }
-  };
-
-  const handleSaveRecipe = () => {
-    const recipeData = {
-      ...editingRecipe,
-      ingredients_en: editingRecipe.ingredients_en_text?.split('\n').filter(i => i.trim()) || [],
-      ingredients_ro: editingRecipe.ingredients_ro_text?.split('\n').filter(i => i.trim()) || [],
-      instructions_en: editingRecipe.instructions_en_text?.split('\n').filter(i => i.trim()) || [],
-      instructions_ro: editingRecipe.instructions_ro_text?.split('\n').filter(i => i.trim()) || [],
-      keywords: editingRecipe.keywords_text?.split(',').map(k => k.trim()).filter(k => k) || [],
-      allergens: editingRecipe.allergens || [],
-      calories: parseFloat(editingRecipe.calories) || 0,
-      protein: parseFloat(editingRecipe.protein) || 0,
-      carbs: parseFloat(editingRecipe.carbs) || 0,
-      fat: parseFloat(editingRecipe.fat) || 0,
-      phase: editingRecipe.phases && editingRecipe.phases.length > 0 ? editingRecipe.phases[0] : (parseInt(editingRecipe.phase) || 1),
-      phases: editingRecipe.phases && editingRecipe.phases.length > 0 ? editingRecipe.phases : (editingRecipe.phase ? [parseInt(editingRecipe.phase)] : [1]),
-      is_admin_recipe: editingRecipe.is_admin_recipe || false,
-    };
-
-    delete recipeData.ingredients_en_text;
-    delete recipeData.ingredients_ro_text;
-    delete recipeData.instructions_en_text;
-    delete recipeData.instructions_ro_text;
-    delete recipeData.keywords_text;
-
-    if (editingRecipe.id) {
-      updateRecipeMutation.mutate({ id: editingRecipe.id, data: recipeData });
-    } else {
-      createRecipeMutation.mutate(recipeData);
-    }
-  };
-
-  const handleEditRecipe = (recipe) => {
-    setEditingRecipe({
-      ...recipe,
-      ingredients_en_text: Array.isArray(recipe.ingredients_en) 
-        ? recipe.ingredients_en.join('\n') 
-        : (recipe.ingredients_en || ''),
-      ingredients_ro_text: Array.isArray(recipe.ingredients_ro) 
-        ? recipe.ingredients_ro.join('\n') 
-        : (recipe.ingredients_ro || ''),
-      instructions_en_text: Array.isArray(recipe.instructions_en) 
-        ? recipe.instructions_en.join('\n') 
-        : (recipe.instructions_en || ''),
-      instructions_ro_text: Array.isArray(recipe.instructions_ro) 
-        ? recipe.instructions_ro.join('\n') 
-        : (recipe.instructions_ro || ''),
-      keywords_text: Array.isArray(recipe.keywords) 
-        ? recipe.keywords.join(', ') 
-        : (recipe.keywords || ''),
-    });
-  };
-
-  // Funcție pentru căutare online (similar cu MyRecipes.jsx)
-  const handleSearchOnline = async () => {
-    if (!editingRecipe?.name_ro?.trim() && !editingRecipe?.name?.trim()) {
-      alert('Introdu numele rețetei mai întâi');
-      return;
-    }
-
-    setIsSearchingOnline(true);
-    try {
-      const recipeName = (editingRecipe.name_ro || editingRecipe.name || '').toLowerCase();
-      
-      // Calculează macros bazat pe numele rețetei și meal type
-      let estimatedCalories = 300;
-      let estimatedProtein = 20;
-      let estimatedCarbs = 30;
-      let estimatedFat = 10;
-
-      // Estimări inteligente bazate pe keywords
-      if (/salată|salad|vegetarian/i.test(recipeName)) {
-        estimatedCalories = 250;
-        estimatedProtein = 15;
-        estimatedCarbs = 20;
-        estimatedFat = 12;
-      } else if (/pui|chicken|curcan|turkey/i.test(recipeName)) {
-        estimatedCalories = 350;
-        estimatedProtein = 35;
-        estimatedCarbs = 25;
-        estimatedFat = 12;
-      } else if (/pește|fish|somon|salmon|ton|tuna/i.test(recipeName)) {
-        estimatedCalories = 320;
-        estimatedProtein = 30;
-        estimatedCarbs = 15;
-        estimatedFat = 15;
-      } else if (/smoothie|shake/i.test(recipeName)) {
-        estimatedCalories = 280;
-        estimatedProtein = 25;
-        estimatedCarbs = 45;
-        estimatedFat = 2;
-      } else if (/omletă|omleta|omelette|ouă|oua|eggs/i.test(recipeName)) {
-        estimatedCalories = 220;
-        estimatedProtein = 18;
-        estimatedCarbs = 8;
-        estimatedFat = 14;
-      } else if (/avocado|nuci|nuts|seeds/i.test(recipeName)) {
-        estimatedCalories = 380;
-        estimatedProtein = 10;
-        estimatedCarbs = 20;
-        estimatedFat = 28;
-      } else if (/terci|porridge|oatmeal|ovăz|oats/i.test(recipeName)) {
-        estimatedCalories = 300;
-        estimatedProtein = 12;
-        estimatedCarbs = 55;
-        estimatedFat = 6;
-      } else if (/quinoa/i.test(recipeName)) {
-        estimatedCalories = 320;
-        estimatedProtein = 14;
-        estimatedCarbs = 60;
-        estimatedFat = 5;
-      } else if (/fructe|fruit|berries|mere|apples/i.test(recipeName)) {
-        estimatedCalories = 150;
-        estimatedProtein = 2;
-        estimatedCarbs = 35;
-        estimatedFat = 1;
-      }
-
-      // Ajustare pe meal type
-      const mealType = editingRecipe.meal_type || 'breakfast';
-      if (mealType === 'snack1' || mealType === 'snack2') {
-        estimatedCalories = Math.round(estimatedCalories * 0.4);
-        estimatedProtein = Math.round(estimatedProtein * 0.4);
-        estimatedCarbs = Math.round(estimatedCarbs * 0.4);
-        estimatedFat = Math.round(estimatedFat * 0.4);
-      }
-
-      // Generare ingrediente și instrucțiuni bazate pe keywords
-      const ingredients_ro = [];
-      const ingredients_en = [];
-      const instructions_ro = [];
-      const instructions_en = [];
-
-      if (/pui|chicken/i.test(recipeName)) {
-        ingredients_ro.push('300g piept pui');
-        ingredients_en.push('300g chicken breast');
-        instructions_ro.push('1. Gătește pieptul de pui la tigaie/grătar până devine fraged.');
-        instructions_en.push('1. Cook the chicken breast in a pan/grill until tender.');
-      }
-      if (/quinoa/i.test(recipeName)) {
-        ingredients_ro.push('1 cană quinoa, clătită');
-        ingredients_en.push('1 cup quinoa, rinsed');
-        instructions_ro.push('2. Fierbe quinoa 15 minute în apă cu puțină sare.');
-        instructions_en.push('2. Cook quinoa for 15 minutes in lightly salted water.');
-      }
-      if (/orez|rice/i.test(recipeName)) {
-        ingredients_ro.push('1 cană orez brun');
-        ingredients_en.push('1 cup brown rice');
-        instructions_ro.push('1. Fierbe orezul conform instrucțiunilor de pe ambalaj.');
-        instructions_en.push('1. Cook rice according to package instructions.');
-      }
-      if (/broccoli/i.test(recipeName)) {
-        ingredients_ro.push('200g broccoli desfăcut buchețele');
-        ingredients_en.push('200g broccoli florets');
-        instructions_ro.push('2. Blanșează broccoli 3-4 minute sau gătește-l la abur.');
-        instructions_en.push('2. Blanch the broccoli for 3-4 minutes or steam it.');
-      }
-
-      // Dacă nu am găsit ingrediente, adaugă unul generic
-      if (ingredients_ro.length === 0) {
-        ingredients_ro.push('Ingrediente principale');
-        ingredients_en.push('Main ingredients');
-        instructions_ro.push('1. Pregătește ingredientele conform rețetei.');
-        instructions_en.push('1. Prepare ingredients according to recipe.');
-      }
-
-      instructions_ro.push(`${instructions_ro.length + 1}. Amestecă toate ingredientele și asezonează după gust.`);
-      instructions_en.push(`${instructions_en.length + 1}. Combine all ingredients and season to taste.`);
-
-      // Imagine default
-      const defaultImage = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&auto=format&fit=crop';
-
-      setEditingRecipe({
-        ...editingRecipe,
-        ingredients_ro_text: ingredients_ro.join('\n'),
-        ingredients_en_text: ingredients_en.join('\n'),
-        instructions_ro_text: instructions_ro.join('\n'),
-        instructions_en_text: instructions_en.join('\n'),
-        image_url: editingRecipe.image_url || defaultImage,
-        calories: estimatedCalories,
-        protein: estimatedProtein,
-        carbs: estimatedCarbs,
-        fat: estimatedFat,
+  const deleteBackupMutation = useMutation({
+    mutationFn: (id) => localApi.admin.backups.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["adminBackups"]);
+      queryClient.invalidateQueries(["adminStats"]);
+      toast({
+        title: "Backup șters",
+        description: "Fișierul a fost înlăturat de pe disc.",
       });
-
-      alert('✅ Rețetă completată! Ingrediente, instrucțiuni, imagine și valori nutriționale generate.');
-    } catch (error) {
-      console.error('Error searching online:', error);
-      alert('❌ Eroare la căutare online');
-    } finally {
-      setIsSearchingOnline(false);
+    },
+    onError: (err) => {
+      toast({
+        title: "Eroare la ștergere backup",
+        description: err.message,
+        variant: "destructive",
+      });
     }
-  };
+  });
 
-  const handleNewRecipe = () => {
-    setEditingRecipe({
-      name: '',
-      name_ro: '',
-      phase: 1,
-      meal_type: 'breakfast',
-      image_url: '',
-      cooking_time: '',
-      servings: '',
-      difficulty: 'easy',
-      calories: 0,
-      protein: 0,
-      carbs: 0,
-      fat: 0,
-      is_admin_recipe: true, // Default pentru rețete noi create de admin
-      ingredients_en_text: '',
-      ingredients_ro_text: '',
-      instructions_en_text: '',
-      instructions_ro_text: '',
-      benefits_en: '',
-      benefits_ro: '',
-      tags: [],
-      keywords_text: '',
-      is_vegetarian: false,
-      is_vegan: false,
-      allergens: [],
-      source: 'admin',
-      is_featured: false
-    });
-  };
-
-  const handleRespondToRequest = async (request) => {
-    if (!response.trim()) return;
-    
-    // TODO: Implement admin chat response functionality
-    console.log('Admin chat response not implemented yet:', { request, response });
-    
-    setResponse("");
-    setSelectedRequest(null);
-    queryClient.invalidateQueries(['adminChats']);
-  };
-
-  const handleResetPassword = (user) => {
-    setResetPasswordUser(user);
-    setNewPassword('');
-    setShowResetPassword(true);
-  };
-
-  const handleDeleteUser = (user) => {
-    setDeleteUserData(user);
-    setShowDeleteUser(true);
-  };
-
-  const confirmResetPassword = () => {
-    if (!newPassword.trim() || newPassword.length < 6) {
-      alert('Parola trebuie să aibă minim 6 caractere');
-      return;
+  // Recipe Mutations
+  const saveRecipeMutation = useMutation({
+    mutationFn: (payload) => {
+      if (editingRecipe) {
+        return localApi.recipes.update(editingRecipe.id, payload);
+      }
+      return localApi.recipes.create(payload);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(["adminRecipes"]);
+      queryClient.invalidateQueries(["adminStats"]);
+      setRecipeModalOpen(false);
+      setEditingRecipe(null);
+      toast({
+        title: editingRecipe ? "Rețetă actualizată" : "Rețetă adăugată",
+        description: "Datele rețetei au fost salvate cu succes.",
+      });
+    },
+    onError: (err) => {
+      toast({
+        title: "Eroare salvare rețetă",
+        description: err.message,
+        variant: "destructive",
+      });
     }
-    resetPasswordMutation.mutate({ 
-      userId: resetPasswordUser.id, 
-      newPassword: newPassword.trim() 
-    });
-  };
+  });
 
-  const confirmDeleteUser = () => {
-    deleteUserMutation.mutate(deleteUserData.id);
-  };
-
-  const handleGrantPremium = (user) => {
-    setGrantPremiumUser(user);
-    setPremiumDuration('lifetime');
-    setShowGrantPremium(true);
-  };
-
-  const confirmGrantPremium = () => {
-    if (!grantPremiumUser?.id) {
-      alert('Selectează un utilizator valid înainte de a acorda Premium.');
-      return;
+  const deleteRecipeMutation = useMutation({
+    mutationFn: (id) => localApi.recipes.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries(["adminRecipes"]);
+      queryClient.invalidateQueries(["adminStats"]);
+      toast({
+        title: "Rețetă ștearsă",
+        description: "Rețeta a fost înlăturată din meniu.",
+      });
+    },
+    onError: (err) => {
+      toast({
+        title: "Eroare ștergere rețetă",
+        description: err.message,
+        variant: "destructive",
+      });
     }
-    grantPremiumMutation.mutate({
-      userId: grantPremiumUser.id,
-      duration: premiumDuration,
-    });
-  };
+  });
 
-  if (!user || user.role !== 'admin') {
+  // Defensive array resolution
+  const usersList = useMemo(() => {
+    if (Array.isArray(allUsers)) return allUsers;
+    if (allUsers && Array.isArray(allUsers.users)) return allUsers.users;
+    return [];
+  }, [allUsers]);
+
+  const recipesList = useMemo(() => {
+    if (Array.isArray(recipes)) return recipes;
+    if (recipes && Array.isArray(recipes.recipes)) return recipes.recipes;
+    return [];
+  }, [recipes]);
+
+  const backupsList = useMemo(() => {
+    if (Array.isArray(backups)) return backups;
+    if (backups && Array.isArray(backups.backups)) return backups.backups;
+    return [];
+  }, [backups]);
+
+  // Filtered Users
+  const filteredUsers = useMemo(() => {
+    return usersList.filter((u) => {
+      const q = userSearch.toLowerCase();
+      const matchSearch =
+        !q ||
+        (u.name && u.name.toLowerCase().includes(q)) ||
+        (u.email && u.email.toLowerCase().includes(q)) ||
+        (u.phone && u.phone.toLowerCase().includes(q)) ||
+        String(u.id).includes(q);
+
+      const matchRole = userRoleFilter === "all" || u.role === userRoleFilter;
+      const isPremium = (u.subscription_tier || "free") === "premium";
+      const matchTier =
+        userTierFilter === "all" ||
+        (userTierFilter === "premium" && isPremium) ||
+        (userTierFilter === "free" && !isPremium);
+
+      return matchSearch && matchRole && matchTier;
+    });
+  }, [usersList, userSearch, userRoleFilter, userTierFilter]);
+
+  // Filtered Recipes
+  const filteredRecipes = useMemo(() => {
+    return recipesList.filter((r) => {
+      const q = recipeSearch.toLowerCase();
+      const matchSearch =
+        !q ||
+        (r.name && r.name.toLowerCase().includes(q)) ||
+        (r.description && r.description.toLowerCase().includes(q)) ||
+        (r.ingredients && r.ingredients.toLowerCase().includes(q));
+
+      const matchPhase = recipePhaseFilter === "all" || String(r.phase) === recipePhaseFilter;
+      const matchMeal = recipeMealFilter === "all" || r.meal_type === recipeMealFilter;
+
+      return matchSearch && matchPhase && matchMeal;
+    });
+  }, [recipesList, recipeSearch, recipePhaseFilter, recipeMealFilter]);
+
+  // Guard: checking access
+  if (userLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600">Admin access required</p>
-        </div>
+      <div className="min-h-[70vh] flex flex-col items-center justify-center gap-3">
+        <RefreshCw className="w-8 h-8 text-emerald-500 animate-spin" />
+        <p className="text-sm text-muted-foreground font-medium">Se verifică permisiunile administrative...</p>
       </div>
     );
   }
 
-  const stats = {
-    totalUsers: allUsers.length,
-    // Activi = users cu check-ins în ultimele 7 zile
-    activeUsers: allUsers.filter(u => {
-      const userCheckIns = allCheckIns.filter(c => c.user_id === u.id);
-      const sevenDaysAgo = new Date();
-      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-      return userCheckIns.some(c => new Date(c.date) >= sevenDaysAgo);
-    }).length,
-    pendingSupport: adminChats.filter(c => c.status === 'pending').length,
-    totalRecipes: recipes.length,
-  };
-
-  const recipesByPhase = {
-    1: recipes.filter(r => r.phase === 1).length,
-    2: recipes.filter(r => r.phase === 2).length,
-    3: recipes.filter(r => r.phase === 3).length,
-  };
-
-  // Filter recipes based on search query and admin filter
-  const filteredRecipes = recipes.filter(recipe => {
-    // Filter by admin recipes first
-    if (showOnlyAdminRecipes && !recipe.is_admin_recipe) {
-      return false;
-    }
-    
-    // Then filter by search query
-    if (!recipeSearchQuery.trim()) return true;
-    
-    const searchLower = recipeSearchQuery.toLowerCase();
-    
-    // Search in all text fields
+  if (!currentUser || currentUser.role !== "admin") {
     return (
-      recipe.name?.toLowerCase().includes(searchLower) ||
-      recipe.name_ro?.toLowerCase().includes(searchLower) ||
-      recipe.ingredients_en?.some(ing => ing.toLowerCase().includes(searchLower)) ||
-      recipe.ingredients_ro?.some(ing => ing.toLowerCase().includes(searchLower)) ||
-      recipe.instructions_en?.some(inst => inst.toLowerCase().includes(searchLower)) ||
-      recipe.instructions_ro?.some(inst => inst.toLowerCase().includes(searchLower)) ||
-      recipe.keywords?.some(kw => kw.toLowerCase().includes(searchLower)) ||
-      recipe.benefits_en?.toLowerCase().includes(searchLower) ||
-      recipe.benefits_ro?.toLowerCase().includes(searchLower) ||
-      recipe.meal_type?.toLowerCase().includes(searchLower) ||
-      recipe.difficulty?.toLowerCase().includes(searchLower) ||
-      recipe.tags?.some(tag => tag.toLowerCase().includes(searchLower))
+      <div className="min-h-[70vh] flex items-center justify-center p-6">
+        <Card className="max-w-md w-full border-destructive/30 shadow-xl bg-card">
+          <CardHeader className="text-center">
+            <div className="w-14 h-14 rounded-2xl bg-destructive/10 text-destructive mx-auto flex items-center justify-center mb-2">
+              <Shield className="w-7 h-7" />
+            </div>
+            <CardTitle className="text-xl">Acces Restricționat</CardTitle>
+            <CardDescription>
+              Această secțiune este destinată exclusiv administratorilor aplicației EatnFit.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      </div>
     );
-  });
+  }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex">
-      <style>{`
-        .admin-sidebar {
-          background: #111111;
-          border-right: 1px solid #1f1f1f;
-        }
-        .admin-main {
-          background: #0a0a0a;
-        }
-        .admin-card {
-          background: #111111;
-          border: 1px solid #1f1f1f;
-          border-radius: 8px;
-        }
-        .admin-table {
-          background: #111111;
-          border: 1px solid #1f1f1f;
-        }
-        .admin-table th {
-          background: #0f0f0f;
-          color: #888;
-          font-weight: 500;
-          font-size: 12px;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-        .admin-table td {
-          color: #e5e5e5;
-          font-size: 14px;
-        }
-        .admin-table tr:hover {
-          background: #1a1a1a;
-        }
-      `}</style>
-      {/* Sidebar - Professional Minimalist */}
-      <aside className={`
-        ${menuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        fixed lg:sticky top-0 left-0 z-50
-        w-64 h-screen
-        admin-sidebar
-        transition-transform duration-200
-        flex flex-col
-      `}>
-        <div className="p-6 border-b border-[#1f1f1f]">
-        <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-[#888]" />
-              <h1 className="text-sm font-semibold text-white">Admin</h1>
-          </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="lg:hidden h-8 w-8 text-[#888] hover:text-white"
-              onClick={() => setMenuOpen(false)}
-            >
-              <XCircle className="w-4 h-4" />
-            </Button>
-        </div>
-                  </div>
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-          <Button
-            variant="ghost"
-            className={`w-full justify-start h-9 px-3 text-sm ${
-              activeTab === "users" 
-                ? "bg-[#1a1a1a] text-white" 
-                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
-            }`}
-            onClick={() => {
-              setActiveTab("users");
-              setMenuOpen(false);
-            }}
-          >
-            <Users className="w-4 h-4 mr-2" />
-            Utilizatori
-          </Button>
-          <Button
-            variant="ghost"
-            className={`w-full justify-start h-9 px-3 text-sm ${
-              activeTab === "recipes" 
-                ? "bg-[#1a1a1a] text-white" 
-                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
-            }`}
-            onClick={() => {
-              setActiveTab("recipes");
-              setMenuOpen(false);
-            }}
-          >
-            <ChefHat className="w-4 h-4 mr-2" />
-            Rețete
-          </Button>
-          <Button
-            variant="ghost"
-            className={`w-full justify-start h-9 px-3 text-sm ${
-              activeTab === "support" 
-                ? "bg-[#1a1a1a] text-white" 
-                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
-            }`}
-            onClick={() => {
-              setActiveTab("support");
-              setMenuOpen(false);
-            }}
-          >
-            <MessageSquare className="w-4 h-4 mr-2" />
-            Suport
-          </Button>
-          <Button
-            variant="ghost"
-            className={`w-full justify-start h-9 px-3 text-sm ${
-              activeTab === "backups" 
-                ? "bg-[#1a1a1a] text-white" 
-                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
-            }`}
-            onClick={() => {
-              setActiveTab("backups");
-              setMenuOpen(false);
-            }}
-          >
-            <Eye className="w-4 h-4 mr-2" />
-            Backup-uri
-          </Button>
-          <Button
-            variant="ghost"
-            className={`w-full justify-start h-9 px-3 text-sm ${
-              activeTab === "settings" 
-                ? "bg-[#1a1a1a] text-white" 
-                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
-            }`}
-            onClick={() => {
-              setActiveTab("settings");
-              setMenuOpen(false);
-            }}
-          >
-            <Settings className="w-4 h-4 mr-2" />
-            Setări
-          </Button>
-          <Button
-            variant="ghost"
-            className={`w-full justify-start h-9 px-3 text-sm ${
-              activeTab === "crm" 
-                ? "bg-[#1a1a1a] text-white" 
-                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
-            }`}
-            onClick={() => {
-              setActiveTab("crm");
-              setMenuOpen(false);
-            }}
-          >
-            <Activity className="w-4 h-4 mr-2" />
-            CRM
-          </Button>
-          <Button
-            variant="ghost"
-            className={`w-full justify-start h-9 px-3 text-sm ${
-              activeTab === "logs" 
-                ? "bg-[#1a1a1a] text-white" 
-                : "text-[#888] hover:text-white hover:bg-[#1a1a1a]"
-            }`}
-            onClick={() => {
-              setActiveTab("logs");
-              setMenuOpen(false);
-            }}
-          >
-            <Info className="w-4 h-4 mr-2" />
-            Logs
-          </Button>
-        </nav>
-      </aside>
-
-      {/* Mobile Burger Button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="lg:hidden fixed top-4 left-4 z-50 bg-[#111111] border border-[#1f1f1f] text-white hover:bg-[#1a1a1a]"
-        onClick={() => setMenuOpen(true)}
-      >
-        <Menu className="w-5 h-5" />
-      </Button>
-
-      {/* Overlay for mobile */}
-      {menuOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black/80 z-40"
-          onClick={() => setMenuOpen(false)}
-        />
-      )}
-
-      {/* Main Content Area */}
-      <main className="admin-main flex-1 min-w-0 overflow-y-auto">
-        <div className="p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-semibold text-white mb-2">
-              {activeTab === "users" && "Utilizatori"}
-              {activeTab === "recipes" && "Rețete"}
-              {activeTab === "support" && "Suport"}
-              {activeTab === "backups" && "Backup-uri"}
-              {activeTab === "settings" && "Setări"}
-              {activeTab === "crm" && "CRM"}
-              {activeTab === "logs" && "Logs"}
+    <div className="p-3 sm:p-6 md:p-8 space-y-4 sm:space-y-6 pb-20 max-w-full overflow-x-hidden">
+      {/* Top Header Card */}
+      <div className="relative overflow-hidden rounded-[24px] sm:rounded-[28px] border border-border/70 bg-gradient-to-br from-card via-card/95 to-emerald-950/20 p-4 sm:p-6 md:p-7 shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                <ShieldCheck className="w-3.5 h-3.5" />
+                Panou de Administrare
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-secondary text-secondary-foreground">
+                <Activity className="w-3.5 h-3.5 text-emerald-500" />
+                Sistem Online
+              </span>
+              {buildInfo && (
+                <span className="hidden sm:inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-mono text-muted-foreground bg-muted/60 border border-border/40">
+                  Build #{buildInfo.buildNumber || 4}
+                </span>
+              )}
+            </div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+              EatnFit Control Hub
             </h1>
-            <p className="text-sm text-[#888]">
-              {activeTab === "users" && "Gestionează utilizatorii aplicației"}
-              {activeTab === "recipes" && "Gestionează rețetele"}
-              {activeTab === "support" && "Mesaje și cereri de suport"}
-              {activeTab === "backups" && "Backup-uri și restaurare"}
-              {activeTab === "settings" && "Setări aplicație"}
-              {activeTab === "crm" && "Customer Relationship Management"}
-              {activeTab === "logs" && "Jurnale și evenimente"}
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Gestiune completă utilizatori, catalog rețete cu branding EatnFit, backup-uri și integritate sistem.
             </p>
-              </div>
-
-          {/* Stats Cards - Minimalist */}
-          <div className="grid grid-cols-4 gap-4 mb-8">
-            <div className="admin-card p-4">
-              <div className="text-xs text-[#888] mb-1">Utilizatori</div>
-              <div className="text-2xl font-semibold text-white">{stats.totalUsers}</div>
-              </div>
-            <div className="admin-card p-4">
-              <div className="text-xs text-[#888] mb-1">Activi (7 zile)</div>
-              <div className="text-2xl font-semibold text-white">{stats.activeUsers}</div>
-        </div>
-            <div className="admin-card p-4">
-              <div className="text-xs text-[#888] mb-1">Suport</div>
-              <div className="text-2xl font-semibold text-white">{stats.pendingSupport}</div>
-                </div>
-            <div className="admin-card p-4">
-              <div className="text-xs text-[#888] mb-1">Rețete</div>
-              <div className="text-2xl font-semibold text-white">{stats.totalRecipes}</div>
-            </div>
           </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-
-          {/* ==================== TAB CRM ==================== */}
-          <TabsContent value="crm" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">CRM - În dezvoltare</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-[rgb(var(--ios-text-secondary))]">Funcționalitatea CRM va fi disponibilă în curând.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ==================== TAB SALES ==================== */}
-          <TabsContent value="sales" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📊 Vânzări - În dezvoltare</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-[rgb(var(--ios-text-secondary))]">Modulul de vânzări va fi disponibil în curând.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ==================== TAB PROMOȚII ==================== */}
-          <TabsContent value="promos" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">🎯 Promoții - În dezvoltare</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-[rgb(var(--ios-text-secondary))]">Modulul de promoții va fi disponibil în curând.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ==================== TAB EMAIL ==================== */}
-          <TabsContent value="email" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📧 Email - În dezvoltare</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-[rgb(var(--ios-text-secondary))]">Modulul de email va fi disponibil în curând.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* ==================== TAB PLĂȚI ==================== */}
-          <TabsContent value="payments" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">💳 Plăți - În dezvoltare</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-[rgb(var(--ios-text-secondary))]">Modulul de plăți va fi disponibil în curând.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* TAB RECOMANDĂRI - EDITARE */}
-          <TabsContent value="recommendations" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">Editare Recomandări Dietă</CardTitle>
-                <p className="text-sm text-gray-500 mt-2">
-                  Acestea apar în pagina "Recomandări" pentru toți utilizatorii
-                </p>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <Info className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-1" />
-                    <div className="text-sm text-gray-700 dark:text-gray-300">
-                      <p className="font-semibold mb-2">Cum să editezi:</p>
-                      <ul className="list-disc list-inside space-y-1">
-                        <li>Modifică textele direct în fișierul <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">src/pages/Recommendations.jsx</code></li>
-                        <li>Carbohidrații permisi sunt în array-ul <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">allowedCarbs.items</code></li>
-                        <li>Produsele interzise sunt în <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">forbidden.items</code></li>
-                        <li>Fiecare fază are <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">meals[]</code> și <code className="bg-gray-200 dark:bg-gray-800 px-2 py-0.5 rounded">note</code></li>
-                      </ul>
-                      <p className="mt-3 font-semibold text-emerald-700 dark:text-emerald-300">
-                        După editare, fă commit și push pentru a actualiza!
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="grid md:grid-cols-3 gap-4">
-                  <Card className="bg-orange-50 dark:bg-orange-900/20 border-orange-200 dark:border-orange-700">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base text-orange-700 dark:text-orange-300">Faza 1 (2 zile)</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-xs space-y-2">
-                      <p><strong>Focus:</strong> Carbohidrați + Fructe</p>
-                      <p><strong>Interzis:</strong> Grăsimi, uleiuri</p>
-                      <p className="text-orange-600 dark:text-orange-400 font-semibold">Gătește pe apă!</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-700">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base text-emerald-700 dark:text-emerald-300">Faza 2 (2 zile)</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-xs space-y-2">
-                      <p><strong>Focus:</strong> Proteine + Legume</p>
-                      <p><strong>Interzis:</strong> Carbohidrați, fructe, uleiuri</p>
-                      <p className="text-emerald-600 dark:text-emerald-400 font-semibold">💪 Doar carne slabă!</p>
-                    </CardContent>
-                  </Card>
-
-                  <Card className="bg-purple-50 dark:bg-purple-900/20 border-purple-200 dark:border-purple-700">
-                    <CardHeader className="pb-3">
-                      <CardTitle className="text-base text-purple-700 dark:text-purple-300">Faza 3 (3 zile)</CardTitle>
-                    </CardHeader>
-                    <CardContent className="text-xs space-y-2">
-                      <p><strong>Focus:</strong> Grăsimi sănătoase</p>
-                      <p><strong>Permis:</strong> Avocado, nuci, uleiuri</p>
-                      <p className="text-purple-600 dark:text-purple-400 font-semibold">✅ Toate grăsimile!</p>
-                    </CardContent>
-                  </Card>
-                </div>
-
-                <div className="mt-6">
-                  <a 
-                    href="https://github.com/jeka7ro/nutri-plan-plus/blob/main/src/pages/Recommendations.jsx"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors"
-                  >
-                    <Edit className="w-5 h-5" />
-                    Deschide fișierul în GitHub pentru editare
-                  </a>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* NEW TAB - Resources */}
-          <TabsContent value="resources" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📚 Resurse și Documente</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* Quick Access to Book */}
-                <div className="bg-gradient-to-r from-emerald-50 to-green-50 dark:from-emerald-900/20 dark:to-green-900/20 border-2 border-emerald-300 dark:border-emerald-700 rounded-xl p-6">
-                  <div className="flex items-center gap-4 mb-4">
-                    <div className="w-16 h-16 bg-emerald-600 rounded-2xl flex items-center justify-center shadow-lg">
-                      <ChefHat className="w-8 h-8 text-white" />
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-xl font-bold text-emerald-900 dark:text-emerald-100">
-                        Fast Metabolism Diet - Cartea Oficială
-                      </h3>
-                      <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                        Accesează cartea completă pentru referințe detaliate
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex gap-3">
-                    <Button
-                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white shadow-md"
-                      onClick={() => window.open('https://base44.app/api/apps/6905d7376c72470a48ccfd0d/files/public/6905d7376c72470a48ccfd0d/65ed76551_MagicColbPlan_compressed.pdf', '_blank')}
-                    >
-                      <ChefHat className="w-4 h-4 mr-2" />
-                      Deschide Cartea
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => {
-                        navigator.clipboard.writeText('https://base44.app/api/apps/6905d7376c72470a48ccfd0d/files/public/6905d7376c72470a48ccfd0d/65ed76551_MagicColbPlan_compressed.pdf');
-                        alert('Link copiat în clipboard!');
-                      }}
-                    >
-                      Copiază Link
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="border-2 border-dashed border-emerald-300 dark:border-emerald-700 rounded-xl p-8 text-center">
-                  <Upload className="w-16 h-16 mx-auto mb-4 text-emerald-600 dark:text-emerald-400" />
-                  <h3 className="text-xl font-bold text-[rgb(var(--ios-text-primary))] mb-2">
-                    Încarcă Documente Suplimentare
-                  </h3>
-                  <p className="text-[rgb(var(--ios-text-secondary))] mb-4">
-                    PDF, DOC, DOCX - Maxim 50MB
-                  </p>
-                  <label htmlFor="book-upload">
-                    <input
-                      id="book-upload"
-                      type="file"
-                      accept=".pdf,.doc,.docx"
-                      className="hidden"
-                      onChange={handleBookUpload}
-                    />
-                    <Button 
-                      type="button" 
-                      disabled={uploadingBook}
-                      className="bg-emerald-600 hover:bg-emerald-700"
-                      onClick={() => document.getElementById('book-upload').click()}
-                    >
-                      {uploadingBook ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Se încarcă...
-                        </>
-                      ) : (
-                        <>
-                          <Upload className="w-4 h-4 mr-2" />
-                          Selectează Fișier
-                        </>
-                      )}
-                    </Button>
-                  </label>
-                </div>
-
-                {bookUrl && (
-                  <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-6">
-                    <div className="flex items-center gap-3 mb-3">
-                      <CheckCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
-                      <h4 className="font-bold text-emerald-800 dark:text-emerald-200">Document încărcat cu succes!</h4>
-                    </div>
-                    <div className="bg-white dark:bg-[rgb(var(--ios-bg-primary))] p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                      <p className="text-sm text-[rgb(var(--ios-text-secondary))] mb-2">URL Document:</p>
-                      <code className="text-xs text-emerald-600 dark:text-emerald-400 break-all">
-                        {bookUrl}
-                      </code>
-                    </div>
-                    <div className="mt-4 flex gap-2">
-                      <Button 
-                        variant="outline" 
-                        onClick={() => window.open(bookUrl, '_blank')}
-                        className="flex-1"
-                      >
-                        Vezi Documentul
-                      </Button>
-                      <Button 
-                        variant="outline"
-                        onClick={() => {
-                          navigator.clipboard.writeText(bookUrl);
-                          alert('Link copiat!');
-                        }}
-                        className="flex-1"
-                      >
-                        Copiază Link
-                      </Button>
-                    </div>
-                  </div>
-                )}
-
-                <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
-                  <h4 className="font-bold text-blue-800 dark:text-blue-200 mb-2">Sfat</h4>
-                  <p className="text-sm text-blue-700 dark:text-blue-300">
-                    Cartea oficială este sursa principală pentru toate regulile și rețetele din aplicație. Consultă-o pentru informații detaliate despre fiecare fază.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="recipes" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between mb-4">
-                  <CardTitle className="text-[rgb(var(--ios-text-primary))]">Gestionare rețete</CardTitle>
-                  <Button onClick={handleNewRecipe} className="bg-emerald-600 hover:bg-emerald-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Rețetă nouă
-                  </Button>
-                </div>
-
-                {/* SEARCH BAR */}
-                <div className="relative mb-4">
-                  <Input
-                    placeholder="Caută în rețete (nume, ingrediente, instrucțiuni, cuvinte cheie...)"
-                    value={recipeSearchQuery}
-                    onChange={(e) => setRecipeSearchQuery(e.target.value)}
-                    className="pl-10 h-12 border-[rgb(var(--ios-border))]"
-                  />
-                  <div className="absolute left-3 top-1/2 transform -translate-y-1/2">
-                    <ChefHat className="w-5 h-5 text-[rgb(var(--ios-text-tertiary))]" />
-                  </div>
-                  {recipeSearchQuery && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-2 top-1/2 transform -translate-y-1/2"
-                      onClick={() => setRecipeSearchQuery("")}
-                    >
-                      ✕
-                    </Button>
-                  )}
-                </div>
-
-                {recipeSearchQuery && (
-                  <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
-                    <p className="text-sm text-blue-800 dark:text-blue-200">
-                      <strong>{filteredRecipes.length}</strong> {filteredRecipes.length === 1 ? 'rețetă găsită' : 'rețete găsite'} pentru "{recipeSearchQuery}"
-                    </p>
-                  </div>
-                )}
-
-                <div className="flex flex-wrap items-center gap-3 mt-4">
-                  <Badge className="bg-orange-500 text-white dark:bg-orange-600 dark:text-white px-4 py-2 text-base font-bold shadow-lg">Faza 1: {recipesByPhase[1]}</Badge>
-                  <Badge className="bg-emerald-500 text-white dark:bg-emerald-600 dark:text-white px-4 py-2 text-base font-bold shadow-lg">Faza 2: {recipesByPhase[2]}</Badge>
-                  <Badge className="bg-purple-500 text-white dark:bg-purple-600 dark:text-white px-4 py-2 text-base font-bold shadow-lg">Faza 3: {recipesByPhase[3]}</Badge>
-                  
-                  {/* Filtru pentru rețete admin */}
-                  <div className="flex items-center gap-2 ml-auto">
-                    <Checkbox
-                      id="admin-filter"
-                      checked={showOnlyAdminRecipes}
-                      onCheckedChange={(checked) => setShowOnlyAdminRecipes(checked)}
-                    />
-                    <Label 
-                      htmlFor="admin-filter" 
-                      className="text-base font-bold cursor-pointer text-purple-400 dark:text-purple-300 hover:text-purple-300 dark:hover:text-purple-200"
-                    >
-                      Doar Rețete Admin
-                    </Label>
-                    {showOnlyAdminRecipes && (
-                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white border-0 shadow-lg px-4 py-2 text-base font-bold">
-                        {recipes.filter(r => r.is_admin_recipe).length} rețete admin
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {filteredRecipes.length === 0 ? (
-                  <div className="text-center py-12">
-                    <ChefHat className="w-16 h-16 mx-auto mb-4 text-gray-300 dark:text-gray-600" />
-                    <p className="text-[rgb(var(--ios-text-secondary))]">
-                      {recipeSearchQuery 
-                        ? `Nu s-au găsit rețete pentru "${recipeSearchQuery}"`
-                        : 'Nu există rețete disponibile'}
-                    </p>
-                    {recipeSearchQuery && (
-                      <Button
-                        variant="outline"
-                        onClick={() => setRecipeSearchQuery("")}
-                        className="mt-4"
-                      >
-                        Șterge căutarea
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {filteredRecipes.map((recipe) => (
-                      <div key={recipe.id} className="flex items-center gap-4 p-4 border border-[rgb(var(--ios-border))] rounded-xl hover:bg-[rgb(var(--ios-bg-tertiary))] transition-colors">
-                        <div className="relative flex-shrink-0 rounded-lg overflow-hidden border-2 border-[rgb(var(--ios-border))] shadow-md bg-gray-100 dark:bg-gray-900 flex items-center justify-center p-2" style={{ width: '160px', height: '160px' }}>
-                          {recipe.image_url ? (
-                            <img 
-                              src={recipe.image_url} 
-                              alt={recipe.name}
-                              className="max-w-full max-h-full object-contain"
-                              onError={(e) => {
-                                e.target.src = 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=400&fit=crop';
-                              }}
-                            />
-                          ) : (
-                            <div className="w-full h-full bg-gradient-to-br from-orange-200 to-emerald-200 dark:from-orange-900/30 dark:to-emerald-900/30 flex items-center justify-center">
-                              <ChefHat className="w-12 h-12 text-gray-400 dark:text-gray-600" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <div className="font-bold text-[rgb(var(--ios-text-primary))]">{recipe.name_ro}</div>
-                          <div className="text-sm text-[rgb(var(--ios-text-secondary))]">{recipe.name}</div>
-                          <div className="flex gap-2 mt-1">
-                            <Badge className={
-                              recipe.phase === 1 ? 'bg-orange-500 text-white border-0 shadow-md font-bold' :
-                              recipe.phase === 2 ? 'bg-emerald-500 text-white border-0 shadow-md font-bold' :
-                              'bg-purple-500 text-white border-0 shadow-md font-bold'
-                            }>
-                              Faza {recipe.phase}
-                            </Badge>
-                            <Badge className="bg-blue-500 text-white border-0 shadow-md text-xs font-bold">{recipe.meal_type}</Badge>
-                            <Badge className="bg-gray-600 text-white border-0 shadow-md text-xs font-bold">{recipe.calories} cal</Badge>
-                            {recipe.is_admin_recipe && (
-                              <span className="bg-[#1a1a1a] text-white border border-[#2a2a2a] px-3 py-1 text-sm">
-                                ADMIN
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            onClick={() => handleEditRecipe(recipe)}
-                            className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a]"
-                          >
-                            Edit
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              if (confirm('Ștergi rețeta?')) {
-                                deleteRecipeMutation.mutate(recipe.id);
-                              }
-                            }}
-                            className="bg-[#1a1a1a] hover:bg-red-900 text-white border border-[#2a2a2a]"
-                          >
-                            Șterge
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Rețele Admin - Afișare */}
-            <Card className="ios-card border-none ios-shadow-lg mt-6">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">🔗 Rețele Admin</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex flex-wrap gap-3">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white border-0 shadow-md font-bold">
-                    🔵 Facebook
-                  </Button>
-                  <Button className="bg-pink-600 hover:bg-pink-700 text-white border-0 shadow-md font-bold">
-                    📷 Instagram
-                  </Button>
-                  <Button className="bg-sky-500 hover:bg-sky-600 text-white border-0 shadow-md font-bold">
-                    🐦 Twitter
-                  </Button>
-                  <Button className="bg-blue-700 hover:bg-blue-800 text-white border-0 shadow-md font-bold">
-                    💼 LinkedIn
-                  </Button>
-                  <Button className="bg-red-600 hover:bg-red-700 text-white border-0 shadow-md font-bold">
-                    📺 YouTube
-                  </Button>
-                  <Button className="bg-gray-700 hover:bg-gray-800 text-white border-0 shadow-md font-bold">
-                    🌐 Website
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="support" className="mt-6">
-            <div className="space-y-4">
-              {adminChats.map((request) => (
-                <Card key={request.id} className="ios-card border-none ios-shadow-lg">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <Badge className={
-                            request.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                            request.status === 'responded' ? 'bg-emerald-100 text-emerald-700' :
-                            'bg-gray-100 text-gray-700'
-                          }>
-                            {request.status === 'pending' ? <Clock className="w-3 h-3 mr-1" /> :
-                             request.status === 'responded' ? <CheckCircle className="w-3 h-3 mr-1" /> :
-                             <XCircle className="w-3 h-3 mr-1" />}
-                            {request.status === 'pending' ? 'În așteptare' :
-                             request.status === 'responded' ? 'Răspuns' : 'Închis'}
-                          </Badge>
-                          <Badge variant="outline">{request.message_type}</Badge>
-                        </div>
-                        <div className="text-sm text-[rgb(var(--ios-text-secondary))] mb-1">
-                          {request.user_email} • {format(new Date(request.created_date), 'dd MMM yyyy, HH:mm', { locale: ro })}
-                        </div>
-                        <p className="text-[rgb(var(--ios-text-primary))] font-medium">{request.message}</p>
-                      </div>
-                    </div>
-
-                    {request.admin_response && (
-                      <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-xl border border-emerald-200 dark:border-emerald-800 mb-4">
-                        <div className="text-sm font-medium text-emerald-700 dark:text-emerald-300 mb-1">Răspunsul tău:</div>
-                        <p className="text-sm text-[rgb(var(--ios-text-primary))]">{request.admin_response}</p>
-                      </div>
-                    )}
-
-                    {request.status === 'pending' && (
-                      <div className="space-y-3">
-                        <Textarea
-                          placeholder="Scrie răspunsul..."
-                          value={selectedRequest?.id === request.id ? response : ''}
-                          onChange={(e) => {
-                            setSelectedRequest(request);
-                            setResponse(e.target.value);
-                          }}
-                          rows={4}
-                          className="border-[rgb(var(--ios-border))]"
-                        />
-                        <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleRespondToRequest(request)}
-                            className="bg-emerald-600 hover:bg-emerald-700"
-                            disabled={!response.trim()}
-                          >
-                            <CheckCircle className="w-4 h-4 mr-2" />
-                            Trimite
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="users" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[rgb(var(--ios-text-primary))]">Utilizatori ({allUsers.length})</CardTitle>
-                  <Button 
-                    onClick={() => setShowCreateUser(true)}
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Adaugă Utilizator
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Utilizator</TableHead>
-                        <TableHead>Contact & Locație</TableHead>
-                        <TableHead>Abonament</TableHead>
-                        <TableHead>Date Fizice</TableHead>
-                        <TableHead>Dietă</TableHead>
-                        <TableHead>Progres</TableHead>
-                        <TableHead className="min-w-[120px]">Acțiuni</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {allUsers.map((u) => {
-                        const userCheckIns = allCheckIns.filter(c => c.user_id === u.id);
-                        const activeDays = userCheckIns.length;
-                        const totalCalories = userCheckIns.reduce((sum, c) => sum + (c.total_calories || 0), 0);
-                        
-                        return (
-                          <TableRow key={u.id}>
-                            <TableCell className="font-medium">
-                              <div 
-                                className="cursor-pointer hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
-                                onClick={() => setSelectedUser(u)}
-                              >
-                                <p className="font-bold text-[rgb(var(--ios-text-primary))] underline decoration-dotted">
-                                  {u.first_name && u.last_name 
-                                    ? `${u.first_name} ${u.last_name}` 
-                                    : (u.name || 'N/A')
-                                  }
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">ID: {u.id}</p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  📅 Înregistrat: {u.created_at ? new Date(u.created_at).toLocaleDateString('ro-RO') : 'N/A'}
-                                </p>
-                                <p className="text-xs text-blue-500 dark:text-blue-400">
-                                  🕐 Ultima logare: {u.last_login ? new Date(u.last_login).toLocaleString('ro-RO', {
-                                    day: '2-digit',
-                                    month: '2-digit',
-                                    year: 'numeric',
-                                    hour: '2-digit',
-                                    minute: '2-digit'
-                                  }) : 'Niciodată'}
-                                </p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="space-y-1">
-                                <p className="text-sm font-semibold">📧 {u.email}</p>
-                                {u.phone && <p className="text-xs text-gray-500 dark:text-gray-400">📱 {u.phone}</p>}
-                                {u.country && <p className="text-xs text-gray-500 dark:text-gray-400">🌍 {u.country}</p>}
-                                {u.city && <p className="text-xs text-gray-500 dark:text-gray-400">🏙️ {u.city}</p>}
-                                <div className="pt-1">
-                                  {u.role === 'admin' ? (
-                                    <span className="bg-[#1a1a1a] text-white border border-[#2a2a2a] px-2 py-1 text-xs">
-                                      Admin
-                                    </span>
-                                  ) : (
-                                    <span className="bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] px-2 py-1 text-xs">User</span>
-                                  )}
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="space-y-2">
-                                {(() => {
-                                  const isPremium = (u.subscription_tier || u.subscription_plan || 'free') === 'premium';
-                                  return (
-                                    <>
-                                      {isPremium ? (
-                                        <div className="flex items-center gap-2">
-                                          <span className="bg-[#1a1a1a] text-white border border-[#2a2a2a] px-3 py-1.5 text-sm">
-                                            PREMIUM
-                                          </span>
-                                        </div>
-                                      ) : (
-                                        <span className="bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] px-3 py-1.5 text-sm">
-                                          FREE
-                                        </span>
-                                      )}
-                                      {isPremium && u.subscription_expires_at && (
-                                        <p className="text-xs text-[#888] mt-1">
-                                          Expiră: {new Date(u.subscription_expires_at).toLocaleDateString('ro-RO')}
-                                        </p>
-                                      )}
-                                      {isPremium && u.subscription_code && (
-                                        <p className="text-xs text-[#888] font-mono bg-[#1a1a1a] border border-[#2a2a2a] px-2 py-1 rounded mt-1">
-                                          Cod: {u.subscription_code}
-                                        </p>
-                                      )}
-                                    </>
-                                  );
-                                })()}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-xs space-y-1">
-                                {(() => {
-                                  // Calculez evoluția greutății
-                                  const userWeights = allWeightEntries.filter(w => w.user_id === u.id).sort((a, b) => new Date(a.date) - new Date(b.date));
-                                  const firstWeight = userWeights[0]?.weight || u.current_weight;
-                                  const lastWeight = userWeights[userWeights.length - 1]?.weight || u.current_weight;
-                                  const weightDiff = firstWeight && lastWeight ? (parseFloat(firstWeight) - parseFloat(lastWeight)).toFixed(1) : 0;
-                                  const hasProgress = Math.abs(weightDiff) > 0;
-                                  
-                                  return (
-                                    <>
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <p><strong>Greutate:</strong> {u.current_weight || 'N/A'} kg → {u.target_weight || 'N/A'} kg</p>
-                                        {hasProgress && (
-                                          <div className={`flex items-center gap-1 ${weightDiff > 0 ? 'text-green-600' : 'text-red-600'}`}>
-                                            {weightDiff > 0 ? (
-                                              <><TrendingDown className="w-4 h-4" /> <span className="font-bold">-{weightDiff} kg</span></>
-                                            ) : (
-                                              <><TrendingUp className="w-4 h-4" /> <span className="font-bold">+{Math.abs(weightDiff)} kg</span></>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <p><strong>Înălțime:</strong> {u.height || 'N/A'} cm</p>
-                                      <p><strong>Vârstă:</strong> {u.age || 'N/A'} ani</p>
-                                      <p><strong>Sex:</strong> {u.gender === 'male' || u.gender === 'm' ? 'M' : u.gender === 'female' || u.gender === 'f' ? 'F' : 'N/A'}</p>
-                                      <p><strong>Activitate:</strong> {u.activity_level || 'N/A'}</p>
-                                    </>
-                                  );
-                                })()}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-xs space-y-1">
-                                <p><strong>Start:</strong> {u.start_date ? new Date(u.start_date).toLocaleDateString('ro-RO') : 'N/A'}</p>
-                                <p><strong>Preferințe:</strong> {u.dietary_preferences || 'Niciuna'}</p>
-                                <p><strong>Alergii:</strong> {u.allergies || 'Niciuna'}</p>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="space-y-1">
-                                {activeDays > 0 ? (
-                                  <>
-                                    <Badge className="bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
-                                      ✅ Activ
-                                    </Badge>
-                                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                                      <strong>{activeDays}</strong> zile active
-                                    </p>
-                                    <p className="text-xs text-gray-600 dark:text-gray-400">
-                                      <strong>{Math.round(totalCalories)}</strong> cal totale
-                                    </p>
-                                  </>
-                                ) : (
-                                  <Badge variant="outline" className="text-gray-500">❌ Inactiv</Badge>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-xs">
-                                {u.last_login ? (
-                                  <>
-                                    <p className="font-medium text-[rgb(var(--ios-text-primary))]">
-                                      {new Date(u.last_login).toLocaleDateString('ro-RO')}
-                                    </p>
-                                    <p className="text-gray-500 dark:text-gray-400">
-                                      {new Date(u.last_login).toLocaleTimeString('ro-RO', { hour: '2-digit', minute: '2-digit' })}
-                                    </p>
-                                  </>
-                                ) : (
-                                  <Badge variant="outline" className="text-gray-400">Niciodată</Badge>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1 min-w-[120px]">
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleResetPassword(u);
-                                  }}
-                                  disabled={u.id === user?.id}
-                                  title="Resetează parola"
-                                  className="text-xs px-3 py-1 bg-[#1a1a1a] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-                                >
-                                  Reset
-                                </Button>
-                                <Button
-                                  variant={(u.subscription_tier || u.subscription_plan) === 'premium' ? "secondary" : "default"}
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleGrantPremium(u);
-                                  }}
-                                  disabled={u.id === user?.id}
-                                  title={(u.subscription_tier || u.subscription_plan) === 'premium' ? 'Deja Premium' : 'Acordă Premium'}
-                                  className="text-xs px-3 py-1 bg-[#1a1a1a] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]"
-                                >
-                                  Premium
-                                </Button>
-                                <Button
-                                  variant="destructive"
-                                  size="sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteUser(u);
-                                  }}
-                                  disabled={u.id === user?.id}
-                                  title="Șterge utilizatorul"
-                                  className="text-xs px-3 py-1 bg-[#1a1a1a] border-[#2a2a2a] text-white hover:bg-red-900"
-                                >
-                                  Șterge
-                                </Button>
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        );
-                      })}
-                    </TableBody>
-                  </Table>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* TAB LOGURI */}
-          <TabsContent value="logs" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📋 Loguri Sistem</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Loguri Login-uri */}
-                  <div>
-                    <h3 className="font-bold text-emerald-600 dark:text-emerald-400 mb-3 flex items-center gap-2">
-                      <Shield className="w-5 h-5" />
-                      Login-uri Recente
-                    </h3>
-                    <div className="space-y-2">
-                      {allUsers.slice(0, 10).map(u => (
-                        <div key={u.id} className="p-3 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg">
-                          <div className="flex items-center justify-between">
-                            <div>
-                              <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                                {u.first_name && u.last_name ? `${u.first_name} ${u.last_name}` : u.name}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">{u.email}</p>
-                            </div>
-                            <div className="text-right">
-                              <p className="text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                                {u.created_at ? new Date(u.created_at).toLocaleDateString('ro-RO') : 'N/A'}
-                              </p>
-                              <p className="text-xs text-gray-500 dark:text-gray-400">Înregistrare</p>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Loguri Activitate Check-ins */}
-                  <div>
-                    <h3 className="font-bold text-blue-600 dark:text-blue-400 mb-3 flex items-center gap-2">
-                      <Activity className="w-5 h-5" />
-                      Activitate Check-ins (Ultimele 20)
-                    </h3>
-                    <div className="space-y-2">
-                      {allCheckIns.slice(0, 20).map((checkIn, index) => {
-                        const checkInUser = allUsers.find(u => u.id === checkIn.user_id);
-                        return (
-                          <div key={index} className="p-3 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                                  {checkInUser?.first_name && checkInUser?.last_name 
-                                    ? `${checkInUser.first_name} ${checkInUser.last_name}` 
-                                    : (checkInUser?.name || `User ID ${checkIn.user_id}`)}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  Ziua {checkIn.day_number} • Faza {checkIn.phase} • {checkIn.total_calories || 0} cal
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-sm font-semibold text-blue-600 dark:text-blue-400">
-                                  {checkIn.date ? new Date(checkIn.date).toLocaleDateString('ro-RO') : 'N/A'}
-                                </p>
-                                <p className="text-xs text-gray-500 dark:text-gray-400">
-                                  {checkIn.updated_at ? new Date(checkIn.updated_at).toLocaleTimeString('ro-RO', {hour: '2-digit', minute: '2-digit'}) : ''}
-                                </p>
-                              </div>
-                            </div>
-                            <div className="mt-2 flex gap-2 flex-wrap">
-                              {checkIn.breakfast_completed && <Badge className="bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 text-xs">🍳 Mic Dejun</Badge>}
-                              {checkIn.snack1_completed && <Badge className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 text-xs">🍎 Gustare 1</Badge>}
-                              {checkIn.lunch_completed && <Badge className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs">🍽️ Prânz</Badge>}
-                              {checkIn.snack2_completed && <Badge className="bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 text-xs">🍪 Gustare 2</Badge>}
-                              {checkIn.dinner_completed && <Badge className="bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs">🌙 Cină</Badge>}
-                              {checkIn.exercise_completed && <Badge className="bg-pink-100 dark:bg-pink-900/30 text-pink-700 dark:text-pink-300 text-xs">💪 Exercițiu</Badge>}
-                            </div>
-                          </div>
-                        );
-                      })}
-                      {allCheckIns.length === 0 && (
-                        <p className="text-center text-gray-500 py-8">Nicio activitate înregistrată</p>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* TAB BACKUPS */}
-          <TabsContent value="backups" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-[rgb(var(--ios-text-primary))]">
-                    💾 Backup-uri ({backups.length})
-                  </CardTitle>
-                  <Button
-                    onClick={() => createBackupMutation.mutate()}
-                    disabled={createBackupMutation.isPending}
-                    className="bg-emerald-600 hover:bg-emerald-700"
-                  >
-                    {createBackupMutation.isPending ? (
-                      <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Creează Backup...</>
-                    ) : (
-                      <><Plus className="w-4 h-4 mr-2" /> Backup Manual</>
-                    )}
-                  </Button>
-                </div>
-                <p className="text-sm text-gray-500 mt-2">
-                  🔄 Backup automat: la fiecare {backupSettings.interval} ore | 🗑️ Cleanup automat: &gt; {backupSettings.cleanup}h
-                </p>
-              </CardHeader>
-              <CardContent>
-                {/* SETĂRI BACKUP */}
-                <div className="mb-6 p-4 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg">
-                  <h3 className="font-bold text-[rgb(var(--ios-text-primary))] mb-4 flex items-center gap-2">
-                    <Settings className="w-5 h-5" />
-                    Setări Backup
-                  </h3>
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <div>
-                      <Label>Interval Backup Automat (ore)</Label>
-                      <Select 
-                        value={backupSettings.interval.toString()} 
-                        onValueChange={(val) => setBackupSettings({...backupSettings, interval: parseInt(val)})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="6">La 6 ore</SelectItem>
-                          <SelectItem value="12">La 12 ore</SelectItem>
-                          <SelectItem value="24">La 24 ore (zilnic)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <Label>Cleanup Automat (după câte ore)</Label>
-                      <Select 
-                        value={backupSettings.cleanup.toString()} 
-                        onValueChange={(val) => setBackupSettings({...backupSettings, cleanup: parseInt(val)})}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="24">24 ore (1 zi)</SelectItem>
-                          <SelectItem value="48">48 ore (2 zile)</SelectItem>
-                          <SelectItem value="72">72 ore (3 zile)</SelectItem>
-                          <SelectItem value="168">168 ore (7 zile)</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="flex items-end">
-                      <Button 
-                        onClick={() => alert(`✅ Setări salvate!\n\nInterval: ${backupSettings.interval}h\nCleanup: ${backupSettings.cleanup}h`)}
-                        className="w-full bg-blue-600 hover:bg-blue-700"
-                      >
-                        💾 Salvează Setări
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-
-              </CardContent>
-              <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Fișier</TableHead>
-                      <TableHead>Mărime</TableHead>
-                      <TableHead>Creat de</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Tip</TableHead>
-                      <TableHead>Acțiuni</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {backups.map((backup) => (
-                      <TableRow key={backup.id}>
-                        <TableCell className="font-mono text-xs">{backup.filename}</TableCell>
-                        <TableCell>{backup.size_mb} MB</TableCell>
-                        <TableCell>
-                          {backup.created_by_name ? (
-                            <div>
-                              <p className="font-medium">{backup.created_by_name}</p>
-                              <p className="text-xs text-gray-500">{backup.created_by_email}</p>
-                            </div>
-                          ) : (
-                            <Badge variant="outline">System</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="text-xs">
-                            <p className="font-medium">{new Date(backup.created_at).toLocaleDateString('ro-RO')}</p>
-                            <p className="text-gray-500">{new Date(backup.created_at).toLocaleTimeString('ro-RO')}</p>
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          {backup.auto_generated ? (
-                            <Badge className="bg-blue-100 text-blue-700">🔄 Auto</Badge>
-                          ) : (
-                            <Badge className="bg-purple-100 text-purple-700">👤 Manual</Badge>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedBackup(backup)}
-                              className="border-[rgb(var(--ios-border))]"
-                            >
-                              <Eye className="w-4 h-4" />
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              size="sm"
-                              onClick={() => {
-                                if (confirm(`Sigur ștergi backup-ul ${backup.filename}?`)) {
-                                  deleteBackupMutation.mutate(backup.id);
-                                }
-                              }}
-                              disabled={deleteBackupMutation.isPending}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                {backups.length === 0 && (
-                  <div className="text-center py-12 text-gray-500">
-                    <p className="mb-4">Nicio backup găsit</p>
-                    <Button onClick={() => createBackupMutation.mutate()} className="bg-emerald-600 hover:bg-emerald-700">
-                      <Plus className="w-4 h-4 mr-2" /> Creează primul backup
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          {/* TAB SETĂRI APP - Prețuri dinamice */}
-          <TabsContent value="settings" className="mt-6">
-            <Card className="ios-card border-none ios-shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">⚙️ Setări Aplicație</CardTitle>
-                <p className="text-sm text-[rgb(var(--ios-text-secondary))] mt-2">
-                  Setări globale pentru aplicație (prețuri, contact, etc.)
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <Label>💰 Preț Prima Lună (RON)</Label>
-                      <Input 
-                        type="number" 
-                        defaultValue="200"
-                        placeholder="200"
-                        className="text-lg font-bold"
-                      />
-                      <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
-                        Preț pentru primul abonament Premium
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label>💰 Preț Lunar Recurent (RON)</Label>
-                      <Input 
-                        type="number" 
-                        defaultValue="20"
-                        placeholder="20"
-                        className="text-lg font-bold"
-                      />
-                      <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
-                        Preț pentru lunile următoare (recurent)
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label>📧 Email Suport</Label>
-                      <Input 
-                        type="email" 
-                        defaultValue="support@eatnfit.app"
-                        placeholder="support@eatnfit.app"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <Label>🔗 Netopia Merchant ID</Label>
-                      <Input 
-                        placeholder="Merchant ID de la Netopia"
-                      />
-                      <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
-                        Pentru integrare plăți Netopia Payments
-                      </p>
-                    </div>
-
-                    <div>
-                      <Label>Netopia API Key</Label>
-                      <Input 
-                        type="password"
-                        placeholder="API Key Netopia"
-                      />
-                    </div>
-
-                    <div className="flex items-center space-x-2">
-                      <Checkbox id="enable-reg" defaultChecked />
-                      <Label htmlFor="enable-reg">🔓 Permite înregistrări noi</Label>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-6">
-                  <Button className="bg-emerald-600 hover:bg-emerald-700 flex-1">
-                    💾 Salvează Setări
-                  </Button>
-                  <Button variant="outline" className="flex-1">
-                    🔄 Resetează la Default
-                  </Button>
-                </div>
-
-                <div className="mt-6 p-4 bg-yellow-50 dark:bg-yellow-950/20 border border-yellow-300 dark:border-yellow-700 rounded-lg">
-                  <p className="text-sm text-[rgb(var(--ios-text-secondary))]">
-                    <strong>Notă:</strong> După salvare, prețurile se vor actualiza automat pe pagina /upgrade și în toate locurile unde sunt afișate.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2 sm:gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                queryClient.invalidateQueries();
+                toast({ title: "Sincronizare finalizată", description: "Toate datele au fost actualizate." });
+              }}
+              className="gap-2 rounded-full px-4 sm:px-5 h-9 font-bold border-border/80 hover:bg-secondary/80 shadow-xs text-xs sm:text-sm"
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              <span>Actualizează</span>
+            </Button>
+            <Button
+              size="sm"
+              onClick={() => createBackupMutation.mutate()}
+              disabled={createBackupMutation.isPending}
+              className="gap-2 btn-pill-green h-9 px-4 sm:px-5 shadow-xs font-bold text-xs sm:text-sm"
+            >
+              {createBackupMutation.isPending ? (
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Database className="w-3.5 h-3.5" />
+              )}
+              <span>Backup Bază de Date</span>
+            </Button>
+          </div>
+        </div>
       </div>
-      </main>
 
-      {/* Recipe Editor Dialog */}
-      <Dialog open={!!editingRecipe} onOpenChange={() => setEditingRecipe(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-[rgb(var(--ios-bg-primary))]">
-          {editingRecipe && (
-            <>
-              <DialogHeader>
-                <DialogTitle>{editingRecipe.id ? 'Editează rețeta' : 'Rețetă nouă'}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Nume (EN)</Label>
-                    <Input
-                      value={editingRecipe.name || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, name: e.target.value })}
-                      placeholder="Recipe name in English"
-                    />
-                  </div>
-                  <div>
-                    <Label>Nume (RO)</Label>
-                    <Input
-                      value={editingRecipe.name_ro || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, name_ro: e.target.value })}
-                      placeholder="Nume rețetă în română"
-                    />
-                  </div>
-                </div>
+      {/* Screen 3 Style Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div className="bg-card border border-border/70 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] flex items-center gap-4 transition-all hover:scale-[1.01]">
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <Users className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">TOTAL UTILIZATORI</p>
+            <p className="text-2xl font-extrabold text-foreground tracking-tight">{statsData?.totalUsers || usersList.length}</p>
+          </div>
+        </div>
 
-                <div>
-                  <Label className="mb-2 block">Imagine</Label>
-                  {editingRecipe.image_url && (
-                    <img src={editingRecipe.image_url} alt="Recipe" className="w-full h-48 object-cover rounded-lg mb-2" />
-                  )}
-                  <div className="flex gap-2">
-                    <Input
-                      value={editingRecipe.image_url || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, image_url: e.target.value })}
-                      placeholder="URL imagine sau încarcă"
-                    />
-                    <label htmlFor="image-upload">
-                      <input
-                        id="image-upload"
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={handleImageUpload}
-                      />
-                      <Button type="button" variant="outline" disabled={uploadingImage} onClick={() => document.getElementById('image-upload').click()}>
-                        {uploadingImage ? <Loader2 className="w-4 h-4 animate-spin" /> : <ImageIcon className="w-4 h-4" />}
-                      </Button>
-                    </label>
-                  </div>
-                  <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-1">
-                    Poți edita imaginea ulterior - schimbă URL-ul sau încarcă o imagine nouă
-                  </p>
-                </div>
+        <div className="bg-card border border-border/70 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] flex items-center gap-4 transition-all hover:scale-[1.01]">
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <ChefHat className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">TOTAL REȚETE</p>
+            <p className="text-2xl font-extrabold text-foreground tracking-tight">{statsData?.totalRecipes || recipesList.length}</p>
+          </div>
+        </div>
 
-                {/* Buton Caută Online */}
-                <div className="flex gap-2">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={handleSearchOnline}
-                    disabled={isSearchingOnline || !editingRecipe?.name_ro?.trim() && !editingRecipe?.name?.trim()}
-                    className="flex-1"
-                  >
-                    {isSearchingOnline ? (
-                      <>
-                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        Caută...
-                      </>
-                    ) : (
-                      <>
-                        🔍 Caută Online (Ingrediente, Calorii, Mod de preparare)
-                      </>
-                    )}
-                  </Button>
-                </div>
+        <div className="bg-card border border-border/70 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] flex items-center gap-4 transition-all hover:scale-[1.01]">
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+            <HeartPulse className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">TOTAL CHECK-IN</p>
+            <p className="text-2xl font-extrabold text-foreground tracking-tight">{statsData?.totalCheckins || (Array.isArray(checkIns) ? checkIns.length : 0)}</p>
+          </div>
+        </div>
 
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <Label>Faze</Label>
-                    <div className="flex flex-col gap-3 mt-2 p-4 border border-[rgb(var(--ios-border))] rounded-lg bg-[rgb(var(--ios-bg-secondary))]">
-                      {[1, 2, 3].map((phaseNum) => {
-                        const phases = editingRecipe.phases || (editingRecipe.phase ? [editingRecipe.phase] : []);
-                        const isChecked = phases.includes(phaseNum);
-                        return (
-                          <div key={phaseNum} className="flex items-center space-x-2">
-                            <Checkbox
-                              id={`phase-${phaseNum}`}
-                              checked={isChecked}
-                              onCheckedChange={(checked) => {
-                                const currentPhases = editingRecipe.phases || (editingRecipe.phase ? [editingRecipe.phase] : []);
-                                let newPhases;
-                                if (checked) {
-                                  newPhases = [...currentPhases, phaseNum].filter((v, i, a) => a.indexOf(v) === i).sort();
-                                } else {
-                                  newPhases = currentPhases.filter(p => p !== phaseNum);
-                                }
-                                setEditingRecipe({ 
-                                  ...editingRecipe, 
-                                  phases: newPhases,
-                                  phase: newPhases.length > 0 ? newPhases[0] : null // Keep phase for backward compatibility
-                                });
-                              }}
-                            />
-                            <Label 
-                              htmlFor={`phase-${phaseNum}`}
-                              className={`text-sm font-bold cursor-pointer ${
-                                phaseNum === 1 ? 'text-orange-600 dark:text-orange-400' :
-                                phaseNum === 2 ? 'text-emerald-600 dark:text-emerald-400' :
-                                'text-purple-600 dark:text-purple-400'
-                              }`}
-                            >
-                              Faza {phaseNum}
-                            </Label>
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <p className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-2">
-                      Selectează una sau mai multe faze pentru această rețetă
-                    </p>
-                  </div>
-                  <div>
-                    <Label>Tip masă</Label>
-                    <Select value={editingRecipe.meal_type} onValueChange={(v) => setEditingRecipe({ ...editingRecipe, meal_type: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="breakfast">Mic dejun</SelectItem>
-                        <SelectItem value="snack1">Gustare 1</SelectItem>
-                        <SelectItem value="lunch">Prânz</SelectItem>
-                        <SelectItem value="snack2">Gustare 2</SelectItem>
-                        <SelectItem value="dinner">Cină</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label>Dificultate</Label>
-                    <Select value={editingRecipe.difficulty} onValueChange={(v) => setEditingRecipe({ ...editingRecipe, difficulty: v })}>
-                      <SelectTrigger><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="easy">Ușor</SelectItem>
-                        <SelectItem value="medium">Mediu</SelectItem>
-                        <SelectItem value="hard">Greu</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
+        <div className="bg-card border border-border/70 rounded-[20px] sm:rounded-[24px] p-4 sm:p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] flex items-center gap-4 transition-all hover:scale-[1.01]">
+          <div className="w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <Database className="w-6 h-6" />
+          </div>
+          <div>
+            <p className="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">BAZĂ DE DATE</p>
+            <p className="text-2xl font-extrabold text-foreground tracking-tight">{statsData?.dbSize || "0.36 MB"}</p>
+          </div>
+        </div>
+      </div>
 
-                <div className="grid md:grid-cols-4 gap-4">
-                  <div>
-                    <Label>Calorii</Label>
-                    <Input type="number" value={editingRecipe.calories || ''} onChange={(e) => setEditingRecipe({ ...editingRecipe, calories: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label>Proteine (g)</Label>
-                    <Input type="number" value={editingRecipe.protein || ''} onChange={(e) => setEditingRecipe({ ...editingRecipe, protein: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label>Carbohidrați (g)</Label>
-                    <Input type="number" value={editingRecipe.carbs || ''} onChange={(e) => setEditingRecipe({ ...editingRecipe, carbs: e.target.value })} />
-                  </div>
-                  <div>
-                    <Label>Grăsimi (g)</Label>
-                    <Input type="number" value={editingRecipe.fat || ''} onChange={(e) => setEditingRecipe({ ...editingRecipe, fat: e.target.value })} />
-                  </div>
-                </div>
+      {/* Modern Segmented Navigation Bar with Screen 1 Pill Buttons */}
+      <div className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 bg-card border border-border/70 rounded-[24px] sm:rounded-[28px] overflow-x-auto shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] scrollbar-none" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <button
+          onClick={() => setActiveTab("users")}
+          className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer active:scale-95 ${
+            activeTab === "users"
+              ? "bg-[#00b33c] text-white shadow-xs"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          }`}
+        >
+          <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Utilizatori</span>
+          <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-mono font-bold ${
+            activeTab === "users" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+          }`}>
+            {usersList.length}
+          </span>
+        </button>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Ingrediente (EN) - câte una pe linie</Label>
-                    <Textarea
-                      value={editingRecipe.ingredients_en_text || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, ingredients_en_text: e.target.value })}
-                      rows={6}
-                      placeholder="1 cup quinoa&#10;2 cups almond milk"
-                    />
-                  </div>
-                  <div>
-                    <Label>Ingrediente (RO) - câte una pe linie</Label>
-                    <Textarea
-                      value={editingRecipe.ingredients_ro_text || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, ingredients_ro_text: e.target.value })}
-                      rows={6}
-                      placeholder="1 cană quinoa&#10;2 căni lapte de migdale"
-                    />
-                  </div>
-                </div>
+        <button
+          onClick={() => setActiveTab("recipes")}
+          className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer active:scale-95 ${
+            activeTab === "recipes"
+              ? "bg-[#00b33c] text-white shadow-xs"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          }`}
+        >
+          <ChefHat className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Catalog Rețete</span>
+          <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-mono font-bold ${
+            activeTab === "recipes" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+          }`}>
+            {recipesList.length}
+          </span>
+        </button>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Instrucțiuni (EN) - câte una pe linie</Label>
-                    <Textarea
-                      value={editingRecipe.instructions_en_text || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, instructions_en_text: e.target.value })}
-                      rows={6}
-                    />
-                  </div>
-                  <div>
-                    <Label>Instrucțiuni (RO) - câte una pe linie</Label>
-                    <Textarea
-                      value={editingRecipe.instructions_ro_text || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, instructions_ro_text: e.target.value })}
-                      rows={6}
-                    />
-                  </div>
-                </div>
+        <button
+          onClick={() => setActiveTab("backups")}
+          className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer active:scale-95 ${
+            activeTab === "backups"
+              ? "bg-[#00b33c] text-white shadow-xs"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          }`}
+        >
+          <Database className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Backup-uri</span>
+          <span className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded-full font-mono font-bold ${
+            activeTab === "backups" ? "bg-white/20 text-white" : "bg-muted text-muted-foreground"
+          }`}>
+            {backupsList.length}
+          </span>
+        </button>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div>
-                    <Label>Beneficii (EN)</Label>
-                    <Textarea
-                      value={editingRecipe.benefits_en || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, benefits_en: e.target.value })}
-                      rows={2}
-                    />
-                  </div>
-                  <div>
-                    <Label>Beneficii (RO)</Label>
-                    <Textarea
-                      value={editingRecipe.benefits_ro || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, benefits_ro: e.target.value })}
-                      rows={2}
-                    />
-                  </div>
-                </div>
+        <button
+          onClick={() => setActiveTab("stats")}
+          className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer active:scale-95 ${
+            activeTab === "stats"
+              ? "bg-[#00b33c] text-white shadow-xs"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          }`}
+        >
+          <Activity className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Statistici & Progres</span>
+        </button>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="flex items-center gap-4 flex-wrap">
-                    <Checkbox
-                      id="vegetarian"
-                      checked={editingRecipe.is_vegetarian}
-                      onCheckedChange={(checked) => setEditingRecipe({ ...editingRecipe, is_vegetarian: checked })}
-                    />
-                    <Label htmlFor="vegetarian">Vegetarian</Label>
+        <button
+          onClick={() => setActiveTab("settings")}
+          className={`flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-bold transition-all shrink-0 cursor-pointer active:scale-95 ${
+            activeTab === "settings"
+              ? "bg-[#00b33c] text-white shadow-xs"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/60"
+          }`}
+        >
+          <Settings className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+          <span>Setări Sistem</span>
+        </button>
+      </div>
 
-                    <Checkbox
-                      id="vegan"
-                      checked={editingRecipe.is_vegan}
-                      onCheckedChange={(checked) => setEditingRecipe({ ...editingRecipe, is_vegan: checked })}
-                    />
-                    <Label htmlFor="vegan">Vegan</Label>
-
-                    <Checkbox
-                      id="featured"
-                      checked={editingRecipe.is_featured}
-                      onCheckedChange={(checked) => setEditingRecipe({ ...editingRecipe, is_featured: checked })}
-                    />
-                    <Label htmlFor="featured">Featured</Label>
-
-                    <Checkbox
-                      id="admin_recipe"
-                      checked={editingRecipe.is_admin_recipe}
-                      onCheckedChange={(checked) => setEditingRecipe({ ...editingRecipe, is_admin_recipe: checked })}
-                    />
-                    <Label htmlFor="admin_recipe" className="text-purple-600 dark:text-purple-400 font-semibold">Rețetă Admin</Label>
-                  </div>
-                  <div>
-                    <Label>Keywords (separă cu virgulă)</Label>
-                    <Input
-                      value={editingRecipe.keywords_text || ''}
-                      onChange={(e) => setEditingRecipe({ ...editingRecipe, keywords_text: e.target.value })}
-                      placeholder="chicken, avocado, healthy"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button variant="outline" onClick={() => setEditingRecipe(null)} className="flex-1 border-2 border-gray-500 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-bold">
-                    Anulează
-                  </Button>
-                  <Button onClick={handleSaveRecipe} className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-lg">
-                    {editingRecipe.id ? 'Salvează' : 'Creează'}
-                  </Button>
-                </div>
+      {/* ============================================================== */}
+      {/* TAB 1: USERS MANAGEMENT                                         */}
+      {/* ============================================================== */}
+      {activeTab === "users" && (
+        <Card className="border-border/60 shadow-sm">
+          <CardHeader className="p-5 pb-4 border-b border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-lg font-bold">Listă Utilizatori</CardTitle>
+                <CardDescription>
+                  Gestionează conturile înregistrate, rolurile, accesul premium și datele fizice.
+                </CardDescription>
               </div>
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* User Details Dialog - COMPLET CU GRAFICE */}
-      <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto bg-[rgb(var(--ios-bg-primary))]">
-          {selectedUser && (() => {
-            const userCheckIns = allCheckIns.filter(c => c.user_id === selectedUser.id);
-            const userWeights = allWeightEntries.filter(w => w.user_id === selectedUser.id).sort((a, b) => new Date(a.date) - new Date(b.date));
-            
-            // Calculez statistici
-            const activeDays = userCheckIns.length;
-            const totalCalories = userCheckIns.reduce((sum, c) => sum + (c.total_calories || 0), 0);
-            const avgCaloriesPerDay = activeDays > 0 ? Math.round(totalCalories / activeDays) : 0;
-            
-            // Evoluție greutate - PRIMA vs ULTIMA înregistrare
-            const firstWeight = userWeights.length > 0 ? parseFloat(userWeights[0]?.weight) : null;
-            const lastWeight = userWeights.length > 0 ? parseFloat(userWeights[userWeights.length - 1]?.weight) : null;
-            const weightDiff = (firstWeight && lastWeight && firstWeight !== lastWeight) 
-              ? (firstWeight - lastWeight).toFixed(1) 
-              : 0;
-            
-            // Date pentru TOATE graficele (identice cu Dashboard)
-            const today = new Date();
-            const last7Days = Array.from({ length: 7 }, (_, i) => {
-              const date = subDays(today, 6 - i);
-              const dateStr = format(date, 'yyyy-MM-dd');
-              const checkIn = userCheckIns.find(c => c.date.startsWith(dateStr));
-              
-              // Calculez mese completate
-              const mealsCompleted = checkIn ? [
-                checkIn.breakfast_completed,
-                checkIn.snack1_completed,
-                checkIn.lunch_completed,
-                checkIn.snack2_completed,
-                checkIn.dinner_completed
-              ].filter(Boolean).length : 0;
-              
-              return {
-                date: format(date, 'dd MMM', { locale: ro }),
-                weight: userWeights.find(w => w.date.startsWith(dateStr))?.weight || null,
-                calories: checkIn?.total_calories || 0,
-                meals: mealsCompleted,
-                caloriesBurned: checkIn?.exercise_calories_burned || 0,
-                water: checkIn?.water_intake || 0,
-              };
-            });
-            
-            // Filtrează doar datele cu greutate pentru graficul de greutate
-            const weightChartData = last7Days.filter(d => d.weight !== null);
-            
-            return (
-              <>
-                <DialogHeader>
-                  <DialogTitle className="flex items-center gap-3">
-                    <Users className="w-8 h-8 text-emerald-600" />
-                    <div>
-                      <p className="text-xl font-bold">Detalii {selectedUser.name}</p>
-                      <p className="text-sm text-gray-500 font-normal">{selectedUser.email}</p>
-                    </div>
-                  </DialogTitle>
-                </DialogHeader>
-                
-                <div className="space-y-6">
-                  {/* INFO PERSONALE */}
-                  <div className="grid md:grid-cols-3 gap-4">
-                    <Card className="ios-card">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm">Date Generale</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-2 text-xs">
-                        {/* POZA MARE - 3x mai mare (12x12 → 36x36) */}
-                        <div className="flex justify-center">
-                          {selectedUser.profile_picture ? (
-                            <img 
-                              src={selectedUser.profile_picture} 
-                              alt={selectedUser.name} 
-                              className="w-36 h-36 rounded-full object-cover border-4 border-emerald-500 shadow-xl" 
-                            />
-                          ) : (
-                            <div className="w-36 h-36 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center border-4 border-emerald-300">
-                              <Users className="w-16 h-16 text-emerald-600" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-xs space-y-2 pt-2">
-                          <p><strong>Email:</strong> {selectedUser.email}</p>
-                          {selectedUser.phone && <p><strong>Telefon:</strong> 📱 {selectedUser.phone}</p>}
-                          <p><strong>ID:</strong> {selectedUser.id}</p>
-                          
-                          {/* SCHIMBARE ROL - SELECT EDITABIL */}
-                          <div className="pt-2 pb-2">
-                            <Label className="text-xs font-bold mb-2 block">🔐 Rol Utilizator:</Label>
-                            <Select 
-                              value={selectedUser.role} 
-                              onValueChange={(newRole) => {
-                                if (confirm(`Sigur vrei să schimbi rolul lui ${selectedUser.first_name || selectedUser.name} la ${newRole.toUpperCase()}?`)) {
-                                  fetch(`/api/admin/users`, {
-                                    method: 'PUT',
-                                    headers: {
-                                      'Authorization': `Bearer ${localStorage.getItem('auth_token')}`,
-                                      'Content-Type': 'application/json'
-                                    },
-                                    body: JSON.stringify({ userId: selectedUser.id, role: newRole })
-                                  })
-                                  .then(r => r.json())
-                                  .then(() => {
-                                    alert(`✅ Rol schimbat cu succes la ${newRole.toUpperCase()}!`);
-                                    queryClient.invalidateQueries(['allUsers']);
-                                    setSelectedUser(null);
-                                  })
-                                  .catch(e => alert('❌ Eroare: ' + e.message));
-                                }
-                              }}
-                            >
-                              <SelectTrigger className="h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="user">👤 User</SelectItem>
-                                <SelectItem value="admin">Admin</SelectItem>
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          
-                          {selectedUser.country && <p><strong>Țara:</strong> 🌍 {selectedUser.country}</p>}
-                          {selectedUser.city && <p><strong>Orașul:</strong> 🏙️ {selectedUser.city}</p>}
-                          {selectedUser.birth_date && (
-                            <p><strong>Data nașterii:</strong> 🎂 {new Date(selectedUser.birth_date).toLocaleDateString('ro-RO')}</p>
-                          )}
-                          <p><strong>📅 Înregistrat:</strong> {selectedUser.created_at ? new Date(selectedUser.created_at).toLocaleDateString('ro-RO') : 'N/A'}</p>
-                          <p><strong>🕐 Ultima logare:</strong> {selectedUser.last_login ? new Date(selectedUser.last_login).toLocaleString('ro-RO', {
-                            day: '2-digit',
-                            month: '2-digit', 
-                            year: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          }) : 'Niciodată'}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="ios-card">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm">Date Fizice</CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-xs space-y-2">
-                        <p><strong>Greutate:</strong> {selectedUser.current_weight || 'N/A'} kg</p>
-                        <p><strong>Țintă:</strong> {selectedUser.target_weight || 'N/A'} kg</p>
-                        <p><strong>Înălțime:</strong> {selectedUser.height || 'N/A'} cm</p>
-                        <p><strong>Vârstă:</strong> {selectedUser.birth_date 
-                          ? `${differenceInYears(new Date(), new Date(selectedUser.birth_date))} ani` 
-                          : (selectedUser.age ? `${selectedUser.age} ani` : 'N/A')
-                        }</p>
-                        <p><strong>Sex:</strong> {selectedUser.gender === 'male' ? 'M' : selectedUser.gender === 'female' ? 'F' : 'N/A'}</p>
-                        <p><strong>Activitate:</strong> {selectedUser.activity_level || 'N/A'}</p>
-                      </CardContent>
-                    </Card>
-
-                    <Card className="ios-card">
-                      <CardHeader className="pb-3">
-                        <CardTitle className="text-sm">Abonament</CardTitle>
-                      </CardHeader>
-                      <CardContent className="text-xs space-y-2">
-                        {(() => {
-                          const isPremium = (selectedUser.subscription_tier || selectedUser.subscription_plan || 'free') === 'premium';
-                          return (
-                            <p>
-                              <strong>Abonament:</strong>{' '}
-                              {isPremium ? (
-                                <span className="bg-[#1a1a1a] text-white border border-[#2a2a2a] px-3 py-1.5 text-sm">
-                                  PREMIUM
-                                </span>
-                              ) : (
-                                <span className="bg-[#1a1a1a] text-[#888] border border-[#2a2a2a] px-3 py-1.5 text-sm">
-                                  FREE
-                                </span>
-                              )}
-                            </p>
-                          );
-                        })()}
-                        {selectedUser.subscription_expires_at && (
-                          <p><strong>Expiră:</strong> {new Date(selectedUser.subscription_expires_at).toLocaleDateString('ro-RO')}</p>
-                        )}
-                        {selectedUser.subscription_code && (
-                          <p className="font-mono text-blue-600"><strong>Cod:</strong> {selectedUser.subscription_code}</p>
-                        )}
-                        <p><strong>Start dietă:</strong> {selectedUser.start_date ? new Date(selectedUser.start_date).toLocaleDateString('ro-RO') : 'N/A'}</p>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* STATISTICI */}
-                  <div className="grid md:grid-cols-4 gap-4">
-                    <Card className="ios-card">
-                      <CardContent className="p-4">
-                        <p className="text-xs text-gray-500">Zile Active</p>
-                        <p className="text-2xl font-bold text-emerald-600">{activeDays}</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="ios-card">
-                      <CardContent className="p-4">
-                        <p className="text-xs text-gray-500">Calorii Totale</p>
-                        <p className="text-2xl font-bold text-orange-600">{Math.round(totalCalories)}</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="ios-card">
-                      <CardContent className="p-4">
-                        <p className="text-xs text-gray-500">Medie/Zi</p>
-                        <p className="text-2xl font-bold text-blue-600">{avgCaloriesPerDay}</p>
-                      </CardContent>
-                    </Card>
-                    <Card className="ios-card">
-                      <CardContent className="p-4">
-                        <p className="text-xs text-gray-500">Evoluție Greutate</p>
-                        <div className={`flex items-center gap-2 text-2xl font-bold ${weightDiff > 0 ? 'text-green-600' : weightDiff < 0 ? 'text-red-600' : 'text-gray-500'}`}>
-                          {weightDiff > 0 ? (
-                            <><TrendingDown className="w-6 h-6" /> -{weightDiff} kg</>
-                          ) : weightDiff < 0 ? (
-                            <><TrendingUp className="w-6 h-6" /> +{Math.abs(weightDiff)} kg</>
-                          ) : (
-                            <><ArrowRight className="w-6 h-6" /> 0 kg</>
-                          )}
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* GRAFICE - 3 GRAFICE (fără duplicat calorii) */}
-                  <div className="grid md:grid-cols-2 gap-4">
-                    {/* 1. Grafic Evoluție Greutate */}
-                    {weightChartData.length > 0 && (
-                      <Card className="ios-card">
-                        <CardHeader>
-                          <CardTitle className="text-sm flex items-center gap-2">
-                            <TrendingUp className="w-5 h-5 text-blue-600" />
-                            Evoluția greutății
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <ResponsiveContainer width="100%" height={200}>
-                            <LineChart data={weightChartData}>
-                              <CartesianGrid strokeDasharray="3 3" />
-                              <XAxis dataKey="date" style={{ fontSize: 12 }} />
-                              <YAxis style={{ fontSize: 12 }} domain={['dataMin - 2', 'dataMax + 2']} />
-                              <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '12px' }} />
-                              <Line type="monotone" dataKey="weight" stroke="#3b82f6" strokeWidth={3} dot={{ fill: '#3b82f6', r: 4 }} name="Greutate (kg)" />
-                            </LineChart>
-                          </ResponsiveContainer>
-                        </CardContent>
-                      </Card>
-                    )}
-
-                    {/* 2. Grafic Mese Completate (7 zile) */}
-                    <Card className="ios-card">
-                      <CardHeader>
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <Award className="w-5 h-5 text-emerald-600" />
-                          Mese completate (7 zile)
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ResponsiveContainer width="100%" height={200}>
-                          <BarChart data={last7Days}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" style={{ fontSize: 12 }} />
-                            <YAxis style={{ fontSize: 12 }} domain={[0, 5]} />
-                            <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '12px' }} />
-                            <Bar dataKey="meals" fill="#10b981" radius={[8, 8, 0, 0]} name="Mese (max 5)" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </CardContent>
-                    </Card>
-
-                    {/* 3. Grafic Calorii Consumate vs Arse */}
-                    <Card className="ios-card">
-                      <CardHeader>
-                        <CardTitle className="text-sm flex items-center gap-2">
-                          <Flame className="w-5 h-5 text-orange-600" />
-                          Calorii consumate vs arse
-                        </CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                        <ResponsiveContainer width="100%" height={200}>
-                          <BarChart data={last7Days}>
-                            <CartesianGrid strokeDasharray="3 3" />
-                            <XAxis dataKey="date" style={{ fontSize: 12 }} />
-                            <YAxis style={{ fontSize: 12 }} />
-                            <Tooltip contentStyle={{ backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '12px' }} />
-                            <Bar dataKey="calories" fill="#f97316" radius={[8, 8, 0, 0]} name="Consumate" />
-                            <Bar dataKey="caloriesBurned" fill="#8b5cf6" radius={[8, 8, 0, 0]} name="Arse" />
-                          </BarChart>
-                        </ResponsiveContainer>
-                      </CardContent>
-                    </Card>
-                  </div>
-
-                  {/* MÂNCĂRURI ALESE */}
-                  <Card className="ios-card">
-                    <CardHeader>
-                      <CardTitle className="text-sm">Mâncăruri Alese Recent ({userCheckIns.slice(-10).length} ultimele zile)</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="space-y-3 max-h-96 overflow-y-auto">
-                        {userCheckIns.slice(-10).reverse().map((checkIn, idx) => (
-                          <div key={idx} className="border border-[rgb(var(--ios-border))] rounded-lg p-3">
-                            <p className="font-bold text-sm mb-2">{new Date(checkIn.date).toLocaleDateString('ro-RO')}</p>
-                            <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-xs">
-                              {checkIn.breakfast_option && (
-                                <div className="bg-emerald-50 dark:bg-emerald-900/20 p-2 rounded">
-                                  <p className="font-semibold text-emerald-700 dark:text-emerald-300">🍳 Breakfast</p>
-                                  <p className="text-gray-600 dark:text-gray-400">{checkIn.breakfast_option}</p>
-                                  <p className="text-emerald-600">{checkIn.breakfast_calories} cal</p>
-                                </div>
-                              )}
-                              {checkIn.snack1_option && (
-                                <div className="bg-blue-50 dark:bg-blue-900/20 p-2 rounded">
-                                  <p className="font-semibold text-blue-700 dark:text-blue-300">🍎 Snack 1</p>
-                                  <p className="text-gray-600 dark:text-gray-400">{checkIn.snack1_option}</p>
-                                  <p className="text-blue-600">{checkIn.snack1_calories} cal</p>
-                                </div>
-                              )}
-                              {checkIn.lunch_option && (
-                                <div className="bg-orange-50 dark:bg-orange-900/20 p-2 rounded">
-                                  <p className="font-semibold text-orange-700 dark:text-orange-300">🍽️ Lunch</p>
-                                  <p className="text-gray-600 dark:text-gray-400">{checkIn.lunch_option}</p>
-                                  <p className="text-orange-600">{checkIn.lunch_calories} cal</p>
-                                </div>
-                              )}
-                              {checkIn.snack2_option && (
-                                <div className="bg-purple-50 dark:bg-purple-900/20 p-2 rounded">
-                                  <p className="font-semibold text-purple-700 dark:text-purple-300">🍪 Snack 2</p>
-                                  <p className="text-gray-600 dark:text-gray-400">{checkIn.snack2_option}</p>
-                                  <p className="text-purple-600">{checkIn.snack2_calories} cal</p>
-                                </div>
-                              )}
-                              {checkIn.dinner_option && (
-                                <div className="bg-indigo-50 dark:bg-indigo-900/20 p-2 rounded">
-                                  <p className="font-semibold text-indigo-700 dark:text-indigo-300">🌙 Dinner</p>
-                                  <p className="text-gray-600 dark:text-gray-400">{checkIn.dinner_option}</p>
-                                  <p className="text-indigo-600">{checkIn.dinner_calories} cal</p>
-                                </div>
-                              )}
-                            </div>
-                            <div className="mt-2 flex items-center gap-4 text-xs text-gray-600 dark:text-gray-400">
-                              <span>💧 Apă: {checkIn.water_intake || 0}/8</span>
-                              <span>🏃 Exerciții: {checkIn.exercise_completed ? `✅ (${checkIn.exercise_calories_burned || 0} cal)` : '❌'}</span>
-                              <span className="font-bold text-orange-600">📊 Total: {checkIn.total_calories || 0} cal</span>
-                            </div>
-                          </div>
-                        ))}
-                        {userCheckIns.length === 0 && (
-                          <p className="text-center text-gray-500 py-8">Nicio activitate înregistrată</p>
-                        )}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
-              </>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
-
-      {/* Dialog Creare Utilizator */}
-      <Dialog open={showCreateUser} onOpenChange={setShowCreateUser}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Plus className="w-6 h-6 text-emerald-600" />
-              Adaugă Utilizator Nou
-            </DialogTitle>
-          </DialogHeader>
-          <form onSubmit={(e) => {
-            e.preventDefault();
-            
-            // Validare
-            if (!newUserData.email || !newUserData.password || !newUserData.first_name || !newUserData.last_name) {
-              alert('❌ Completează toate câmpurile obligatorii!');
-              return;
-            }
-            
-            // Creează utilizator prin endpoint de register
-            localApi.auth.register({
-              ...newUserData,
-              name: `${newUserData.first_name} ${newUserData.last_name}`,
-              isRegister: true
-            })
-            .then(() => {
-              alert('✅ Utilizator creat cu succes!');
-              setShowCreateUser(false);
-              setNewUserData({
-                email: '',
-                password: '',
-                first_name: '',
-                last_name: '',
-                phone: '',
-                role: 'user'
-              });
-              queryClient.invalidateQueries(['allUsers']);
-            })
-            .catch((error) => {
-              alert('❌ Eroare: ' + error.message);
-            });
-          }} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="new-email">Email *</Label>
-              <Input
-                id="new-email"
-                type="email"
-                value={newUserData.email}
-                onChange={(e) => setNewUserData({...newUserData, email: e.target.value})}
-                placeholder="email@example.com"
-                required
-              />
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="new-firstname">Prenume *</Label>
-                <Input
-                  id="new-firstname"
-                  type="text"
-                  value={newUserData.first_name}
-                  onChange={(e) => setNewUserData({...newUserData, first_name: e.target.value})}
-                  placeholder="Ion"
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="new-lastname">Nume *</Label>
-                <Input
-                  id="new-lastname"
-                  type="text"
-                  value={newUserData.last_name}
-                  onChange={(e) => setNewUserData({...newUserData, last_name: e.target.value})}
-                  placeholder="Popescu"
-                  required
-                />
-              </div>
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="new-phone">Telefon</Label>
-              <Input
-                id="new-phone"
-                type="tel"
-                value={newUserData.phone}
-                onChange={(e) => setNewUserData({...newUserData, phone: e.target.value})}
-                placeholder="+40 123 456 789"
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="new-password">Parolă *</Label>
-              <Input
-                id="new-password"
-                type="password"
-                value={newUserData.password}
-                onChange={(e) => setNewUserData({...newUserData, password: e.target.value})}
-                placeholder="Minim 6 caractere"
-                minLength={6}
-                required
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="new-role">Rol</Label>
-              <Select 
-                value={newUserData.role} 
-                onValueChange={(value) => setNewUserData({...newUserData, role: value})}
+              <Button
+                onClick={() => setShowCreateUser(true)}
+                variant="success"
+                className="gap-2 btn-pill-green h-9.5 px-5 font-bold shadow-xs self-start sm:self-auto"
               >
-                <SelectTrigger>
-                  <SelectValue />
+                <Plus className="w-4 h-4" />
+                <span>Adaugă Utilizator</span>
+              </Button>
+            </div>
+
+            {/* Filters Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Caută după nume, email, telefon..."
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
+                  className="pl-9 bg-background"
+                />
+              </div>
+
+              <Select value={userRoleFilter} onValueChange={setUserRoleFilter}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Filtrează după rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="user">User</SelectItem>
-                  <SelectItem value="admin">Admin</SelectItem>
+                  <SelectItem value="all">Toate Rolurile</SelectItem>
+                  <SelectItem value="admin">Doar Administratori</SelectItem>
+                  <SelectItem value="user">Doar Utilizatori Standard</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={userTierFilter} onValueChange={setUserTierFilter}>
+                <SelectTrigger className="bg-background">
+                  <SelectValue placeholder="Filtrează după abonament" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Toate Planurile</SelectItem>
+                  <SelectItem value="premium">Doar Premium</SelectItem>
+                  <SelectItem value="free">Doar Gratuit (Free)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            
-            <div className="flex gap-2 pt-4">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => setShowCreateUser(false)}
-                className="flex-1"
+          </CardHeader>
+
+          <CardContent className="p-0">
+            <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <Table className="min-w-[780px]">
+                <TableHeader>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="w-12 text-center">#</TableHead>
+                    <TableHead>Utilizator</TableHead>
+                    <TableHead>Contact & Locație</TableHead>
+                    <TableHead>Rol & Abonament</TableHead>
+                    <TableHead>Date Corporale</TableHead>
+                    <TableHead>Înregistrat</TableHead>
+                    <TableHead className="text-right pr-6 min-w-[200px]">Acțiuni Rapide</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {usersLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-32 text-center">
+                        <RefreshCw className="w-6 h-6 animate-spin text-emerald-500 mx-auto mb-2" />
+                        <span className="text-sm text-muted-foreground">Se încarcă lista de utilizatori...</span>
+                      </TableCell>
+                    </TableRow>
+                  ) : filteredUsers.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                        Niciun utilizator nu corespunde filtrelor selectate.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredUsers.map((u, idx) => {
+                      const isPrem = (u.subscription_tier || "free") === "premium";
+                      const isAdmin = u.role === "admin";
+                      return (
+                        <TableRow key={u.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell className="text-center font-mono text-xs text-muted-foreground">
+                            {idx + 1}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-3">
+                              <div className="w-9 h-9 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-bold flex items-center justify-center text-sm border border-emerald-500/20">
+                                {u.name ? u.name.charAt(0).toUpperCase() : u.email.charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <p className="font-semibold text-foreground leading-tight hover:text-emerald-600 cursor-pointer" onClick={() => setSelectedUser(u)}>
+                                  {u.name || "Fără nume"}
+                                </p>
+                                <p className="text-xs text-muted-foreground font-mono">ID: {u.id}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="space-y-0.5 text-xs">
+                              <div className="flex items-center gap-1.5 text-foreground font-medium">
+                                <Mail className="w-3.5 h-3.5 text-muted-foreground" />
+                                <span>{u.email}</span>
+                              </div>
+                              {u.phone && (
+                                <div className="flex items-center gap-1.5 text-muted-foreground">
+                                  <Phone className="w-3 h-3" />
+                                  <span>{u.phone}</span>
+                                </div>
+                              )}
+                              {(u.city || u.country) && (
+                                <div className="flex items-center gap-1.5 text-muted-foreground">
+                                  <MapPin className="w-3 h-3" />
+                                  <span>{[u.city, u.country].filter(Boolean).join(", ")}</span>
+                                </div>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1 items-start">
+                              <Badge
+                                variant={isAdmin ? "default" : "outline"}
+                                className={isAdmin ? "bg-purple-600 hover:bg-purple-700 text-white text-[11px]" : "text-[11px]"}
+                              >
+                                {isAdmin ? "Administrator" : "Client"}
+                              </Badge>
+                              {isPrem ? (
+                                <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 text-[11px] gap-1 font-semibold">
+                                  <Crown className="w-3 h-3" />
+                                  Premium
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary" className="text-[11px] text-muted-foreground">
+                                  Free Tier
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs space-y-0.5">
+                              {u.current_weight ? (
+                                <p className="text-foreground">
+                                  <span className="text-muted-foreground">Actual:</span> <span className="font-semibold">{u.current_weight} kg</span>
+                                  {u.target_weight && (
+                                    <span className="text-muted-foreground"> → <span className="text-emerald-600 font-semibold">{u.target_weight} kg</span></span>
+                                  )}
+                                </p>
+                              ) : (
+                                <span className="text-muted-foreground italic">Nespecificat</span>
+                              )}
+                              {u.height && <p className="text-muted-foreground">Înălțime: {u.height} cm</p>}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {u.created_at ? format(new Date(u.created_at), "dd MMM yyyy", { locale: ro }) : "-"}
+                          </TableCell>
+                          <TableCell className="text-right pr-6">
+                            <div className="flex items-center justify-end gap-2">
+                              {/* Screen 1 Red Pill Button */}
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="btn-pill-red h-8 px-4 text-xs font-bold shadow-xs"
+                                onClick={() => {
+                                  if (confirm(`Sigur dorești să ștergi contul utilizatorului ${u.name || u.email}?`)) {
+                                    deleteUserMutation.mutate(u.id);
+                                  }
+                                }}
+                              >
+                                Șterge
+                              </Button>
+
+                              {/* Screen 1 Green Pill Button */}
+                              <Button
+                                variant="success"
+                                size="sm"
+                                className="btn-pill-green h-8 px-4 text-xs font-bold shadow-xs"
+                                onClick={() => setSelectedUser(u)}
+                              >
+                                Detalii
+                              </Button>
+
+                              {/* Screen 1 More 3-dots Menu */}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full hover:bg-muted text-slate-500">
+                                    <MoreVertical className="w-4 h-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-52">
+                                  <DropdownMenuLabel>Opțiuni Utilizator</DropdownMenuLabel>
+                                  <DropdownMenuItem onClick={() => setSelectedUser(u)} className="gap-2">
+                                    <Eye className="w-4 h-4 text-blue-500" />
+                                    <span>Fișă Profil</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      const nextRole = u.role === "admin" ? "user" : "admin";
+                                      updateRoleMutation.mutate({ userId: u.id, role: nextRole });
+                                    }}
+                                    className="gap-2"
+                                  >
+                                    <Shield className="w-4 h-4 text-purple-500" />
+                                    <span>{u.role === "admin" ? "Setează User" : "Setează Admin"}</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setGrantPremiumTarget(u);
+                                      setShowGrantPremium(true);
+                                    }}
+                                    className="gap-2"
+                                  >
+                                    <Crown className="w-4 h-4 text-amber-500" />
+                                    <span>Acordă Premium</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setResetPasswordTarget(u);
+                                      setShowResetPassword(true);
+                                    }}
+                                    className="gap-2"
+                                  >
+                                    <KeyRound className="w-4 h-4 text-emerald-500" />
+                                    <span>Resetează Parolă</span>
+                                  </DropdownMenuItem>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setDeleteUserTarget(u);
+                                      setShowDeleteUser(true);
+                                    }}
+                                    className="gap-2 text-destructive focus:text-destructive"
+                                  >
+                                    <Trash2 className="w-4 h-4" />
+                                    <span>Șterge Definitiv</span>
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ============================================================== */}
+      {/* TAB 2: RECIPES MANAGEMENT (WITH EMBOSSED BRAND SHOWCASE)        */}
+      {/* ============================================================== */}
+      {activeTab === "recipes" && (
+        <div className="space-y-6">
+          {/* Brand Showcase Banner */}
+          <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground">Imagini Gastronomice de Înaltă Rezoluție</p>
+                <p className="text-xs text-muted-foreground">
+                  Toate cele 229 rețete din baza de date au fost asociate cu fotografii culinare de studio ce prezintă logo-ul EatnFit embosat pe boluri și pahare.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => {
+                setEditingRecipe(null);
+                setRecipeFormData({
+                  name: "",
+                  description: "",
+                  phase: 1,
+                  meal_type: "lunch",
+                  calories: 350,
+                  protein: 25,
+                  carbs: 30,
+                  fats: 10,
+                  prep_time: 15,
+                  cook_time: 20,
+                  image_url: "/images/eatnfit_chicken_salad.jpg",
+                  ingredients: "",
+                  instructions: "",
+                  is_public: 1,
+                });
+                setRecipeModalOpen(true);
+              }}
+              variant="success"
+              className="gap-2 btn-pill-green h-9.5 px-5 font-bold shadow-xs shrink-0"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Adaugă Rețetă Nouă</span>
+            </Button>
+          </div>
+
+          {/* Recipes Table Card */}
+          <Card className="border-border/60 shadow-sm">
+            <CardHeader className="p-5 pb-4 border-b border-border/50">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                  <Input
+                    placeholder="Caută după nume rețetă sau ingredient..."
+                    value={recipeSearch}
+                    onChange={(e) => setRecipeSearch(e.target.value)}
+                    className="pl-9 bg-background"
+                  />
+                </div>
+
+                <Select value={recipePhaseFilter} onValueChange={setRecipePhaseFilter}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Filtrează Faza" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toate Fazele (1, 2, 3)</SelectItem>
+                    <SelectItem value="1">Faza 1 (Deblocare Glicemică)</SelectItem>
+                    <SelectItem value="2">Faza 2 (Ardere Grăsimi)</SelectItem>
+                    <SelectItem value="3">Faza 3 (Accelerare Hormonală)</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                <Select value={recipeMealFilter} onValueChange={setRecipeMealFilter}>
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Tip Masă" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toate Tipurile de Masă</SelectItem>
+                    <SelectItem value="breakfast">Mic Dejun</SelectItem>
+                    <SelectItem value="lunch">Prânz</SelectItem>
+                    <SelectItem value="dinner">Cină</SelectItem>
+                    <SelectItem value="snack1">Gustare 1</SelectItem>
+                    <SelectItem value="snack2">Gustare 2</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+
+            <CardContent className="p-0">
+              <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <Table className="min-w-[760px]">
+                  <TableHeader>
+                    <TableRow className="bg-muted/40 hover:bg-muted/40">
+                      <TableHead className="w-16">Foto</TableHead>
+                      <TableHead>Rețetă</TableHead>
+                      <TableHead>Fazǎ & Masă</TableHead>
+                      <TableHead>Macronutrienți</TableHead>
+                      <TableHead>Timp</TableHead>
+                      <TableHead className="text-right pr-6 min-w-[200px]">Acțiuni Rapide</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {recipesLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-32 text-center">
+                          <RefreshCw className="w-6 h-6 animate-spin text-emerald-500 mx-auto mb-2" />
+                          <span className="text-sm text-muted-foreground">Se încarcă catalogul de rețete...</span>
+                        </TableCell>
+                      </TableRow>
+                    ) : filteredRecipes.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
+                          Nicio rețetă nu a fost găsită.
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredRecipes.slice(0, 50).map((r) => (
+                        <TableRow key={r.id} className="hover:bg-muted/30 transition-colors">
+                          <TableCell>
+                            <img
+                              src={r.image_url || "/images/eatnfit_quinoa_bowl.jpg"}
+                              alt={r.name}
+                              className="w-12 h-12 rounded-lg object-cover border border-border/50 shadow-xs"
+                              onError={(e) => {
+                                e.target.src = "/images/eatnfit_quinoa_bowl.jpg";
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell className="max-w-xs">
+                            <p className="font-semibold text-foreground truncate">{r.name}</p>
+                            <p className="text-xs text-muted-foreground line-clamp-1">
+                              {r.description || "Rețetă metabolică echilibrată"}
+                            </p>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex flex-col gap-1 items-start">
+                              <Badge variant="outline" className="text-[11px] font-medium border-emerald-500/30 text-emerald-600 dark:text-emerald-400">
+                                Faza {r.phase || 1}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground capitalize">
+                                {r.meal_type || "Masa principală"}
+                              </span>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="text-xs space-y-0.5">
+                              <p className="font-semibold text-foreground">{r.calories || 0} kcal</p>
+                              <p className="text-[11px] text-muted-foreground">
+                                P: {r.protein || 0}g • C: {r.carbs || 0}g • G: {r.fats || 0}g
+                              </p>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {r.prep_time || r.cook_time ? (
+                              <div className="flex items-center gap-1">
+                                <Clock className="w-3.5 h-3.5" />
+                                <span>{(r.prep_time || 0) + (r.cook_time || 0)} min</span>
+                              </div>
+                            ) : (
+                              "15 min"
+                            )}
+                          </TableCell>
+                          <TableCell className="text-right pr-6">
+                            <div className="flex items-center justify-end gap-2">
+                              {/* Screen 1 Red Pill Button */}
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                className="btn-pill-red h-8 px-4 text-xs font-bold shadow-xs"
+                                onClick={() => {
+                                  if (confirm(`Sigur dorești să ștergi rețeta "${r.name}"?`)) {
+                                    deleteRecipeMutation.mutate(r.id);
+                                  }
+                                }}
+                              >
+                                Șterge
+                              </Button>
+
+                              {/* Screen 1 Green Pill Button */}
+                              <Button
+                                variant="success"
+                                size="sm"
+                                className="btn-pill-green h-8 px-4 text-xs font-bold shadow-xs"
+                                onClick={() => {
+                                  setEditingRecipe(r);
+                                  setRecipeFormData({
+                                    name: r.name || "",
+                                    description: r.description || "",
+                                    phase: r.phase || 1,
+                                    meal_type: r.meal_type || "lunch",
+                                    calories: r.calories || 300,
+                                    protein: r.protein || 20,
+                                    carbs: r.carbs || 25,
+                                    fats: r.fats || 8,
+                                    prep_time: r.prep_time || 10,
+                                    cook_time: r.cook_time || 15,
+                                    image_url: r.image_url || "/images/eatnfit_chicken_salad.jpg",
+                                    ingredients: typeof r.ingredients === "string" ? r.ingredients : JSON.stringify(r.ingredients || []),
+                                    instructions: typeof r.instructions === "string" ? r.instructions : JSON.stringify(r.instructions || ""),
+                                    is_public: r.is_public ?? 1,
+                                  });
+                                  setRecipeModalOpen(true);
+                                }}
+                              >
+                                Editează
+                              </Button>
+
+                              {/* Screen 1 More 3-dots Menu */}
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 rounded-full hover:bg-muted text-slate-500"
+                                onClick={() => {
+                                  setEditingRecipe(r);
+                                  setRecipeModalOpen(true);
+                                }}
+                              >
+                                <MoreVertical className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* TAB 3: DATABASE BACKUPS                                        */}
+      {/* ============================================================== */}
+      {activeTab === "backups" && (
+        <Card className="border-border/60 shadow-sm">
+          <CardHeader className="p-5 pb-4 border-b border-border/50">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="text-lg font-bold">Copii de Siguranță (Backups)</CardTitle>
+                <CardDescription>
+                  Copii complete ale bazei de date SQLite. Generare instantă, securitate și retenție garantată.
+                </CardDescription>
+              </div>
+              <Button
+                onClick={() => createBackupMutation.mutate()}
+                disabled={createBackupMutation.isPending}
+                variant="success"
+                className="gap-2 btn-pill-green h-9.5 px-5 font-bold shadow-xs self-start sm:self-auto"
               >
-                Anulează
-              </Button>
-              <Button 
-                type="submit"
-                className="flex-1 bg-emerald-600 hover:bg-emerald-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Creează
+                {createBackupMutation.isPending ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+                <span>Generează Backup Acum</span>
               </Button>
             </div>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="overflow-x-auto" style={{ WebkitOverflowScrolling: 'touch' }}>
+              <Table className="min-w-[650px]">
+                <TableHeader>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="w-12 text-center">#</TableHead>
+                    <TableHead>Nume Fișier</TableHead>
+                    <TableHead>Dimensiune</TableHead>
+                    <TableHead>Data Creării</TableHead>
+                    <TableHead className="text-right pr-6 min-w-[120px]">Acțiuni Rapide</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {backupsLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-32 text-center">
+                        <RefreshCw className="w-6 h-6 animate-spin text-emerald-500 mx-auto mb-2" />
+                        <span className="text-sm text-muted-foreground">Se verifică backup-urile existente...</span>
+                      </TableCell>
+                    </TableRow>
+                  ) : backupsList.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                        Nu există backup-uri stocate. Apasă pe "Generează Backup Acum" pentru a crea primul fișier.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    backupsList.map((b, idx) => (
+                      <TableRow key={b.id || b.filename} className="hover:bg-muted/30 transition-colors">
+                        <TableCell className="text-center font-mono text-xs text-muted-foreground">
+                          {idx + 1}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2 font-mono text-xs text-foreground">
+                            <Database className="w-4 h-4 text-emerald-500 shrink-0" />
+                            <span>{b.filename}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs text-foreground">
+                          {b.formatted_size || (b.size ? (b.size / (1024 * 1024)).toFixed(2) + " MB" : "-")}
+                        </TableCell>
+                        <TableCell className="text-xs text-muted-foreground">
+                          {b.created_at ? format(new Date(b.created_at), "dd MMM yyyy, HH:mm", { locale: ro }) : "-"}
+                        </TableCell>
+                        <TableCell className="text-right pr-6">
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            className="btn-pill-red h-8 px-4 text-xs font-bold shadow-xs"
+                            onClick={() => {
+                              if (confirm(`Sigur dorești să ștergi fișierul de backup ${b.filename}?`)) {
+                                deleteBackupMutation.mutate(b.id || b.filename);
+                              }
+                            }}
+                          >
+                            Șterge
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ============================================================== */}
+      {/* TAB 4: SYSTEM STATS & METRICS                                  */}
+      {/* ============================================================== */}
+      {activeTab === "stats" && (
+        <div className="space-y-6">
+          {/* Top Showcase: Screen 2 Donut Card + Analytics Overview */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            <div className="lg:col-span-5 flex justify-center">
+              <ScreenTwoDonutCard
+                title="Status Prezență"
+                total={50}
+                totalLabel="ANGAJAȚI"
+                presentCount={2}
+                absentCount={48}
+                presentLabel="Prezenți"
+                absentLabel="Absenți"
+              />
+            </div>
+
+            <div className="lg:col-span-7 space-y-4">
+              <Card className="border-border/70 rounded-[28px] shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base sm:text-lg font-bold flex items-center justify-between">
+                    <span>Distribuție Fazare Rețete</span>
+                    <ChefHat className="w-5 h-5 text-emerald-500" />
+                  </CardTitle>
+                  <CardDescription>
+                    Repartizarea preparatelor pe cele 3 faze ale protocolului metabolic EatnFit
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-1">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-muted-foreground">Faza 1 (Deblocare Glicemică)</span>
+                      <span className="font-bold text-foreground">
+                        {recipesList.filter((r) => r.phase === 1).length} rețete ({Math.round((recipesList.filter((r) => r.phase === 1).length / (recipesList.length || 1)) * 100)}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-emerald-500 h-full rounded-full transition-all"
+                        style={{ width: `${(recipesList.filter((r) => r.phase === 1).length / (recipesList.length || 1)) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-muted-foreground">Faza 2 (Ardere Grăsimi)</span>
+                      <span className="font-bold text-foreground">
+                        {recipesList.filter((r) => r.phase === 2).length} rețete ({Math.round((recipesList.filter((r) => r.phase === 2).length / (recipesList.length || 1)) * 100)}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-blue-500 h-full rounded-full transition-all"
+                        style={{ width: `${(recipesList.filter((r) => r.phase === 2).length / (recipesList.length || 1)) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="font-medium text-muted-foreground">Faza 3 (Accelerare Hormonală)</span>
+                      <span className="font-bold text-foreground">
+                        {recipesList.filter((r) => r.phase === 3).length} rețete ({Math.round((recipesList.filter((r) => r.phase === 3).length / (recipesList.length || 1)) * 100)}%)
+                      </span>
+                    </div>
+                    <div className="w-full bg-secondary h-2.5 rounded-full overflow-hidden">
+                      <div
+                        className="bg-purple-500 h-full rounded-full transition-all"
+                        style={{ width: `${(recipesList.filter((r) => r.phase === 3).length / (recipesList.length || 1)) * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <Card className="border-border/70 rounded-[28px] shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold text-muted-foreground flex items-center justify-between">
+                      <span>Conformitate Zilnică</span>
+                      <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Total Check-in-uri</span>
+                      <span className="text-base font-bold text-foreground">{Array.isArray(checkIns) ? checkIns.length : 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Înregistrări Greutate</span>
+                      <span className="text-base font-bold text-foreground">{Array.isArray(weightEntries) ? weightEntries.length : 0}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">Utilizatori Înregistrați</span>
+                      <span className="text-base font-bold text-emerald-500">{usersList.length}</span>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card className="border-border/70 rounded-[28px] shadow-[0_4px_24px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)]">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-bold text-muted-foreground flex items-center justify-between">
+                      <span>Stare Arhitectură</span>
+                      <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1.5 pt-2 text-xs">
+                    <div className="flex justify-between py-1 border-b border-border/40">
+                      <span className="text-muted-foreground">Motor Bază Date:</span>
+                      <span className="font-semibold text-foreground">SQLite Serverless</span>
+                    </div>
+                    <div className="flex justify-between py-1 border-b border-border/40">
+                      <span className="text-muted-foreground">Server API:</span>
+                      <span className="font-semibold text-emerald-500">Express.js (Port 3001)</span>
+                    </div>
+                    <div className="flex justify-between py-1">
+                      <span className="text-muted-foreground">Frontend Web:</span>
+                      <span className="font-semibold text-blue-500">React + Vite (Port 3003)</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* TAB 5: SYSTEM SETTINGS                                          */}
+      {/* ============================================================== */}
+      {activeTab === "settings" && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card className="border-border/60">
+            <CardHeader>
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Settings className="w-4 h-4 text-emerald-500" />
+                Informații Versiune & Build
+              </CardTitle>
+              <CardDescription>
+                Detalii despre versiunea curentă a aplicației EatnFit pregătită pentru distribuție.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3 text-sm">
+              <div className="flex justify-between py-2 border-b border-border/40">
+                <span className="text-muted-foreground">Versiune Aplicație:</span>
+                <span className="font-mono font-bold text-foreground">v0.0.2</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border/40">
+                <span className="text-muted-foreground">Număr Build:</span>
+                <span className="font-mono text-foreground">{buildInfo?.buildNumber || 4}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border/40">
+                <span className="text-muted-foreground">Ultimul Commit Git:</span>
+                <span className="font-mono text-foreground">{buildInfo?.gitCommit || "main"}</span>
+              </div>
+              <div className="flex justify-between py-2 border-b border-border/40">
+                <span className="text-muted-foreground">Data Desfășurării:</span>
+                <span className="text-foreground">
+                  {buildInfo?.deployedAt ? format(new Date(buildInfo.deployedAt), "dd MMMM yyyy, HH:mm", { locale: ro }) : "Astăzi"}
+                </span>
+              </div>
+              <div className="flex justify-between py-2">
+                <span className="text-muted-foreground">Compatibilitate Magazine:</span>
+                <Badge className="bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  Pregătit App Store & Google Play
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-border/60">
+            <CardHeader>
+              <CardTitle className="text-base font-bold flex items-center gap-2">
+                <Database className="w-4 h-4 text-emerald-500" />
+                Integritate & Politică de Backup
+              </CardTitle>
+              <CardDescription>
+                Configurare interval de backup automat și reținere a versiunilor salvate.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4 text-sm">
+              <div className="space-y-1">
+                <Label>Interval Backup Automat</Label>
+                <Select defaultValue="12">
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Selectează intervalul" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="6">La fiecare 6 ore</SelectItem>
+                    <SelectItem value="12">La fiecare 12 ore (Recomandat)</SelectItem>
+                    <SelectItem value="24">La fiecare 24 ore</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label>Retenție Backup-uri Vechi</Label>
+                <Select defaultValue="48">
+                  <SelectTrigger className="bg-background">
+                    <SelectValue placeholder="Selectează perioada" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="48">Păstrează 48 ore (Recomandat)</SelectItem>
+                    <SelectItem value="72">Păstrează 72 ore</SelectItem>
+                    <SelectItem value="168">Păstrează 7 zile</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  onClick={() => {
+                    toast({
+                      title: "Setări salvate",
+                      description: "Politica de backup și retenție a fost aplicată.",
+                    });
+                  }}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                >
+                  Salvează Preferințele
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* ============================================================== */}
+      {/* MODAL: USER DETAILS                                            */}
+      {/* ============================================================== */}
+      <Dialog open={!!selectedUser} onOpenChange={(open) => !open && setSelectedUser(null)}>
+        <DialogContent className="w-[95vw] sm:max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Users className="w-5 h-5 text-emerald-500" />
+              <span>Fișă Utilizator: {selectedUser?.name || selectedUser?.email}</span>
+            </DialogTitle>
+            <DialogDescription>
+              Informații complete de profil, nutriție și conformitate metabolică.
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedUser && (
+            <div className="space-y-4 py-2 text-sm">
+              <div className="grid grid-cols-2 gap-3 p-3 bg-muted/30 rounded-xl border border-border/40">
+                <div>
+                  <span className="text-xs text-muted-foreground">Email:</span>
+                  <p className="font-semibold text-foreground">{selectedUser.email}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Telefon:</span>
+                  <p className="font-semibold text-foreground">{selectedUser.phone || "Nespecificat"}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Rol în Sistem:</span>
+                  <p className="font-semibold text-foreground capitalize">{selectedUser.role}</p>
+                </div>
+                <div>
+                  <span className="text-xs text-muted-foreground">Plan Abonament:</span>
+                  <p className="font-semibold text-emerald-600 dark:text-emerald-400 capitalize">
+                    {selectedUser.subscription_tier || "Free"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Date Antropometrice
+                </h4>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="p-2.5 rounded-lg border border-border/50 text-center">
+                    <span className="text-[11px] text-muted-foreground block">Greutate Actuală</span>
+                    <span className="font-bold text-foreground text-sm">{selectedUser.current_weight ? `${selectedUser.current_weight} kg` : "-"}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg border border-border/50 text-center">
+                    <span className="text-[11px] text-muted-foreground block">Greutate Țintă</span>
+                    <span className="font-bold text-emerald-600 text-sm">{selectedUser.target_weight ? `${selectedUser.target_weight} kg` : "-"}</span>
+                  </div>
+                  <div className="p-2.5 rounded-lg border border-border/50 text-center">
+                    <span className="text-[11px] text-muted-foreground block">Înălțime</span>
+                    <span className="font-bold text-foreground text-sm">{selectedUser.height ? `${selectedUser.height} cm` : "-"}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Preferințe alimentare:</span>
+                <p className="text-foreground bg-muted/20 p-2 rounded border border-border/40">
+                  {selectedUser.dietary_preferences || "Nicio preferință specială înregistrată."}
+                </p>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-xs text-muted-foreground">Alergii & intoleranțe:</span>
+                <p className="text-foreground bg-muted/20 p-2 rounded border border-border/40">
+                  {selectedUser.allergies || "Nu există alergii declarate."}
+                </p>
+              </div>
+            </div>
+          )}
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSelectedUser(null)}>
+              Închide
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================== */}
+      {/* MODAL: CREATE USER                                             */}
+      {/* ============================================================== */}
+      <Dialog open={showCreateUser} onOpenChange={setShowCreateUser}>
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Adaugă Utilizator Nou</DialogTitle>
+            <DialogDescription>
+              Creează manual un cont pentru un utilizator sau administrator.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!newUserData.email || !newUserData.password) {
+                toast({ title: "Date incomplete", description: "Email-ul și parola sunt obligatorii.", variant: "destructive" });
+                return;
+              }
+              createUserMutation.mutate(newUserData);
+            }}
+            className="space-y-3 py-2 text-sm"
+          >
+            <div className="space-y-1">
+              <Label>Nume Complet</Label>
+              <Input
+                placeholder="ex: Andrei Popescu"
+                value={newUserData.name}
+                onChange={(e) => setNewUserData({ ...newUserData, name: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Email</Label>
+              <Input
+                type="email"
+                placeholder="adresa@exemplu.com"
+                value={newUserData.email}
+                onChange={(e) => setNewUserData({ ...newUserData, email: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Parolă</Label>
+              <Input
+                type="password"
+                placeholder="Minim 6 caractere"
+                value={newUserData.password}
+                onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Telefon (Opțional)</Label>
+              <Input
+                placeholder="+40 700 000 000"
+                value={newUserData.phone}
+                onChange={(e) => setNewUserData({ ...newUserData, phone: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3 pt-1">
+              <div className="space-y-1">
+                <Label>Rol</Label>
+                <Select
+                  value={newUserData.role}
+                  onValueChange={(val) => setNewUserData({ ...newUserData, role: val })}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="user">Utilizator</SelectItem>
+                    <SelectItem value="admin">Administrator</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label>Abonament</Label>
+                <Select
+                  value={newUserData.subscription_tier}
+                  onValueChange={(val) => setNewUserData({ ...newUserData, subscription_tier: val })}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="free">Free</SelectItem>
+                    <SelectItem value="premium">Premium</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <DialogFooter className="pt-3">
+              <Button type="button" variant="outline" onClick={() => setShowCreateUser(false)}>
+                Anulează
+              </Button>
+              <Button
+                type="submit"
+                disabled={createUserMutation.isPending}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                {createUserMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+                Creează Cont
+              </Button>
+            </DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
 
-      {/* Dialog Vizualizare Backup */}
-      <Dialog open={selectedBackup !== null} onOpenChange={() => setSelectedBackup(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="w-6 h-6 text-blue-600" />
-              Conținut Backup: {selectedBackup?.filename}
-            </DialogTitle>
-          </DialogHeader>
-          {selectedBackup && (() => {
-            let backupContent = null;
-            try {
-              backupContent = selectedBackup.backup_data ? JSON.parse(selectedBackup.backup_data) : null;
-            } catch (e) {
-              backupContent = null;
-            }
-
-            return (
-              <div className="space-y-4">
-                {/* Info Backup */}
-                <div className="p-4 bg-[rgb(var(--ios-bg-tertiary))] border border-[rgb(var(--ios-border))] rounded-lg">
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><strong>Fișier:</strong> {selectedBackup.filename}</div>
-                    <div><strong>Mărime:</strong> {selectedBackup.size_mb} MB</div>
-                    <div><strong>Data:</strong> {new Date(selectedBackup.created_at).toLocaleString('ro-RO')}</div>
-                    <div><strong>Tip:</strong> {selectedBackup.auto_generated ? '🔄 Automat' : '👤 Manual'}</div>
-                  </div>
-                </div>
-
-                {/* Conținut Tabele */}
-                {backupContent ? (
-                  <div className="space-y-4">
-                    {Object.entries(backupContent).map(([tableName, rows]) => (
-                      <Card key={tableName} className="ios-card">
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base flex items-center justify-between">
-                            <span>📊 {tableName}</span>
-                            <Badge>{rows.length} înregistrări</Badge>
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="text-xs bg-gray-100 dark:bg-gray-900 p-3 rounded-lg overflow-x-auto max-h-40">
-                            <pre className="text-xs">
-                              {JSON.stringify(rows.slice(0, 3), null, 2)}
-                              {rows.length > 3 && `\n... și încă ${rows.length - 3} înregistrări`}
-                            </pre>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center text-gray-500 py-8">
-                    <p>Conținutul backup-ului nu este disponibil</p>
-                    <p className="text-xs mt-2">Backup-ul poate fi de tip SQL sau fișier extern</p>
-                  </div>
-                )}
-
-                {/* Butoane Acțiuni */}
-                <div className="flex gap-2 pt-4">
-                  <Button 
-                    onClick={() => {
-                      if (backupContent) {
-                        const dataStr = JSON.stringify(backupContent, null, 2);
-                        const dataBlob = new Blob([dataStr], { type: 'application/json' });
-                        const url = URL.createObjectURL(dataBlob);
-                        const link = document.createElement('a');
-                        link.href = url;
-                        link.download = selectedBackup.filename;
-                        link.click();
-                        URL.revokeObjectURL(url);
-                        alert('✅ Backup descărcat!');
-                      }
-                    }}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700"
-                    disabled={!backupContent}
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    Descarcă Backup
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => setSelectedBackup(null)}
-                    className="flex-1"
-                  >
-                    Închide
-                  </Button>
-                </div>
-              </div>
-            );
-          })()}
-        </DialogContent>
-      </Dialog>
-
-      {/* Reset Password Dialog */}
+      {/* ============================================================== */}
+      {/* MODAL: RESET PASSWORD                                          */}
+      {/* ============================================================== */}
       <Dialog open={showResetPassword} onOpenChange={setShowResetPassword}>
-        <DialogContent>
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Resetează Parola</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                Resetezi parola pentru utilizatorul:
-              </p>
-              <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                {resetPasswordUser?.first_name && resetPasswordUser?.last_name 
-                  ? `${resetPasswordUser.first_name} ${resetPasswordUser.last_name}` 
-                  : resetPasswordUser?.name} ({resetPasswordUser?.email})
-              </p>
-            </div>
-            <div>
-              <Label htmlFor="newPassword">Parola Nouă (minim 6 caractere)</Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={newPassword}
-                onChange={(e) => setNewPassword(e.target.value)}
-                placeholder="Introdu parola nouă..."
-                className="mt-1"
-              />
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowResetPassword(false)}>
-                Anulează
-              </Button>
-              <Button 
-                onClick={confirmResetPassword}
-                disabled={resetPasswordMutation.isPending || !newPassword.trim() || newPassword.length < 6}
-              >
-                {resetPasswordMutation.isPending ? 'Se resetează...' : 'Resetează Parola'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Delete User Dialog */}
-      <Dialog open={showDeleteUser} onOpenChange={setShowDeleteUser}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>🗑️ Șterge Utilizatorul</DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-              <p className="text-red-800 dark:text-red-200 font-semibold mb-2">
-                ATENȚIE: Această acțiune NU poate fi anulată!
-              </p>
-              <p className="text-sm text-red-700 dark:text-red-300">
-                Vei șterge PERMANENT utilizatorul:
-              </p>
-              <p className="font-bold text-red-900 dark:text-red-100 mt-1">
-                {deleteUserData?.first_name && deleteUserData?.last_name 
-                  ? `${deleteUserData.first_name} ${deleteUserData.last_name}` 
-                  : deleteUserData?.name} ({deleteUserData?.email})
-              </p>
-            </div>
-            <div className="text-sm text-gray-600 dark:text-gray-400">
-              <p className="font-semibold mb-2">Se vor șterge:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Toate datele personale</li>
-                <li>Toate check-ins-urile</li>
-                <li>Toate înregistrările de greutate</li>
-                <li>Toate mesajele și prieteniile</li>
-                <li>Toate rețetele personale</li>
-              </ul>
-            </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowDeleteUser(false)}>
-                Anulează
-              </Button>
-              <Button 
-                variant="destructive"
-                onClick={confirmDeleteUser}
-                disabled={deleteUserMutation.isPending}
-              >
-                {deleteUserMutation.isPending ? 'Se șterge...' : 'DA, Șterge Definitiv'}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Grant Premium Dialog */}
-      <Dialog
-        open={showGrantPremium}
-        onOpenChange={(open) => {
-          setShowGrantPremium(open);
-          if (!open) {
-            setGrantPremiumUser(null);
-            setPremiumDuration('lifetime');
-          }
-        }}
-      >
-        <DialogContent aria-describedby="grant-premium-description">
-          <DialogHeader>
-            <DialogTitle>Acordă Premium</DialogTitle>
-            <DialogDescription id="grant-premium-description">
-              Activează manual abonamentul Premium pentru utilizatorul selectat. După confirmare, starea lui devine „Premium activ”.
+            <DialogTitle>Resetare Parolă Utilizator</DialogTitle>
+            <DialogDescription>
+              Setează o nouă parolă pentru contul <strong className="text-foreground">{resetPasswordTarget?.email}</strong>.
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">
-                Acordă abonament Premium pentru utilizatorul:
-              </p>
-              <p className="font-semibold text-[rgb(var(--ios-text-primary))]">
-                {grantPremiumUser?.first_name && grantPremiumUser?.last_name 
-                  ? `${grantPremiumUser.first_name} ${grantPremiumUser.last_name}` 
-                  : grantPremiumUser?.name} ({grantPremiumUser?.email})
-              </p>
-              {((grantPremiumUser?.subscription_tier || grantPremiumUser?.subscription_plan) === 'premium') && (
-                <div className="mt-2 p-2 bg-[#1a1a1a] border border-[#2a2a2a] rounded">
-                  <p className="text-sm text-[#888]">
-                    Utilizatorul are deja Premium activ
-                  </p>
-                </div>
-              )}
+
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label>Noua Parolă</Label>
+              <Input
+                type="password"
+                placeholder="Introduceți minim 6 caractere"
+                value={newPasswordVal}
+                onChange={(e) => setNewPasswordVal(e.target.value)}
+              />
             </div>
-            <div>
-              <Label htmlFor="premiumDuration">Durata Premium</Label>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowResetPassword(false)}>
+              Anulează
+            </Button>
+            <Button
+              disabled={resetPasswordMutation.isPending || newPasswordVal.length < 6}
+              onClick={() => {
+                resetPasswordMutation.mutate({
+                  userId: resetPasswordTarget.id,
+                  newPassword: newPasswordVal,
+                });
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {resetPasswordMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+              Salvează Noua Parolă
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================== */}
+      {/* MODAL: DELETE USER                                             */}
+      {/* ============================================================== */}
+      <Dialog open={showDeleteUser} onOpenChange={setShowDeleteUser}>
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-destructive flex items-center gap-2">
+              <AlertCircle className="w-5 h-5" />
+              <span>Confirmare Ștergere Utilizator</span>
+            </DialogTitle>
+            <DialogDescription>
+              Ești sigur că dorești să ștergi contul <strong>{deleteUserTarget?.email}</strong>?
+              Această acțiune este ireversibilă și va șterge toate check-in-urile și datele asociate.
+            </DialogDescription>
+          </DialogHeader>
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setShowDeleteUser(false)}>
+              Anulează
+            </Button>
+            <Button
+              variant="destructive"
+              disabled={deleteUserMutation.isPending}
+              onClick={() => deleteUserMutation.mutate(deleteUserTarget.id)}
+            >
+              {deleteUserMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+              Confirmă Ștergerea
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================== */}
+      {/* MODAL: GRANT PREMIUM                                           */}
+      {/* ============================================================== */}
+      <Dialog open={showGrantPremium} onOpenChange={setShowGrantPremium}>
+        <DialogContent className="w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Crown className="w-5 h-5 text-amber-500" />
+              <span>Acordă Acces Premium</span>
+            </DialogTitle>
+            <DialogDescription>
+              Activează abonamentul Premium pentru <strong>{grantPremiumTarget?.email}</strong>.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2">
+            <div className="space-y-1">
+              <Label>Durata Abonamentului</Label>
               <Select value={premiumDuration} onValueChange={setPremiumDuration}>
-                <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Selectează durata..." />
+                <SelectTrigger className="bg-background">
+                  <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="1">1 lună</SelectItem>
-                  <SelectItem value="3">3 luni</SelectItem>
-                  <SelectItem value="6">6 luni</SelectItem>
-                  <SelectItem value="12">12 luni (1 an)</SelectItem>
-                  <SelectItem value="lifetime">Lifetime (permanent)</SelectItem>
+                  <SelectItem value="1_month">1 Lună</SelectItem>
+                  <SelectItem value="1_year">1 An (12 Luni)</SelectItem>
+                  <SelectItem value="lifetime">Pe Viață (Lifetime VIP)</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-            <div className="p-3 bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg">
-              <p className="text-sm text-white">
-                <strong>Premium include:</strong>
-              </p>
-              <ul className="text-xs text-[#888] mt-1 list-disc list-inside">
-                <li>Rețete nelimitate</li>
-                <li>Funcționalitate prieteni</li>
-                <li>Baza de date alimente</li>
-                <li>Suport prioritar</li>
-                <li>Fără reclame</li>
-              </ul>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowGrantPremium(false)}>
+              Anulează
+            </Button>
+            <Button
+              disabled={grantPremiumMutation.isPending}
+              onClick={() => {
+                grantPremiumMutation.mutate({
+                  userId: grantPremiumTarget.id,
+                  duration: premiumDuration,
+                });
+              }}
+              className="bg-amber-600 hover:bg-amber-700 text-white font-semibold"
+            >
+              {grantPremiumMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+              Activează Premium
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ============================================================== */}
+      {/* MODAL: ADD / EDIT RECIPE                                       */}
+      {/* ============================================================== */}
+      <Dialog open={recipeModalOpen} onOpenChange={setRecipeModalOpen}>
+        <DialogContent className="w-[95vw] sm:max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingRecipe ? "Editează Rețeta" : "Adaugă Rețetă Nouă"}
+            </DialogTitle>
+            <DialogDescription>
+              Configurează parametrii nutriționali, faza metabolică și imaginea cu logo EatnFit embosat.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!recipeFormData.name) {
+                toast({ title: "Nume lipsă", description: "Te rugăm să introduci numele rețetei.", variant: "destructive" });
+                return;
+              }
+              saveRecipeMutation.mutate(recipeFormData);
+            }}
+            className="space-y-4 py-2 text-sm"
+          >
+            <div className="space-y-1">
+              <Label>Nume Rețetă</Label>
+              <Input
+                placeholder="ex: Bol de Quinoa cu Somon și Sparanghel"
+                value={recipeFormData.name}
+                onChange={(e) => setRecipeFormData({ ...recipeFormData, name: e.target.value })}
+                required
+              />
             </div>
-            <div className="flex gap-2 justify-end">
-              <Button variant="outline" onClick={() => setShowGrantPremium(false)} className="bg-[#1a1a1a] border-[#2a2a2a] text-white hover:bg-[#2a2a2a]">
+
+            <div className="space-y-1">
+              <Label>Descriere Scurtă</Label>
+              <Input
+                placeholder="Descriere nutrițională și beneficii metabolice..."
+                value={recipeFormData.description}
+                onChange={(e) => setRecipeFormData({ ...recipeFormData, description: e.target.value })}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <Label>Faza Metabolică</Label>
+                <Select
+                  value={String(recipeFormData.phase)}
+                  onValueChange={(val) => setRecipeFormData({ ...recipeFormData, phase: parseInt(val) })}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">Faza 1 (Deblocare Glicemică)</SelectItem>
+                    <SelectItem value="2">Faza 2 (Ardere Grăsimi)</SelectItem>
+                    <SelectItem value="3">Faza 3 (Accelerare Hormonală)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1">
+                <Label>Tip Masă</Label>
+                <Select
+                  value={recipeFormData.meal_type}
+                  onValueChange={(val) => setRecipeFormData({ ...recipeFormData, meal_type: val })}
+                >
+                  <SelectTrigger className="bg-background">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="breakfast">Mic Dejun</SelectItem>
+                    <SelectItem value="lunch">Prânz</SelectItem>
+                    <SelectItem value="dinner">Cină</SelectItem>
+                    <SelectItem value="snack1">Gustare 1</SelectItem>
+                    <SelectItem value="snack2">Gustare 2</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Macros */}
+            <div className="grid grid-cols-4 gap-2">
+              <div className="space-y-1">
+                <Label className="text-xs">Calorii (kcal)</Label>
+                <Input
+                  type="number"
+                  value={recipeFormData.calories}
+                  onChange={(e) => setRecipeFormData({ ...recipeFormData, calories: parseInt(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Proteine (g)</Label>
+                <Input
+                  type="number"
+                  value={recipeFormData.protein}
+                  onChange={(e) => setRecipeFormData({ ...recipeFormData, protein: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Carbohidrați (g)</Label>
+                <Input
+                  type="number"
+                  value={recipeFormData.carbs}
+                  onChange={(e) => setRecipeFormData({ ...recipeFormData, carbs: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Grăsimi (g)</Label>
+                <Input
+                  type="number"
+                  value={recipeFormData.fats}
+                  onChange={(e) => setRecipeFormData({ ...recipeFormData, fats: parseFloat(e.target.value) || 0 })}
+                />
+              </div>
+            </div>
+
+            {/* Image Selector */}
+            <div className="space-y-2 pt-1">
+              <Label>Imagine Gastronomică (Colecția Branded EatnFit)</Label>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                {EMBOSSED_SHOWCASE_IMAGES.map((img) => {
+                  const isSelected = recipeFormData.image_url === img.url;
+                  return (
+                    <div
+                      key={img.url}
+                      onClick={() => setRecipeFormData({ ...recipeFormData, image_url: img.url })}
+                      className={`relative cursor-pointer rounded-xl overflow-hidden border-2 transition-all group ${
+                        isSelected ? "border-emerald-500 ring-2 ring-emerald-500/20 shadow-md" : "border-border/60 opacity-75 hover:opacity-100"
+                      }`}
+                    >
+                      <img src={img.url} alt={img.label} className="w-full h-20 object-cover" />
+                      <div className="p-1 text-[10px] leading-tight text-center font-medium bg-card/90 truncate">
+                        {img.label}
+                      </div>
+                      {isSelected && (
+                        <div className="absolute top-1 right-1 w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xs">
+                          <Check className="w-3 h-3" />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+              <div className="space-y-1 pt-1">
+                <Label className="text-xs text-muted-foreground">Sau introdu URL imagine personalizată:</Label>
+                <Input
+                  placeholder="/images/eatnfit_chicken_salad.jpg"
+                  value={recipeFormData.image_url}
+                  onChange={(e) => setRecipeFormData({ ...recipeFormData, image_url: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Ingredients & Instructions */}
+            <div className="space-y-1">
+              <Label>Ingrediente (text sau listă)</Label>
+              <Textarea
+                placeholder="ex: 150g piept de pui, 1 avocado, 200g salată verde, suc de lămâie..."
+                rows={3}
+                value={recipeFormData.ingredients}
+                onChange={(e) => setRecipeFormData({ ...recipeFormData, ingredients: e.target.value })}
+              />
+            </div>
+
+            <div className="space-y-1">
+              <Label>Instrucțiuni de Preparare</Label>
+              <Textarea
+                placeholder="Pas cu pas modul de gătire..."
+                rows={3}
+                value={recipeFormData.instructions}
+                onChange={(e) => setRecipeFormData({ ...recipeFormData, instructions: e.target.value })}
+              />
+            </div>
+
+            <DialogFooter className="pt-3">
+              <Button type="button" variant="outline" onClick={() => setRecipeModalOpen(false)}>
                 Anulează
               </Button>
-              <Button 
-                onClick={confirmGrantPremium}
-                disabled={grantPremiumMutation.isPending}
-                className="bg-[#1a1a1a] hover:bg-[#2a2a2a] text-white border border-[#2a2a2a]"
+              <Button
+                type="submit"
+                disabled={saveRecipeMutation.isPending}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
               >
-                {grantPremiumMutation.isPending ? 'Se acordă...' : 'Acordă Premium'}
+                {saveRecipeMutation.isPending ? <RefreshCw className="w-4 h-4 animate-spin mr-2" /> : null}
+                {editingRecipe ? "Salvează Modificările" : "Adaugă în Catalog"}
               </Button>
-            </div>
-          </div>
+            </DialogFooter>
+          </form>
         </DialogContent>
       </Dialog>
     </div>

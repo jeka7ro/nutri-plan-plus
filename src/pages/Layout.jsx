@@ -40,22 +40,15 @@ function SidebarNav({ user, t, language, theme, handleLogout }) {
 
   return (
     <Sidebar className="border-r border-[rgb(var(--ios-border))] ios-glass">
-      <SidebarHeader className="border-b border-[rgb(var(--ios-border))] p-2">
-        <div className="flex flex-col items-center mb-1">
+      <div className="h-16 min-h-[64px] max-h-[64px] flex items-center px-4 border-b border-[rgb(var(--ios-border))] bg-white dark:bg-[rgb(var(--ios-bg-primary))] flex-shrink-0 box-border">
+        <Link to={createPageUrl("DailyPlan")} className="flex items-center gap-2 transition-opacity hover:opacity-85">
           <img
             src={theme === 'dark' ? '/logodark.png' : '/logolight.png'}
             alt="EatnFit"
-            className="w-32 h-32 object-contain mb-0"
+            className="h-8 w-auto object-contain"
           />
-          <p className="text-sm font-semibold text-[rgb(var(--ios-text-primary))] text-center -mt-8">
-            {language === 'ro' ? 'Eat Smart. Stay Fit' : 'Eat Smart. Stay Fit'}
-          </p>
-        </div>
-        <div className="flex items-center justify-center gap-2 mt-2">
-          <LanguageSelector />
-          <ThemeSelector />
-        </div>
-      </SidebarHeader>
+        </Link>
+      </div>
       
       <SidebarContent className="px-2 py-2">
         <SidebarGroup>
@@ -257,25 +250,29 @@ function LayoutContent() {
     localApi.auth.me()
       .then(userData => {
         setUser(userData);
-        console.log('✅ User autentificat:', userData.email);
+        console.log('User autentificat:', userData.email);
       })
       .catch(error => {
-        console.log('❌ User NEAUTENTIFICAT - redirectare la login');
+        console.log('User NEAUTENTIFICAT - redirectare la login');
         setUser(null);
         // Redirectare la pagina de login
         navigate('/');
       });
   }, [navigate]);
 
-  const getCurrentDay = () => {
-    if (!user?.start_date) return 1;
+  const hasActiveProgram = !!user?.start_date && user?.program_status !== 'abandoned';
+  
+  const getProgramDaysPassed = () => {
+    if (!hasActiveProgram) return 0;
     const startDate = new Date(user.start_date);
     const today = new Date();
-    const daysPassed = differenceInDays(today, startDate) + 1;
-    return Math.min(Math.max(daysPassed, 1), 28);
+    today.setHours(0, 0, 0, 0);
+    return differenceInDays(today, startDate) + 1;
   };
 
-  const currentDay = getCurrentDay();
+  const programDaysPassed = getProgramDaysPassed();
+  const isProgramExpired = hasActiveProgram && programDaysPassed > 28;
+  const currentDay = Math.min(Math.max(programDaysPassed, 1), 28);
 
   const baseNavigationItems = [
     {
@@ -342,7 +339,7 @@ function LayoutContent() {
     : baseNavigationItems;
 
   const handleLogout = () => {
-    console.log('🚪 LOGOUT - Șterg toate datele...');
+    console.log('LOGOUT - Șterg toate datele...');
     
     // Logout folosind API-ul local
     localApi.auth.logout();
@@ -355,7 +352,7 @@ function LayoutContent() {
     localStorage.removeItem('current_user');
     localStorage.clear(); // Pentru siguranță, șterge tot!
     
-    console.log('✅ Date șterse! Redirectare la login...');
+    console.log('Date șterse! Redirectare la login...');
     
     // Redirectare FORȚATĂ cu page reload complet
     window.location.href = '/';
@@ -409,13 +406,22 @@ function LayoutContent() {
         .ios-card {
           background: rgb(var(--ios-bg-primary));
           border: 1px solid rgb(var(--ios-border));
-          border-radius: 16px;
-          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+          border-radius: 24px;
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+          transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
         .dark .ios-card {
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-          border: 1px solid rgba(255, 255, 255, 0.05);
+          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.45);
+          border: 1px solid rgba(255, 255, 255, 0.07);
+          border-radius: 24px;
+        }
+
+        /* Pill button defaults matching Screen 1 */
+        .btn-pill, button.ios-btn {
+          border-radius: 9999px !important;
+          font-weight: 700;
+          letter-spacing: -0.01em;
         }
 
         .ios-glass {
@@ -430,19 +436,19 @@ function LayoutContent() {
         }
 
         .ios-shadow-sm {
-          box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
         }
 
         .dark .ios-shadow-sm {
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
         }
 
         .ios-shadow-lg {
-          box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 10px 15px rgba(0, 0, 0, 0.03);
+          box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 12px 28px rgba(0, 0, 0, 0.02);
         }
 
         .dark .ios-shadow-lg {
-          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.7), 0 10px 25px rgba(0, 0, 0, 0.5);
+          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 12px 30px rgba(0, 0, 0, 0.4);
         }
 
         * {
@@ -487,8 +493,8 @@ function LayoutContent() {
 
         <main className="flex-1 flex flex-col relative max-w-full overflow-x-hidden">
           {/* HEADER MOBIL (ascuns pe desktop) */}
-          <header className="bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-gray-200 dark:border-[rgb(var(--ios-border))] px-4 py-3 md:hidden sticky top-0 z-10 ios-shadow-sm">
-            <div className="flex items-center justify-between gap-3">
+          <header className="h-16 min-h-[64px] max-h-[64px] box-border flex-shrink-0 bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-[rgb(var(--ios-border))] px-4 md:hidden sticky top-0 z-10 ios-shadow-sm flex items-center justify-between">
+            <div className="flex items-center justify-between gap-3 w-full">
               <div className="flex items-center gap-3">
                 <SidebarTrigger className="hover:bg-gray-100 dark:hover:bg-white/5 p-3 rounded-2xl border border-gray-200 dark:border-white/15 transition-colors duration-200 text-xl w-11 h-11 flex items-center justify-center active:scale-[0.97]" />
                 {user && (
@@ -510,22 +516,34 @@ function LayoutContent() {
                 )}
               </div>
               
-              {/* Progress Bar - Centered */}
-              {user?.start_date && (
-                <div className="flex-1 max-w-[140px]">
-                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              {/* Progress Bar - Centered (responsive) */}
+              {user?.program_status === 'abandoned' ? (
+                <div className="hidden min-[380px]:block text-center">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30">
+                    {language === 'ro' ? 'Fără program activ' : 'No active program'}
+                  </span>
+                </div>
+              ) : isProgramExpired ? (
+                <div className="hidden min-[380px]:block text-center">
+                  <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                    {language === 'ro' ? 'Program încheiat' : 'Program ended'}
+                  </span>
+                </div>
+              ) : hasActiveProgram && (
+                <div className="hidden min-[380px]:block flex-1 max-w-[120px] sm:max-w-[160px] mx-1">
+                  <div className="h-2.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                     <div 
                       className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-red-500 via-amber-400 to-emerald-500"
                       style={{ width: `${(currentDay / 28) * 100}%` }}
                     />
                   </div>
-                  <div className="mt-1 text-[11px] font-semibold text-center text-emerald-600 dark:text-emerald-400">
+                  <div className="mt-0.5 text-[10px] font-bold text-center text-emerald-600 dark:text-emerald-400">
                     {language === 'ro' ? 'Ziua' : 'Day'} {currentDay}/28
                   </div>
                 </div>
               )}
 
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 sm:gap-3">
                 <NotificationBell />
                 <ThemeSelector />
               </div>
@@ -533,7 +551,7 @@ function LayoutContent() {
           </header>
 
           {/* HEADER DESKTOP (ascuns pe mobil, vizibil pe desktop) */}
-          <header className="hidden md:flex bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-gray-200 dark:border-[rgb(var(--ios-border))] px-6 py-3 sticky top-0 z-10 ios-shadow-sm items-center justify-between">
+          <header className="hidden md:flex h-16 min-h-[64px] max-h-[64px] box-border flex-shrink-0 bg-white dark:bg-[rgb(var(--ios-bg-primary))] border-b border-[rgb(var(--ios-border))] px-6 sticky top-0 z-10 ios-shadow-sm items-center justify-between">
             <div className="flex items-center gap-3">
               {user && (
                 <div className="flex items-center gap-2">
@@ -558,7 +576,19 @@ function LayoutContent() {
             </div>
 
             {/* Progress Bar - Desktop */}
-            {user?.start_date && (
+            {user?.program_status === 'abandoned' ? (
+              <div className="text-center mx-6">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30">
+                  {language === 'ro' ? 'Fără program activ (abandonat)' : 'No active program (abandoned)'}
+                </span>
+              </div>
+            ) : isProgramExpired ? (
+              <div className="text-center mx-6">
+                <span className="text-xs font-semibold px-3 py-1 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                  {language === 'ro' ? 'Program încheiat / neterminat' : 'Program ended / unfinished'}
+                </span>
+              </div>
+            ) : hasActiveProgram && (
               <div className="flex-1 max-w-[200px] mx-6">
                 <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
                   <div 
@@ -578,9 +608,111 @@ function LayoutContent() {
             </div>
           </header>
 
-          <div className="flex-1 overflow-auto max-w-full">
+          {/* MAIN CONTENT OUTLET cu padding generos pe mobil pentru bara inferioară */}
+          <div className="flex-1 overflow-auto max-w-full pb-24 md:pb-6">
             <Outlet />
           </div>
+
+          {/* MOBILE BOTTOM TAB BAR - Nativ iOS / Android */}
+          <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 dark:bg-[rgb(var(--ios-bg-primary))]/95 backdrop-blur-xl border-t border-[rgb(var(--ios-border))] px-1.5 py-1.5 flex items-center justify-around shadow-[0_-4px_20px_rgba(0,0,0,0.06)] dark:shadow-[0_-4px_24px_rgba(0,0,0,0.4)]">
+            <Link
+              to={createPageUrl("DailyPlan")}
+              className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-2xl transition-all duration-150 active:scale-95 ${
+                location.pathname === createPageUrl("DailyPlan")
+                  ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-muted-foreground hover:text-foreground font-medium"
+              }`}
+            >
+              <div className={`p-1 rounded-xl transition-colors ${location.pathname === createPageUrl("DailyPlan") ? "bg-emerald-500/15" : ""}`}>
+                <Calendar className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] tracking-tight leading-none mt-0.5 truncate">
+                {language === 'ro' ? 'Plan' : 'Daily'}
+              </span>
+            </Link>
+
+            <Link
+              to={createPageUrl("Calendar")}
+              className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-2xl transition-all duration-150 active:scale-95 ${
+                location.pathname === createPageUrl("Calendar")
+                  ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-muted-foreground hover:text-foreground font-medium"
+              }`}
+            >
+              <div className={`p-1 rounded-xl transition-colors ${location.pathname === createPageUrl("Calendar") ? "bg-emerald-500/15" : ""}`}>
+                <Calendar className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] tracking-tight leading-none mt-0.5 truncate">
+                {language === 'ro' ? '28 Zile' : '28 Days'}
+              </span>
+            </Link>
+
+            <Link
+              to={createPageUrl("Recipes")}
+              className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-2xl transition-all duration-150 active:scale-95 ${
+                location.pathname === createPageUrl("Recipes")
+                  ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-muted-foreground hover:text-foreground font-medium"
+              }`}
+            >
+              <div className={`p-1 rounded-xl transition-colors ${location.pathname === createPageUrl("Recipes") ? "bg-emerald-500/15" : ""}`}>
+                <BookOpen className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] tracking-tight leading-none mt-0.5 truncate">
+                {language === 'ro' ? 'Rețete' : 'Recipes'}
+              </span>
+            </Link>
+
+            <Link
+              to={createPageUrl("WeightTracking")}
+              className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-2xl transition-all duration-150 active:scale-95 ${
+                location.pathname === createPageUrl("WeightTracking")
+                  ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                  : "text-muted-foreground hover:text-foreground font-medium"
+              }`}
+            >
+              <div className={`p-1 rounded-xl transition-colors ${location.pathname === createPageUrl("WeightTracking") ? "bg-emerald-500/15" : ""}`}>
+                <TrendingDown className="w-5 h-5" />
+              </div>
+              <span className="text-[10px] tracking-tight leading-none mt-0.5 truncate">
+                {language === 'ro' ? 'Greutate' : 'Weight'}
+              </span>
+            </Link>
+
+            {user?.role === 'admin' ? (
+              <Link
+                to={createPageUrl("Admin")}
+                className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-2xl transition-all duration-150 active:scale-95 ${
+                  location.pathname === createPageUrl("Admin")
+                    ? "text-purple-600 dark:text-purple-400 font-bold"
+                    : "text-muted-foreground hover:text-foreground font-medium"
+                }`}
+              >
+                <div className={`p-1 rounded-xl transition-colors ${location.pathname === createPageUrl("Admin") ? "bg-purple-500/15" : ""}`}>
+                  <Shield className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] tracking-tight leading-none mt-0.5 truncate">
+                  Admin
+                </span>
+              </Link>
+            ) : (
+              <Link
+                to={createPageUrl("Profile")}
+                className={`flex flex-col items-center justify-center flex-1 py-1 px-1 rounded-2xl transition-all duration-150 active:scale-95 ${
+                  location.pathname === createPageUrl("Profile")
+                    ? "text-emerald-600 dark:text-emerald-400 font-bold"
+                    : "text-muted-foreground hover:text-foreground font-medium"
+                }`}
+              >
+                <div className={`p-1 rounded-xl transition-colors ${location.pathname === createPageUrl("Profile") ? "bg-emerald-500/15" : ""}`}>
+                  <User className="w-5 h-5" />
+                </div>
+                <span className="text-[10px] tracking-tight leading-none mt-0.5 truncate">
+                  {language === 'ro' ? 'Profil' : 'Profile'}
+                </span>
+              </Link>
+            )}
+          </nav>
 
           <AIFoodAssistant />
         </main>

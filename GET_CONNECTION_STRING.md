@@ -60,3 +60,4 @@ node fix-render-all.js
 6. Așteaptă 2-3 minute
 7. Apoi copiază "Internal Database URL"
 
+

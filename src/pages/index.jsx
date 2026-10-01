@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import localApi from "@/api/localClient"; // Direct client pentru auth
 import { createPageUrl } from "@/utils";
-import { Loader2 } from "lucide-react";
+import { Loader2, CheckCircle2, KeyRound } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -52,18 +52,18 @@ export default function IndexPage() {
         
         // ADMINS bypass onboarding complet
         if (user.role === 'admin') {
-          console.log('✅ Admin detectat - SKIP onboarding');
+          console.log('Admin detectat - SKIP onboarding');
           navigate(createPageUrl("DailyPlan"));
           return;
         }
         
         // Verifică dacă user-ul are datele complete SAU a completat deja onboarding
         // Dacă are profile_picture sau name completat, considerăm că a trecut deja prin onboarding
-        const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
+        const hasCompletedProfile = (user.start_date || user.program_status === 'abandoned') && user.current_weight && user.target_weight;
         const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
         
               if (hasCompletedProfile || hasBasicInfo) {
-                console.log('✅ Profil deja completat - SKIP onboarding');
+                console.log('Profil deja completat - SKIP onboarding');
                 // Navighează la DailyPlan (ziua curentă) în loc de Dashboard
                 navigate(createPageUrl("DailyPlan"));
               } else {
@@ -78,26 +78,26 @@ export default function IndexPage() {
         const savedPassword = localStorage.getItem('remembered_password');
         const savedRemember = localStorage.getItem('remember_me') === 'true';
         
-        console.log('🔍 Remember me check:', { savedEmail, hasSavedPassword: !!savedPassword, savedRemember });
+        console.log('Remember me check:', { savedEmail, hasSavedPassword: !!savedPassword, savedRemember });
         
         if (savedEmail && savedPassword && savedRemember) {
-          // ✨ AUTO-LOGIN INSTANT - PĂSTRĂM LOADING ACTIV!
-          console.log('🔐 AUTO-LOGIN cu credențiale salvate... (LOADING rămâne activ)');
+          // AUTO-LOGIN INSTANT - PĂSTRĂM LOADING ACTIV!
+          console.log('AUTO-LOGIN cu credențiale salvate... (LOADING rămâne activ)');
           
           try {
             const loginResult = await localApi.auth.login(savedEmail, savedPassword);
-            console.log('✅ AUTO-LOGIN SUCCESS! Navigare automată...');
+            console.log('AUTO-LOGIN SUCCESS! Navigare automată...');
             
             const user = await localApi.auth.me();
             
             // ADMINS bypass onboarding complet
             if (user.role === 'admin') {
-              console.log('✅ Admin detectat - SKIP onboarding');
+              console.log('Admin detectat - SKIP onboarding');
               navigate(createPageUrl("DailyPlan"));
               return;
             }
             
-            const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
+            const hasCompletedProfile = (user.start_date || user.program_status === 'abandoned') && user.current_weight && user.target_weight;
             const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
             
             if (hasCompletedProfile || hasBasicInfo) {
@@ -108,7 +108,7 @@ export default function IndexPage() {
             }
             // NU setăm isLoading(false) aici - navigarea se va face automat
           } catch (autoLoginError) {
-            console.error('❌ AUTO-LOGIN FAILED:', autoLoginError);
+            console.error('AUTO-LOGIN FAILED:', autoLoginError);
             // Șterge credențialele invalide
             localStorage.removeItem('remembered_email');
             localStorage.removeItem('remembered_password');
@@ -137,21 +137,21 @@ export default function IndexPage() {
     try {
       if (isLogin) {
         // Login
-        console.log('🔍 LOGIN START:', formData.email);
+        console.log('LOGIN START:', formData.email);
         const loginResult = await localApi.auth.login(formData.email, formData.password);
-        console.log('✅ LOGIN SUCCESS! Token saved:', !!loginResult.token);
+        console.log('LOGIN SUCCESS! Token saved:', !!loginResult.token);
         
         // Salvează credențialele și PAROLA dacă "Remember me" este bifat
         if (rememberMe) {
           localStorage.setItem('remembered_email', formData.email);
           localStorage.setItem('remembered_password', formData.password); // SALVĂM ȘI PAROLA!
           localStorage.setItem('remember_me', 'true');
-          console.log('✅ Credențiale SALVATE în localStorage');
+          console.log('Credențiale SALVATE în localStorage');
         } else {
           localStorage.removeItem('remembered_email');
           localStorage.removeItem('remembered_password');
           localStorage.removeItem('remember_me');
-          console.log('🗑️ Credențiale ȘTERSE din localStorage');
+          console.log('Credențiale ȘTERSE din localStorage');
         }
         
         toast({
@@ -161,18 +161,18 @@ export default function IndexPage() {
         });
         
         // Check if user has completed onboarding
-        console.log('🔍 Verificăm datele user...');
+        console.log('Verificăm datele user...');
         const user = await localApi.auth.me();
-        console.log('✅ User data:', user);
+        console.log('User data:', user);
         
         // ADMINS bypass onboarding complet
         if (user.role === 'admin') {
-          console.log('✅ Admin detectat - SKIP onboarding');
+          console.log('Admin detectat - SKIP onboarding');
           navigate(createPageUrl("DailyPlan"));
           return;
         }
         
-        const hasCompletedProfile = user.start_date && user.current_weight && user.target_weight;
+        const hasCompletedProfile = (user.start_date || user.program_status === 'abandoned') && user.current_weight && user.target_weight;
         const hasBasicInfo = user.profile_picture || (user.name && user.name !== user.email.split('@')[0]);
         
         if (hasCompletedProfile || hasBasicInfo) {
@@ -429,17 +429,21 @@ export default function IndexPage() {
           }}>
             <DialogContent>
               <DialogHeader>
-                <DialogTitle>
-                  {language === 'ro' ? '🔑 Recuperare Parolă' : '🔑 Password Recovery'}
+                <DialogTitle className="flex items-center gap-2">
+                  <KeyRound className="w-5 h-5 text-emerald-600" />
+                  <span>{language === 'ro' ? 'Recuperare Parolă' : 'Password Recovery'}</span>
                 </DialogTitle>
                 <DialogDescription>
                   {forgotPasswordSuccess ? (
                     <div className="space-y-4 pt-4">
                       <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-lg border border-emerald-200 dark:border-emerald-800">
-                        <p className="text-emerald-800 dark:text-emerald-200 font-semibold">
-                          ✅ {language === 'ro' 
-                            ? 'Email trimis cu succes!' 
-                            : 'Email sent successfully!'}
+                        <p className="text-emerald-800 dark:text-emerald-200 font-semibold flex items-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                          <span>
+                            {language === 'ro' 
+                              ? 'Email trimis cu succes!' 
+                              : 'Email sent successfully!'}
+                          </span>
                         </p>
                         <p className="text-sm text-emerald-700 dark:text-emerald-300 mt-2">
                           {language === 'ro'

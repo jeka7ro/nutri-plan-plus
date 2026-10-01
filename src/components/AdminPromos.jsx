@@ -158,7 +158,7 @@ export default function AdminPromos() {
       <Card className="ios-card border-none ios-shadow-lg">
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle className="text-[rgb(var(--ios-text-primary))]">🎁 Coduri Promoționale</CardTitle>
+            <CardTitle className="text-[rgb(var(--ios-text-primary))]">Coduri Promoționale</CardTitle>
             <Button 
               size="sm" 
               className="bg-purple-500 hover:bg-purple-600"
@@ -288,7 +288,7 @@ export default function AdminPromos() {
       <Dialog open={showAddPromo} onOpenChange={setShowAddPromo}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>🎁 Adaugă Cod Promoțional</DialogTitle>
+            <DialogTitle>Adaugă Cod Promoțional</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -349,7 +349,7 @@ export default function AdminPromos() {
               disabled={!newPromo.code || createPromoMutation.isLoading}
               className="w-full bg-purple-500 hover:bg-purple-600"
             >
-              {createPromoMutation.isLoading ? 'Se salvează...' : '✅ Creează Cod'}
+              {createPromoMutation.isLoading ? 'Se salvează...' : 'Creează Cod'}
             </Button>
           </div>
         </DialogContent>
@@ -360,7 +360,7 @@ export default function AdminPromos() {
         <Dialog open={!!editingPromo} onOpenChange={() => setEditingPromo(null)}>
           <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>✏️ Editează Cod: {editingPromo.code}</DialogTitle>
+              <DialogTitle>Editează Cod: {editingPromo.code}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>

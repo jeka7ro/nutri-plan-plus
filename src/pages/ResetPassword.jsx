@@ -54,7 +54,7 @@ export default function ResetPassword() {
       setSuccess(true);
       
       toast({
-        title: language === 'ro' ? '✅ Parolă resetată!' : '✅ Password reset!',
+        title: language === 'ro' ? 'Parolă resetată!' : 'Password reset!',
         description: language === 'ro' 
           ? 'Parola ta a fost resetată cu succes. Te poți autentifica acum.' 
           : 'Your password has been reset successfully. You can now sign in.',
@@ -105,7 +105,7 @@ export default function ResetPassword() {
           <div className="text-center">
             <CheckCircle className="w-16 h-16 text-emerald-500 mx-auto mb-4" />
             <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-              {language === 'ro' ? '✅ Parolă Resetată!' : '✅ Password Reset!'}
+              {language === 'ro' ? 'Parolă Resetată!' : 'Password Reset!'}
             </h1>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
               {language === 'ro' 
@@ -129,7 +129,7 @@ export default function ResetPassword() {
             className="w-32 h-32 object-contain mx-auto mb-4"
           />
           <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-            {language === 'ro' ? '🔑 Resetează Parola' : '🔑 Reset Password'}
+            {language === 'ro' ? 'Resetează Parola' : 'Reset Password'}
           </h1>
           <p className="text-gray-600 dark:text-gray-300">
             {language === 'ro' 

@@ -332,7 +332,7 @@ export default function MyRecipes() {
   const handleSearchOnline = async () => {
     if (!formData.name.trim()) {
       toast({
-        title: language === 'ro' ? '⚠️ Introdu numele rețetei' : '⚠️ Enter recipe name',
+        title: language === 'ro' ? 'Introdu numele rețetei' : 'Enter recipe name',
         variant: "destructive",
       });
       return;
@@ -444,7 +444,7 @@ export default function MyRecipes() {
       }
 
       toast({
-        title: language === 'ro' ? '✅ Rețetă completată!' : '✅ Recipe completed!',
+        title: language === 'ro' ? 'Rețetă completată!' : 'Recipe completed!',
         description: language === 'ro' 
           ? `Ingrediente, instrucțiuni, imagine și valori nutriționale generate.` 
           : `Ingredients, instructions, image and nutritional values generated.`,
@@ -452,7 +452,7 @@ export default function MyRecipes() {
 
     } catch (error) {
       toast({
-        title: language === 'ro' ? '❌ Eroare' : '❌ Error',
+        title: language === 'ro' ? 'Eroare' : 'Error',
         description: language === 'ro' ? 'Nu s-a putut căuta online' : 'Could not search online',
         variant: "destructive",
       });
@@ -675,7 +675,7 @@ export default function MyRecipes() {
               // Verifică limita FREE
               if (user?.subscription_plan === 'free' && myRecipes.length >= 1) {
                 toast({
-                  title: language === 'ro' ? '⚠️ Limită FREE atinsă' : '⚠️ FREE Limit Reached',
+                  title: language === 'ro' ? 'Limită Plan Standard Atinsă' : 'Free Plan Limit Reached',
                   description: language === 'ro' 
                     ? 'Ai atins limita de 1 rețetă pentru contul FREE. Upgrade la Premium pentru rețete nelimitate!' 
                     : 'You reached the limit of 1 recipe for FREE account. Upgrade to Premium for unlimited recipes!',
@@ -846,13 +846,13 @@ export default function MyRecipes() {
                     disabled={isSearchingOnline || !formData.name.trim()}
                     className="bg-cyan-500/10 border-cyan-500 text-cyan-600 dark:text-cyan-400"
                   >
-                    {isSearchingOnline ? '🔍...' : '🔍 Online'}
+                    {isSearchingOnline ? 'Se caută...' : 'Caută Online'}
                   </Button>
                 </div>
                 <p className="text-xs text-[rgb(var(--ios-text-tertiary))]">
                   {language === 'ro' 
-                    ? '💡 Caută online pentru imagine automată' 
-                    : '💡 Search online for auto image'}
+                    ? 'Caută online pentru imagine automată' 
+                    : 'Search online for auto image'}
                 </p>
               </div>
 
@@ -1131,8 +1131,8 @@ export default function MyRecipes() {
                 </div>
                 <p className="text-xs text-[rgb(var(--ios-text-tertiary))]">
                   {language === 'ro' 
-                    ? '💡 Folosește butonul "🔍 Online" pentru a completa automat valorile' 
-                    : '💡 Use the "🔍 Online" button to auto-fill values'}
+                    ? 'Folosește butonul "Caută Online" pentru a completa automat valorile' 
+                    : 'Use the "Search Online" button to auto-fill values'}
                 </p>
               </div>
 

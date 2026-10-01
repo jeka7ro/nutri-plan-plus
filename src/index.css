@@ -100,7 +100,7 @@ button:focus-visible {
     --chart-3: 197 37% 24%;
     --chart-4: 43 74% 66%;
     --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --radius: 1.5rem;
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -154,5 +154,29 @@ button:focus-visible {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer components {
+  /* Screen 1 Button Pill Styles */
+  .btn-pill {
+    @apply rounded-full font-bold px-5 py-2.5 transition-all active:scale-[0.98] inline-flex items-center justify-center gap-2;
+  }
+  .btn-pill-green {
+    @apply rounded-full bg-[#00b33c] text-white font-bold px-5 py-2 hover:bg-[#009933] shadow-sm active:scale-[0.98] inline-flex items-center justify-center gap-1.5;
+  }
+  .btn-pill-red {
+    @apply rounded-full bg-[#f03a47] text-white font-bold px-5 py-2 hover:bg-[#dc2626] shadow-sm active:scale-[0.98] inline-flex items-center justify-center gap-1.5;
+  }
+
+  /* Screen 2 & 3 Container / Card Styles */
+  .container-screen {
+    @apply rounded-[24px] bg-card border border-border/70 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)];
+  }
+  .metric-card {
+    @apply rounded-[24px] bg-card border border-border/70 p-5 shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.35)] flex items-center gap-4;
+  }
+  .metric-icon-bubble {
+    @apply w-12 h-12 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 flex items-center justify-center shrink-0;
   }
 }

@@ -1,16 +1,28 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
 import db, { initDatabase } from './database.js';
 import { registerUser, loginUser, authMiddleware } from './auth.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
-const PORT = 3001;
+const PORT = process.env.PORT || 3001;
 
 // Middleware
 app.use(cors());
 app.use(bodyParser.json({ limit: '50mb' })); // Cresc limita pentru poze
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+
+// Serve static images
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
 
 // Initialize database
 initDatabase();
@@ -52,7 +64,7 @@ app.post('/api/auth/login', async (req, res) => {
 // Get current user
 app.get('/api/auth/me', authMiddleware, (req, res) => {
   const user = db.prepare(`
-    SELECT id, email, name, role, start_date, birth_date, current_weight, target_weight, 
+    SELECT id, email, name, role, start_date, program_status, birth_date, current_weight, target_weight, 
            height, age, gender, activity_level, dietary_preferences, allergies, profile_picture
     FROM users WHERE id = ?
   `).get(req.userId);
@@ -68,7 +80,7 @@ app.get('/api/auth/me', authMiddleware, (req, res) => {
 app.put('/api/auth/me', authMiddleware, (req, res) => {
   try {
     const updates = req.body;
-    const allowedFields = ['name', 'start_date', 'birth_date', 'current_weight', 'target_weight', 
+    const allowedFields = ['name', 'start_date', 'program_status', 'birth_date', 'current_weight', 'target_weight', 
                           'height', 'age', 'gender', 'activity_level', 
                           'dietary_preferences', 'allergies', 'profile_picture'];
     
@@ -91,8 +103,8 @@ app.put('/api/auth/me', authMiddleware, (req, res) => {
     
     // Return updated user
     const user = db.prepare(`
-      SELECT id, email, name, role, start_date, birth_date, current_weight, target_weight, 
-             height, age, gender, activity_level, dietary_preferences, allergies
+      SELECT id, email, name, role, start_date, program_status, birth_date, current_weight, target_weight, 
+             height, age, gender, activity_level, dietary_preferences, allergies, profile_picture
       FROM users WHERE id = ?
     `).get(req.userId);
     
@@ -102,10 +114,129 @@ app.put('/api/auth/me', authMiddleware, (req, res) => {
   }
 });
 
+// ==================== 28-DAY PROGRAM & CYCLES ENDPOINTS ====================
+
+// Restart / Start a fresh 28-day cycle
+app.post('/api/program/restart', authMiddleware, (req, res) => {
+  try {
+    const { startDate, clearCheckins = true } = req.body;
+    const finalStartDate = startDate || new Date().toISOString().split('T')[0];
+
+    // Archive current cycle if exists
+    const currentUser = db.prepare('SELECT start_date, program_status FROM users WHERE id = ?').get(req.userId);
+    if (currentUser?.start_date) {
+      const completedDays = db.prepare(`
+        SELECT count(DISTINCT date) as count FROM daily_checkins 
+        WHERE user_id = ? AND (breakfast_completed = 1 OR lunch_completed = 1 OR dinner_completed = 1)
+      `).get(req.userId)?.count || 0;
+
+      db.prepare(`
+        INSERT INTO program_cycles (user_id, start_date, end_date, status, days_completed, notes, ended_at)
+        VALUES (?, ?, date(?, '+27 days'), 'restarted', ?, 'Încheiat prin reînceperea unui nou ciclu', CURRENT_TIMESTAMP)
+      `).run(req.userId, currentUser.start_date, currentUser.start_date, completedDays);
+    }
+
+    // Clear old check-ins if requested
+    if (clearCheckins) {
+      db.prepare('DELETE FROM daily_checkins WHERE user_id = ?').run(req.userId);
+      db.prepare('DELETE FROM daily_meals WHERE user_id = ?').run(req.userId);
+    }
+
+    // Update user start_date and program_status to active
+    db.prepare(`
+      UPDATE users 
+      SET start_date = ?, program_status = 'active', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(finalStartDate, req.userId);
+
+    // Insert new active cycle
+    db.prepare(`
+      INSERT INTO program_cycles (user_id, start_date, end_date, status, notes)
+      VALUES (?, ?, date(?, '+27 days'), 'active', 'Ciclu activ de 28 de zile')
+    `).run(req.userId, finalStartDate, finalStartDate);
+
+    const updatedUser = db.prepare(`
+      SELECT id, email, name, role, start_date, program_status, birth_date, current_weight, target_weight, 
+             height, age, gender, activity_level, dietary_preferences, allergies, profile_picture
+      FROM users WHERE id = ?
+    `).get(req.userId);
+
+    res.json({ success: true, user: updatedUser, message: 'Program restarted successfully' });
+  } catch (error) {
+    console.error('Error restarting program:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Abandon / End current program as is
+app.post('/api/program/abandon', authMiddleware, (req, res) => {
+  try {
+    const { clearCheckins = false } = req.body;
+    const currentUser = db.prepare('SELECT start_date, program_status FROM users WHERE id = ?').get(req.userId);
+
+    if (currentUser?.start_date) {
+      const completedDays = db.prepare(`
+        SELECT count(DISTINCT date) as count FROM daily_checkins 
+        WHERE user_id = ? AND (breakfast_completed = 1 OR lunch_completed = 1 OR dinner_completed = 1)
+      `).get(req.userId)?.count || 0;
+
+      db.prepare(`
+        INSERT INTO program_cycles (user_id, start_date, end_date, status, days_completed, notes, ended_at)
+        VALUES (?, ?, date(?, '+27 days'), 'abandoned', ?, 'Program abandonat / încheiat neterminat', CURRENT_TIMESTAMP)
+      `).run(req.userId, currentUser.start_date, currentUser.start_date, completedDays);
+    }
+
+    if (clearCheckins) {
+      db.prepare('DELETE FROM daily_checkins WHERE user_id = ?').run(req.userId);
+      db.prepare('DELETE FROM daily_meals WHERE user_id = ?').run(req.userId);
+    }
+
+    db.prepare(`
+      UPDATE users 
+      SET program_status = 'abandoned', updated_at = CURRENT_TIMESTAMP
+      WHERE id = ?
+    `).run(req.userId);
+
+    const updatedUser = db.prepare(`
+      SELECT id, email, name, role, start_date, program_status, birth_date, current_weight, target_weight, 
+             height, age, gender, activity_level, dietary_preferences, allergies, profile_picture
+      FROM users WHERE id = ?
+    `).get(req.userId);
+
+    res.json({ success: true, user: updatedUser, message: 'Program abandonat cu succes' });
+  } catch (error) {
+    console.error('Error abandoning program:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Get program cycles history
+app.get('/api/program/cycles', authMiddleware, (req, res) => {
+  try {
+    const cycles = db.prepare(`
+      SELECT * FROM program_cycles WHERE user_id = ? ORDER BY created_at DESC
+    `).all(req.userId);
+    res.json(cycles);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ==================== WEIGHT TRACKING ENDPOINTS ====================
 
 // Get weight entries
 app.get('/api/weight', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (req.query.admin === 'true' && user?.role === 'admin') {
+    const entries = db.prepare(`
+      SELECT w.*, u.email as user_email, u.name as user_name
+      FROM weight_entries w
+      LEFT JOIN users u ON w.user_id = u.id
+      ORDER BY w.date DESC
+    `).all();
+    return res.json(entries);
+  }
+
   const entries = db.prepare(`
     SELECT * FROM weight_entries 
     WHERE user_id = ? 
@@ -302,6 +433,17 @@ app.get('/api/checkins/:date', authMiddleware, (req, res) => {
 
 // Get all check-ins for user
 app.get('/api/checkins', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if ((req.query.admin === 'true' || req.query.all === 'true') && user?.role === 'admin') {
+    const allCheckIns = db.prepare(`
+      SELECT c.*, u.email as user_email, u.name as user_name
+      FROM daily_checkins c
+      LEFT JOIN users u ON c.user_id = u.id
+      ORDER BY c.date DESC
+    `).all();
+    return res.json(allCheckIns);
+  }
+
   const checkIns = db.prepare(`
     SELECT * FROM daily_checkins 
     WHERE user_id = ?
@@ -516,13 +658,15 @@ app.put('/api/messages/:id/read', authMiddleware, (req, res) => {
 // Get all users (admin only)
 app.get('/api/admin/users', authMiddleware, (req, res) => {
   const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
-  
-  if (user.role !== 'admin') {
+  if (user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   
   const users = db.prepare(`
-    SELECT id, email, name, role, start_date, current_weight, target_weight, created_at
+    SELECT id, email, name, first_name, last_name, phone, country, city,
+           role, subscription_tier, subscription_expires_at, subscription_code,
+           last_login, start_date, current_weight, target_weight, height, age,
+           gender, activity_level, dietary_preferences, allergies, created_at, updated_at
     FROM users
     ORDER BY created_at DESC
   `).all();
@@ -533,15 +677,219 @@ app.get('/api/admin/users', authMiddleware, (req, res) => {
 // Update user role (admin only)
 app.put('/api/admin/users/:id/role', authMiddleware, (req, res) => {
   const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
-  
-  if (user.role !== 'admin') {
+  if (user?.role !== 'admin') {
     return res.status(403).json({ error: 'Admin access required' });
   }
   
   const { role } = req.body;
-  db.prepare('UPDATE users SET role = ? WHERE id = ?').run(role, req.params.id);
-  
+  db.prepare('UPDATE users SET role = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(role, req.params.id);
   res.json({ success: true });
+});
+
+// Reset user password (admin only)
+app.post('/api/admin/users/:id/reset-password', authMiddleware, async (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const { newPassword } = req.body;
+  if (!newPassword || newPassword.length < 6) {
+    return res.status(400).json({ error: 'Parola trebuie să aibă minim 6 caractere' });
+  }
+  
+  const hash = await bcrypt.hash(newPassword, 10);
+  db.prepare('UPDATE users SET password = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(hash, req.params.id);
+  res.json({ success: true, message: 'Parola a fost resetată cu succes' });
+});
+
+// Delete user (admin only)
+app.delete('/api/admin/users/:id', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const targetId = parseInt(req.params.id);
+  if (targetId === req.userId) {
+    return res.status(400).json({ error: 'Nu poți șterge contul de admin cu care ești conectat' });
+  }
+  
+  db.prepare('DELETE FROM daily_checkins WHERE user_id = ?').run(targetId);
+  db.prepare('DELETE FROM daily_meals WHERE user_id = ?').run(targetId);
+  db.prepare('DELETE FROM weight_entries WHERE user_id = ?').run(targetId);
+  db.prepare('DELETE FROM progress_notes WHERE user_id = ?').run(targetId);
+  db.prepare('DELETE FROM friendships WHERE user_id = ? OR friend_id = ?').run(targetId, targetId);
+  db.prepare('DELETE FROM messages WHERE from_user_id = ? OR to_user_id = ?').run(targetId, targetId);
+  db.prepare('DELETE FROM users WHERE id = ?').run(targetId);
+  
+  res.json({ success: true, message: 'Utilizatorul a fost șters cu succes' });
+});
+
+// Grant premium / subscription (admin only)
+app.post('/api/admin/users/:id/grant-premium', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const { duration } = req.body;
+  let expires = '2099-12-31T23:59:59.000Z';
+  if (duration === '1_month') {
+    const d = new Date(); d.setMonth(d.getMonth() + 1); expires = d.toISOString();
+  } else if (duration === '1_year') {
+    const d = new Date(); d.setFullYear(d.getFullYear() + 1); expires = d.toISOString();
+  }
+  
+  db.prepare('UPDATE users SET subscription_tier = ?, subscription_expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+    .run('premium', expires, req.params.id);
+  res.json({ success: true, message: 'Status premium actualizat' });
+});
+
+// Grant premium alias for /api/auth/me?subscription=grant
+app.post('/api/auth/me', authMiddleware, (req, res) => {
+  if (req.query.subscription === 'grant') {
+    const adminUser = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+    if (adminUser?.role !== 'admin') {
+      return res.status(403).json({ error: 'Admin access required' });
+    }
+    const { targetUserId, durationMonths } = req.body;
+    let expires = '2099-12-31T23:59:59.000Z';
+    if (durationMonths === 1 || durationMonths === '1_month') {
+      const d = new Date(); d.setMonth(d.getMonth() + 1); expires = d.toISOString();
+    } else if (durationMonths === 12 || durationMonths === '1_year') {
+      const d = new Date(); d.setFullYear(d.getFullYear() + 1); expires = d.toISOString();
+    }
+    db.prepare('UPDATE users SET subscription_tier = ?, subscription_expires_at = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?')
+      .run('premium', expires, targetUserId || req.userId);
+    return res.json({ success: true });
+  }
+  res.status(400).json({ error: 'Acțiune necunoscută' });
+});
+
+// List backups (admin only)
+app.get('/api/admin/backups', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const backupDir = path.join(__dirname, 'backups');
+  if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+  
+  const files = fs.readdirSync(backupDir).filter(f => f.endsWith('.db') || f.endsWith('.sql'));
+  const list = files.map(file => {
+    const stats = fs.statSync(path.join(backupDir, file));
+    return {
+      id: file,
+      filename: file,
+      size: stats.size,
+      created_at: stats.mtime.toISOString(),
+      formatted_size: (stats.size / (1024 * 1024)).toFixed(2) + ' MB'
+    };
+  }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  
+  res.json(list);
+});
+
+// Create backup (admin only)
+app.post('/api/admin/backup', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const backupDir = path.join(__dirname, 'backups');
+  if (!fs.existsSync(backupDir)) fs.mkdirSync(backupDir, { recursive: true });
+  
+  const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+  const filename = `nutriplan_backup_${timestamp}.db`;
+  const dest = path.join(backupDir, filename);
+  const sourceDb = path.join(__dirname, 'nutri-plan.db');
+  
+  fs.copyFileSync(sourceDb, dest);
+  const stats = fs.statSync(dest);
+  
+  res.json({
+    success: true,
+    id: filename,
+    filename,
+    size: stats.size,
+    created_at: new Date().toISOString(),
+    formatted_size: (stats.size / (1024 * 1024)).toFixed(2) + ' MB'
+  });
+});
+
+// Delete backup (admin only)
+app.delete('/api/admin/backup/:id?', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const fileId = req.params.id || req.query.id;
+  if (!fileId) return res.status(400).json({ error: 'Lipsește ID-ul backup-ului' });
+  
+  const filePath = path.join(__dirname, 'backups', path.basename(fileId));
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+    return res.json({ success: true, message: 'Backup șters cu succes' });
+  }
+  res.status(404).json({ error: 'Fișierul de backup nu a fost găsit' });
+});
+
+app.delete('/api/admin/backups', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const fileId = req.query.id;
+  if (!fileId) return res.status(400).json({ error: 'Lipsește ID-ul backup-ului' });
+  
+  const filePath = path.join(__dirname, 'backups', path.basename(fileId));
+  if (fs.existsSync(filePath)) {
+    fs.unlinkSync(filePath);
+    return res.json({ success: true, message: 'Backup șters cu succes' });
+  }
+  res.status(404).json({ error: 'Fișierul de backup nu a fost găsit' });
+});
+
+// Admin stats
+app.get('/api/admin/stats', authMiddleware, (req, res) => {
+  const user = db.prepare('SELECT role FROM users WHERE id = ?').get(req.userId);
+  if (user?.role !== 'admin') {
+    return res.status(403).json({ error: 'Admin access required' });
+  }
+  
+  const totalUsers = db.prepare('SELECT count(*) as count FROM users').get().count;
+  const totalRecipes = db.prepare('SELECT count(*) as count FROM recipes').get().count;
+  const totalCheckins = db.prepare('SELECT count(*) as count FROM daily_checkins').get().count;
+  const totalWeights = db.prepare('SELECT count(*) as count FROM weight_entries').get().count;
+  const totalMessages = db.prepare('SELECT count(*) as count FROM messages').get().count;
+  const dbPath = path.join(__dirname, 'nutri-plan.db');
+  const dbSize = fs.existsSync(dbPath) ? (fs.statSync(dbPath).size / (1024 * 1024)).toFixed(2) + ' MB' : '0 MB';
+  
+  res.json({ totalUsers, totalRecipes, totalCheckins, totalWeights, totalMessages, dbSize, status: 'healthy' });
+});
+
+// Build info
+app.get('/api/build-info', (req, res) => {
+  const buildInfoPath = path.join(__dirname, '../build-info.json');
+  if (fs.existsSync(buildInfoPath)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(buildInfoPath, 'utf8'));
+      return res.json(data);
+    } catch (e) {}
+  }
+  res.json({
+    buildNumber: 5,
+    buildDate: new Date().toISOString(),
+    buildTime: new Date().toTimeString().split(' ')[0],
+    gitCommit: 'eatnfit-v0.0.2',
+    deployedAt: new Date().toISOString(),
+    version: '0.0.2'
+  });
 });
 
 // ==================== SEED DATA ====================

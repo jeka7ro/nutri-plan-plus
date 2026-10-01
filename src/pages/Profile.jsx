@@ -1,3 +1,4 @@
+import { useToast } from '@/components/ui/use-toast';
 
 import React, { useState, useEffect } from "react";
 import localApi from "@/api/localClient";
@@ -7,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Target, Calendar, Crown, Check, Upload, Camera, Lock, Key } from "lucide-react";
+import { User, Target, Calendar, Crown, Check, Upload, Camera, Lock, Key, RotateCcw, Square } from "lucide-react";
 import { format, differenceInYears } from "date-fns";
 import { ro } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/select";
 
 export default function Profile() {
+  const { toast } = useToast();
   // VERSIUNE: 1.0.3 - ADAUGAT SCHIMBARE PAROLA
   const [user, setUser] = useState(null);
   const [firstName, setFirstName] = useState("");
@@ -41,8 +43,8 @@ export default function Profile() {
 
   useEffect(() => {
     localApi.auth.me().then(userData => {
-      console.log('📥 User data loaded:', userData);
-      console.log('🔍 VERIFICARE NUME:', { first_name: userData.first_name, last_name: userData.last_name });
+      console.log('User data loaded:', userData);
+      console.log('VERIFICARE NUME:', { first_name: userData.first_name, last_name: userData.last_name });
       setUser(userData);
       setFirstName(userData.first_name || "");
       setLastName(userData.last_name || "");
@@ -66,7 +68,7 @@ export default function Profile() {
       if (formattedBirthDate) {
         const ageCalculated = differenceInYears(new Date(), new Date(formattedBirthDate));
         setAge(ageCalculated.toString());
-        console.log('🎂 Vârsta calculată din data nașterii:', ageCalculated, 'ani');
+        console.log('Vârsta calculată din data nașterii:', ageCalculated, 'ani');
       } else {
         setAge(userData.age || "");
       }
@@ -74,7 +76,7 @@ export default function Profile() {
       setCountry(userData.country || "");
       setCity(userData.city || "");
       
-      console.log('📋 Profile loaded:', {
+      console.log('Profile loaded:', {
         country: userData.country,
         city: userData.city,
         birth_date: formattedBirthDate,
@@ -85,17 +87,17 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: (data) => {
-      console.log('📤 Salvez datele:', data);
+      console.log('Salvez datele:', data);
       return localApi.auth.updateProfile(data);
     },
     onSuccess: (updatedUser) => {
-      console.log('✅ Date salvate cu succes:', updatedUser);
+      console.log('Date salvate cu succes:', updatedUser);
       setUser(updatedUser);
-      alert('✅ Date salvate cu succes!');
+      toast({ title: 'Succes', description: 'Datele de profil au fost salvate.' });
     },
     onError: (error) => {
-      console.error('❌ Eroare la salvare:', error);
-      alert('❌ Eroare la salvare: ' + error.message);
+      console.error('Eroare la salvare:', error);
+      toast({ title: 'Eroare', description: 'Eroare la salvare: ' + error.message, variant: 'destructive' });
     },
   });
 
@@ -104,14 +106,14 @@ export default function Profile() {
       return localApi.auth.changePassword(currentPassword, newPassword);
     },
     onSuccess: () => {
-      alert('✅ Parolă schimbată cu succes!');
+      toast({ title: 'Succes', description: 'Parola a fost schimbată cu succes.' });
       setCurrentPassword("");
       setNewPassword("");
       setConfirmPassword("");
     },
     onError: (error) => {
-      console.error('❌ Eroare la schimbarea parolei:', error);
-      alert('❌ Eroare: ' + error.message);
+      console.error('Eroare la schimbarea parolei:', error);
+      toast({ title: 'Eroare', description: error.message, variant: 'destructive' });
     },
   });
 
@@ -133,7 +135,7 @@ export default function Profile() {
       city: city || null,
     };
     
-    console.log('🚀 Trimit datele spre salvare:', dataToSave);
+    console.log('Trimit datele spre salvare:', dataToSave);
     updateProfileMutation.mutate(dataToSave);
   };
 
@@ -141,12 +143,12 @@ export default function Profile() {
     e.preventDefault();
     
     if (newPassword !== confirmPassword) {
-      alert('❌ Parolele nu se potrivesc!');
+      toast({ title: 'Eroare validare', description: 'Parolele nu se potrivesc!', variant: 'destructive' });
       return;
     }
     
     if (newPassword.length < 6) {
-      alert('❌ Parola nouă trebuie să aibă minim 6 caractere!');
+      toast({ title: 'Eroare validare', description: 'Parola nouă trebuie să aibă minim 6 caractere!', variant: 'destructive' });
       return;
     }
     
@@ -325,7 +327,7 @@ export default function Profile() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName" className="text-[rgb(var(--ios-text-primary))]">👤 Prenume *</Label>
+                  <Label htmlFor="firstName" className="text-[rgb(var(--ios-text-primary))]">Prenume *</Label>
                   <Input
                     id="firstName"
                     type="text"
@@ -336,7 +338,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="lastName" className="text-[rgb(var(--ios-text-primary))]">👤 Nume *</Label>
+                  <Label htmlFor="lastName" className="text-[rgb(var(--ios-text-primary))]">Nume *</Label>
                   <Input
                     id="lastName"
                     type="text"
@@ -350,7 +352,7 @@ export default function Profile() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-[rgb(var(--ios-text-primary))]">📱 Telefon</Label>
+                  <Label htmlFor="phone" className="text-[rgb(var(--ios-text-primary))]">Telefon</Label>
                   <Input
                     id="phone"
                     type="tel"
@@ -361,7 +363,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="birthDate" className="text-[rgb(var(--ios-text-primary))]">📅 Data nașterii *</Label>
+                  <Label htmlFor="birthDate" className="text-[rgb(var(--ios-text-primary))]">Data nașterii *</Label>
                   <Input
                     id="birthDate"
                     type="date"
@@ -394,18 +396,18 @@ export default function Profile() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="country" className="text-[rgb(var(--ios-text-primary))]">🌍 Țara</Label>
+                  <Label htmlFor="country" className="text-[rgb(var(--ios-text-primary))]">Țara</Label>
                   <Input
                     id="country"
                     name="country"
                     type="text"
                     value={country}
                     onChange={(e) => {
-                      console.log('🌍 Country changed:', e.target.value);
+                      console.log('Country changed:', e.target.value);
                       setCountry(e.target.value);
                     }}
                     onInput={(e) => {
-                      console.log('🌍 Country onInput:', e.target.value);
+                      console.log('Country onInput:', e.target.value);
                       setCountry(e.target.value);
                     }}
                     placeholder="Ex: România"
@@ -415,18 +417,18 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="city" className="text-[rgb(var(--ios-text-primary))]">🏙️ Orașul</Label>
+                  <Label htmlFor="city" className="text-[rgb(var(--ios-text-primary))]">Orașul</Label>
                   <Input
                     id="city"
                     name="city"
                     type="text"
                     value={city}
                     onChange={(e) => {
-                      console.log('🏙️ City changed:', e.target.value);
+                      console.log('City changed:', e.target.value);
                       setCity(e.target.value);
                     }}
                     onInput={(e) => {
-                      console.log('🏙️ City onInput:', e.target.value);
+                      console.log('City onInput:', e.target.value);
                       setCity(e.target.value);
                     }}
                     placeholder="Ex: București"
@@ -477,7 +479,14 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="startDate" className="text-[rgb(var(--ios-text-primary))]">Data începerii programului</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="startDate" className="text-[rgb(var(--ios-text-primary))]">Data începerii programului</Label>
+                    {user?.program_status === 'abandoned' && (
+                      <Badge variant="outline" className="text-[10px] bg-red-500/10 text-red-600 border-red-500/30">
+                        Program abandonat
+                      </Badge>
+                    )}
+                  </div>
                   <Input
                     id="startDate"
                     type="date"
@@ -485,6 +494,40 @@ export default function Profile() {
                     onChange={(e) => setStartDate(e.target.value)}
                     className="border-[rgb(var(--ios-border))]"
                   />
+                  <div className="flex flex-wrap items-center gap-2 pt-1">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setStartDate(format(new Date(), 'yyyy-MM-dd'))}
+                      className="rounded-full text-xs h-7 px-3 border-[rgb(var(--ios-border))] text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
+                    >
+                      <RotateCcw className="w-3 h-3 mr-1" />
+                      Setează azi
+                    </Button>
+                    {user?.start_date && user?.program_status !== 'abandoned' && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={async () => {
+                          if (confirm('Ești sigur că vrei să abandonezi/închei programul curent așa cum a rămas?')) {
+                            try {
+                              const res = await localApi.program.abandon(false);
+                              setUser(res.user);
+                              toast({ title: 'Program abandonat', description: 'Ciclul curent a fost arhivat ca neterminat.' });
+                            } catch (err) {
+                              toast({ title: 'Eroare', description: err.message, variant: 'destructive' });
+                            }
+                          }
+                        }}
+                        className="rounded-full text-xs h-7 px-3 border-red-200 text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30"
+                      >
+                        <Square className="w-3 h-3 mr-1" />
+                        Abandonează programul
+                      </Button>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -517,7 +560,7 @@ export default function Profile() {
           <CardContent>
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="currentPassword" className="text-[rgb(var(--ios-text-primary))]">🔒 Parola actuală *</Label>
+                <Label htmlFor="currentPassword" className="text-[rgb(var(--ios-text-primary))]">Parola actuală *</Label>
                 <Input
                   id="currentPassword"
                   type="password"
@@ -531,7 +574,7 @@ export default function Profile() {
 
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="newPassword" className="text-[rgb(var(--ios-text-primary))]">🔑 Parola nouă *</Label>
+                  <Label htmlFor="newPassword" className="text-[rgb(var(--ios-text-primary))]">Parola nouă *</Label>
                   <Input
                     id="newPassword"
                     type="password"
@@ -544,7 +587,7 @@ export default function Profile() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword" className="text-[rgb(var(--ios-text-primary))]">🔑 Confirmă parola *</Label>
+                  <Label htmlFor="confirmPassword" className="text-[rgb(var(--ios-text-primary))]">Confirmă parola *</Label>
                   <Input
                     id="confirmPassword"
                     type="password"

@@ -22,7 +22,7 @@ export default function DietSummary({ language = 'ro' }) {
             "Gustare: Fruct",
             "Cină: Carne + Carbohidrați + Legume"
           ],
-          note: "⚠️ Gătește totul pe apă, FĂRĂ ulei!"
+          note: "Recomandare: Gătește totul pe apă, fără ulei adăugat."
         },
         {
           title: "A Doua Etapă (2 zile)",
@@ -30,7 +30,7 @@ export default function DietSummary({ language = 'ro' }) {
           meals: [
             "Toate mesele: Carne + Legume"
           ],
-          note: "❌ FĂRĂ carbohidrați și uleiuri!"
+          note: "Restricție: Fără carbohidrați și uleiuri."
         },
         {
           title: "A Treia Etapă (3 zile)",
@@ -38,7 +38,7 @@ export default function DietSummary({ language = 'ro' }) {
           meals: [
             "Toate mesele: Carne + Carbohidrați + Legume + Grăsimi sănătoase și fructe"
           ],
-          note: "✅ Poți adăuga: avocado, humus, nuci, uleiuri, unt de arahide, cocos"
+          note: "Permise: avocado, humus, nuci, uleiuri, unt de arahide, cocos"
         }
       ],
       allowedCarbs: {
@@ -64,7 +64,7 @@ export default function DietSummary({ language = 'ro' }) {
             "Snack: Fruit",
             "Dinner: Meat + Carbs + Vegetables"
           ],
-          note: "⚠️ Cook everything with water, NO oil!"
+          note: "Tip: Cook everything with water, no added oil."
         },
         {
           title: "Phase 2 (2 days)",
@@ -72,7 +72,7 @@ export default function DietSummary({ language = 'ro' }) {
           meals: [
             "All meals: Meat + Vegetables"
           ],
-          note: "❌ NO carbs and NO oils!"
+          note: "Restriction: NO carbs and NO oils!"
         },
         {
           title: "Phase 3 (3 days)",
@@ -80,7 +80,7 @@ export default function DietSummary({ language = 'ro' }) {
           meals: [
             "All meals: Everything allowed + healthy fats"
           ],
-          note: "✅ You can add: avocado, hummus, nuts, oils, nut butter, coconut"
+          note: "Allowed: avocado, hummus, nuts, oils, nut butter, coconut"
         }
       ],
       allowedCarbs: {
@@ -147,7 +147,7 @@ export default function DietSummary({ language = 'ro' }) {
             <div className="px-4 pb-4 flex flex-wrap gap-2">
               {t.allowedCarbs.items.map((item, idx) => (
                 <Badge key={idx} variant="outline" className="bg-white dark:bg-emerald-950 border-emerald-300 dark:border-emerald-700 text-emerald-700 dark:text-emerald-300">
-                  ✅ {item}
+                  • {item}
                 </Badge>
               ))}
             </div>
@@ -176,7 +176,7 @@ export default function DietSummary({ language = 'ro' }) {
             <div className="px-4 pb-4 flex flex-wrap gap-2">
               {t.forbidden.items.map((item, idx) => (
                 <Badge key={idx} variant="outline" className="bg-white dark:bg-red-950 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300">
-                  ❌ {item}
+                  • {item}
                 </Badge>
               ))}
             </div>

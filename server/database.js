@@ -177,6 +177,49 @@ export function initDatabase() {
     )
   `);
 
+  // Migrations for existing database
+  const userColumns = [
+    ['phone', 'TEXT'],
+    ['country', 'TEXT'],
+    ['city', 'TEXT'],
+    ['first_name', 'TEXT'],
+    ['last_name', 'TEXT'],
+    ['subscription_tier', "TEXT DEFAULT 'free'"],
+    ['subscription_expires_at', 'TEXT'],
+    ['subscription_code', 'TEXT'],
+    ['last_login', 'TEXT'],
+    ['program_status', "TEXT DEFAULT 'active'"]
+  ];
+  for (const [col, colType] of userColumns) {
+    try {
+      db.exec(`ALTER TABLE users ADD COLUMN ${col} ${colType}`);
+    } catch (e) {
+      // Already exists
+    }
+  }
+
+  // Program cycles history table
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS program_cycles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL,
+      start_date TEXT NOT NULL,
+      end_date TEXT,
+      status TEXT DEFAULT 'active',
+      days_completed INTEGER DEFAULT 0,
+      notes TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+      ended_at TEXT,
+      FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+    )
+  `);
+
+  try {
+    db.exec(`ALTER TABLE recipes ADD COLUMN is_admin_recipe BOOLEAN DEFAULT 0`);
+  } catch (e) {
+    // Already exists
+  }
+
   console.log('✅ Database initialized successfully');
 }
 

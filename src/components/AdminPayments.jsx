@@ -190,12 +190,12 @@ const AdminPayments = () => {
 
   const getRegionFlag = (region) => {
     const flags = {
-      'România': '🇷🇴',
-      'Europa': '🇪🇺',
-      'Global': '🌍',
-      'SUA': '🇺🇸'
+      'România': 'RO',
+      'Europa': 'EU',
+      'Global': 'Global',
+      'SUA': 'US'
     };
-    return flags[region] || '🌍';
+    return flags[region] || '';
   };
 
   const formatCurrency = (amount, currency) => {
@@ -333,10 +333,10 @@ const AdminPayments = () => {
                         <SelectValue placeholder="Selectează regiunea" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="romania">🇷🇴 România</SelectItem>
-                        <SelectItem value="europa">🇪🇺 Europa</SelectItem>
-                        <SelectItem value="sua">🇺🇸 SUA</SelectItem>
-                        <SelectItem value="global">🌍 Global</SelectItem>
+                        <SelectItem value="romania">România (RO)</SelectItem>
+                        <SelectItem value="europa">Europa (EU)</SelectItem>
+                        <SelectItem value="sua">Statele Unite (US)</SelectItem>
+                        <SelectItem value="global">Internațional (Global)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>

@@ -213,9 +213,9 @@ export default function AdminEmail() {
       {/* Sub-tabs: Templates, Campaigns, Analytics */}
       <Tabs value={activeSubTab} onValueChange={setActiveSubTab}>
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="templates">📧 Templates</TabsTrigger>
-          <TabsTrigger value="campaigns">📬 Campanii</TabsTrigger>
-          <TabsTrigger value="analytics">📊 Analytics</TabsTrigger>
+          <TabsTrigger value="templates">Templates</TabsTrigger>
+          <TabsTrigger value="campaigns">Campanii</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
         </TabsList>
 
         {/* TEMPLATES TAB */}
@@ -223,7 +223,7 @@ export default function AdminEmail() {
           <Card className="ios-card border-none ios-shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📧 Email Templates</CardTitle>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">Email Templates</CardTitle>
                 <Button 
                   size="sm" 
                   className="bg-cyan-500 hover:bg-cyan-600"
@@ -281,7 +281,7 @@ export default function AdminEmail() {
           <Card className="ios-card border-none ios-shadow-lg">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle className="text-[rgb(var(--ios-text-primary))]">📬 Email Campanii</CardTitle>
+                <CardTitle className="text-[rgb(var(--ios-text-primary))]">Email Campanii</CardTitle>
                 <Button 
                   size="sm" 
                   className="bg-purple-500 hover:bg-purple-600"
@@ -299,7 +299,7 @@ export default function AdminEmail() {
                   <Send className="w-12 h-12 mx-auto mb-4 opacity-50" />
                   <p>Nu există campanii. Creează prima campanie!</p>
                   {templates.length === 0 && (
-                    <p className="text-sm text-orange-500 mt-2">⚠️ Creează mai întâi un template</p>
+                    <p className="text-sm text-orange-500 mt-2">Creează mai întâi un template</p>
                   )}
                 </div>
               ) : (
@@ -374,7 +374,7 @@ export default function AdminEmail() {
         <TabsContent value="analytics" className="mt-6">
           <Card className="ios-card border-none ios-shadow-lg">
             <CardHeader>
-              <CardTitle className="text-[rgb(var(--ios-text-primary))]">📊 Email Analytics History</CardTitle>
+              <CardTitle className="text-[rgb(var(--ios-text-primary))]">Email Analytics History</CardTitle>
             </CardHeader>
             <CardContent>
               {history.length === 0 ? (
@@ -433,7 +433,7 @@ export default function AdminEmail() {
       <Dialog open={showNewTemplate} onOpenChange={setShowNewTemplate}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>📧 Creează Template Email</DialogTitle>
+            <DialogTitle>Creează Template Email</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
@@ -478,7 +478,7 @@ export default function AdminEmail() {
                   <strong>B</strong>
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => insertTag('link')}>
-                  🔗 Link
+                  Link
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => insertTag('button')}>
                   Button
@@ -494,7 +494,7 @@ export default function AdminEmail() {
                 required
               />
               <p className="text-xs text-gray-400 mt-2">
-                💡 Variabile disponibile: {'{'}{'{'} first_name {'}'}{'}'}, {'{'}{'{'} last_name {'}'}{'}'}, {'{'}{'{'} email {'}'}{'}'}
+                Variabile disponibile: {'{'}{'{'} first_name {'}'}{'}'}, {'{'}{'{'} last_name {'}'}{'}'}, {'{'}{'{'} email {'}'}{'}'}
               </p>
             </div>
 
@@ -503,7 +503,7 @@ export default function AdminEmail() {
               disabled={!newTemplate.name || !newTemplate.subject || !newTemplate.body_html || createTemplateMutation.isLoading}
               className="w-full bg-cyan-500 hover:bg-cyan-600"
             >
-              {createTemplateMutation.isLoading ? 'Se salvează...' : '✅ Creează Template'}
+              {createTemplateMutation.isLoading ? 'Se salvează...' : 'Creează Template'}
             </Button>
           </div>
         </DialogContent>
@@ -513,7 +513,7 @@ export default function AdminEmail() {
       <Dialog open={showNewCampaign} onOpenChange={setShowNewCampaign}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>📬 Creează Campanie Email</DialogTitle>
+            <DialogTitle>Creează Campanie Email</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
@@ -569,7 +569,7 @@ export default function AdminEmail() {
               disabled={!newCampaign.name || !newCampaign.template_id || createCampaignMutation.isLoading}
               className="w-full bg-purple-500 hover:bg-purple-600"
             >
-              {createCampaignMutation.isLoading ? 'Se creează...' : '✅ Creează Campanie'}
+              {createCampaignMutation.isLoading ? 'Se creează...' : 'Creează Campanie'}
             </Button>
           </div>
         </DialogContent>
@@ -580,7 +580,7 @@ export default function AdminEmail() {
         <Dialog open={!!previewTemplate} onOpenChange={() => setPreviewTemplate(null)}>
           <DialogContent className="max-w-3xl">
             <DialogHeader>
-              <DialogTitle>👀 Preview: {previewTemplate.name}</DialogTitle>
+              <DialogTitle>Previzualizare: {previewTemplate.name}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <div>

@@ -46,11 +46,11 @@ export default function WeightTracking() {
       // Folosește întotdeauna ultima greutate din istoric dacă există
       const lastWeight = weightEntries[0].weight;
       setWeight(parseFloat(lastWeight).toFixed(1));
-      console.log('✅ Pre-populat greutate din istoric:', lastWeight);
+      console.log('Pre-populat greutate din istoric:', lastWeight);
     } else if (user?.current_weight) {
       // Fallback la current_weight doar dacă nu există înregistrări
       setWeight(parseFloat(user.current_weight).toFixed(1));
-      console.log('✅ Pre-populat greutate din profil:', user.current_weight);
+      console.log('Pre-populat greutate din profil:', user.current_weight);
     }
   }, [weightEntries, user]);
 
@@ -111,7 +111,7 @@ export default function WeightTracking() {
     setWeight(newWeight);
     setFlashColor('green'); // VERDE = scade = BUN
     setTimeout(() => setFlashColor(null), 800);
-    console.log('🟢 MINUS: Greutate scade cu 0.1 kg');
+    console.log('MINUS: Greutate scade cu 0.1 kg');
   };
 
   const handleIncrement = () => {
@@ -119,7 +119,7 @@ export default function WeightTracking() {
     setWeight(newWeight);
     setFlashColor('red'); // ROȘU = crește = RĂU
     setTimeout(() => setFlashColor(null), 800);
-    console.log('🔴 PLUS: Greutate crește cu 0.1 kg');
+    console.log('PLUS: Greutate crește cu 0.1 kg');
   };
 
   const handleSubmit = (e) => {
@@ -137,7 +137,7 @@ export default function WeightTracking() {
     // FIX: Convertește virgula în punct pentru parseFloat!
     const weightValue = parseFloat(String(weight).replace(',', '.'));
     
-    console.log('💾 Saving weight:', weight, '→', weightValue);
+    console.log('Saving weight:', weight, '→', weightValue);
     
     if (isNaN(weightValue) || weightValue <= 0) {
       toast({
@@ -181,11 +181,11 @@ export default function WeightTracking() {
     : 0;
 
   const moodEmojis = {
-    excelent: "🤩",
-    bine: "😊",
-    normal: "😐",
-    obosit: "😴",
-    slab: "😞"
+    excelent: "Excelent",
+    bine: "Bine",
+    normal: "Normal",
+    obosit: "Obosit",
+    slab: "Scăzut"
   };
 
   return (
@@ -225,14 +225,14 @@ export default function WeightTracking() {
               <div className="space-y-3">
                 {/* Total Pierdut */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">📉 Total pierdut</span>
+                  <span className="text-xs font-medium text-emerald-700 dark:text-emerald-300">Total pierdut</span>
                   <span className="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{totalWeightLost} kg</span>
                 </div>
                 {/* Separator */}
                 <div className="h-px bg-gradient-to-r from-emerald-300 via-teal-300 to-purple-300 dark:from-emerald-700 dark:via-teal-700 dark:to-purple-700"></div>
                 {/* Până la Țintă */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-purple-700 dark:text-purple-300">🎯 Până la țintă</span>
+                  <span className="text-xs font-medium text-purple-700 dark:text-purple-300">Până la țintă</span>
                   <span className="text-2xl font-bold text-purple-900 dark:text-purple-100">{remainingWeight > 0 ? remainingWeight : '0'} kg</span>
                 </div>
               </div>
@@ -344,10 +344,10 @@ export default function WeightTracking() {
                     <div className="p-4 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-[16px]">
                       <div className="flex items-center gap-2 mb-2">
                         <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                        <span className="font-semibold text-emerald-900 dark:text-emerald-100">🎯 Greutatea ta ideală</span>
+                        <span className="font-semibold text-emerald-900 dark:text-emerald-100">Greutatea ta ideală</span>
                       </div>
                       <p className="text-sm text-emerald-700 dark:text-emerald-300">
-                        💡 Completează înălțimea în profil pentru a vedea greutatea ta ideală!
+                        Completează înălțimea în profil pentru a vedea greutatea ta ideală!
                       </p>
                     </div>
                   );
@@ -378,7 +378,7 @@ export default function WeightTracking() {
                   emoji = '⬇️';
                   message = `Ai depășit greutatea ideală. Obiectivul tău de ${user?.target_weight || idealWeightMin} kg e excelent!`;
                 } else {
-                  emoji = '✅';
+                  emoji = '';
                   message = `Felicitări! Ești în range-ul sănătos (IMC ${currentBMI.toFixed(1)}). Menține-te!`;
                 }
 
@@ -386,13 +386,13 @@ export default function WeightTracking() {
                   <div className="p-4 bg-gradient-to-r from-emerald-100 to-teal-100 dark:from-emerald-900/30 dark:to-teal-900/30 rounded-[16px]">
                     <div className="flex items-center gap-2 mb-2">
                       <Target className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-                      <span className="font-semibold text-emerald-900 dark:text-emerald-100">🎯 Greutatea ta ideală</span>
+                      <span className="font-semibold text-emerald-900 dark:text-emerald-100">Greutatea ta ideală</span>
                     </div>
                     <p className="text-sm text-emerald-700 dark:text-emerald-300 mb-2">
                       {emoji} {message}
                     </p>
                     <div className="text-xs text-emerald-600 dark:text-emerald-400 bg-white/50 dark:bg-black/20 px-3 py-2 rounded-lg">
-                      💚 Range sănătos (IMC 20-25): <strong>{idealWeightMin}-{idealWeightMax} kg</strong>
+                      Interval recomandat (IMC 20-25): <strong>{idealWeightMin}-{idealWeightMax} kg</strong>
                       {age && ` • Vârstă: ${age} ani`}
                       {height && ` • Înălțime: ${(height * 100).toFixed(0)} cm`}
                     </div>
@@ -406,7 +406,7 @@ export default function WeightTracking() {
                   Greutatea de astăzi
                 </Label>
                   
-                {/* Mobile & Desktop: iOS-style increment/decrement cu ANIMAȚIE CULOARE + MAGIE ✨ */}
+                {/* Mobile & Desktop: iOS-style increment/decrement cu ANIMAȚIE CULOARE + MAGIE  */}
                 <div className="flex items-center justify-center gap-4 md:gap-6">
                       <Button
                         type="button"

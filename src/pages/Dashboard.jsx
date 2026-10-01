@@ -26,7 +26,9 @@ import {
   Heart,
   UtensilsCrossed,
   Dumbbell,
-  Loader2
+  Loader2,
+  Sparkles,
+  Check
 } from "lucide-react";
 import { format, differenceInDays, subDays } from "date-fns";
 import { ro, enUS } from "date-fns/locale";
@@ -57,7 +59,11 @@ export default function Dashboard() {
   useEffect(() => {
     localApi.auth.me().then(userData => {
       setUser(userData);
-      if (!userData.start_date || !userData.current_weight || !userData.target_weight) {
+      // Adminii nu sunt redirecționați la onboarding niciodată
+      if (userData.role === 'admin') {
+        return;
+      }
+      if ((!userData.start_date && userData.program_status !== 'abandoned') || !userData.current_weight || !userData.target_weight) {
         navigate(createPageUrl("Onboarding"));
       }
     }).catch(() => {});
@@ -114,7 +120,7 @@ export default function Dashboard() {
     const checkInDate = new Date(c.date);
     const checkInDateStr = format(checkInDate, 'yyyy-MM-dd');
     
-    console.log('🔍 DASHBOARD DATE COMPARE:', {
+    console.log('DASHBOARD DATE COMPARE:', {
       today: todayDateStr,
       checkInDate: c.date,
       checkInLocal: checkInDateStr,
@@ -126,7 +132,7 @@ export default function Dashboard() {
 
   const checkIn = todayCheckIn;
   
-  console.log('📊 DASHBOARD DATA:', {
+  console.log('DASHBOARD DATA:', {
     totalCheckIns: checkIns.length,
     todayCheckIn: todayCheckIn ? 'FOUND' : 'NOT FOUND',
     todayDate: todayDateStr,
@@ -134,7 +140,7 @@ export default function Dashboard() {
   });
 
   // DEBUG: Log data pentru a vedea de ce arată zero
-  console.log('🔍 DASHBOARD DEBUG:', {
+  console.log('DASHBOARD DEBUG:', {
     totalCheckIns: checkIns.length,
     todayDate: todayDateStr,
     todayCheckIn: todayCheckIn,
@@ -155,7 +161,7 @@ export default function Dashboard() {
       ].filter(Boolean).length
     : 0;
   
-  console.log('🍽️ MESE COMPLETATE DASHBOARD:', {
+  console.log('MESE COMPLETATE DASHBOARD:', {
     breakfast: todayCheckIn?.breakfast_completed,
     snack1: todayCheckIn?.snack1_completed,
     lunch: todayCheckIn?.lunch_completed,
@@ -167,7 +173,7 @@ export default function Dashboard() {
   const caloriesConsumed = todayCheckIn?.total_calories || 0;
   const caloriesBurned = todayCheckIn?.exercise_calories_burned || 0;
   
-  console.log('💯 CALORII DASHBOARD:', {
+  console.log('CALORII DASHBOARD:', {
     total_calories: todayCheckIn?.total_calories,
     exercise_calories_burned: todayCheckIn?.exercise_calories_burned,
     water_glasses: todayCheckIn?.water_glasses,
@@ -449,11 +455,15 @@ export default function Dashboard() {
                     />
                   ))}
                 </div>
-                <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-3">
-                  {(todayCheckIn?.water_intake || 0) >= 8 
-                    ? (language === 'ro' ? '✨ Obiectiv atins!' : '✨ Goal reached!')
-                    : `${8 - (todayCheckIn?.water_intake || 0)} ${language === 'ro' ? 'mai rămân' : 'more to go'}`
-                  }
+                <div className="text-xs text-[rgb(var(--ios-text-tertiary))] mt-3 flex items-center gap-1">
+                  {(todayCheckIn?.water_intake || 0) >= 8 ? (
+                    <span className="flex items-center gap-1 text-cyan-600 font-medium">
+                      <Sparkles className="w-3.5 h-3.5" />
+                      {language === 'ro' ? 'Obiectiv atins!' : 'Goal reached!'}
+                    </span>
+                  ) : (
+                    <span>{`${8 - (todayCheckIn?.water_intake || 0)} ${language === 'ro' ? 'mai rămân' : 'more to go'}`}</span>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -466,12 +476,12 @@ export default function Dashboard() {
                 <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-[14px] flex items-center justify-center shadow-lg">
                   <Dumbbell className="w-6 h-6 text-white" />
                 </div>
-                <div className={`text-xs font-bold px-3 py-1 rounded-full ${
+                <div className={`text-xs font-bold px-3 py-1 rounded-full flex items-center justify-center ${
                   checkIn?.exercise_completed 
                     ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300'
-                    : 'bg-gray-100 dark:bg-gray-800 text-gray-50 dark:text-gray-400'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                 }`}>
-                  {checkIn?.exercise_completed ? '✓' : '○'}
+                  {checkIn?.exercise_completed ? <Check className="w-3.5 h-3.5" /> : '○'}
                 </div>
               </div>
               <div className="space-y-2">
@@ -490,10 +500,13 @@ export default function Dashboard() {
                           {checkIn.exercise_type?.replace('_', ' ') || 'workout'}
                         </div>
                       </div>
-                      <div className="bg-orange-100 dark:bg-orange-900/30 rounded-lg px-3 py-2">
-                        <div className="text-xs text-[rgb(var(--ios-text-secondary))]">🔥</div>
-                        <div className="text-sm font-bold text-orange-700 dark:text-orange-300">
-                          {checkIn.exercise_calories_burned || 0}
+                      <div className="bg-orange-100 dark:bg-orange-900/30 rounded-lg px-3 py-2 flex items-center gap-1.5">
+                        <Flame className="w-4 h-4 text-orange-600" />
+                        <div>
+                          <div className="text-xs text-[rgb(var(--ios-text-secondary))]">kcal</div>
+                          <div className="text-sm font-bold text-orange-700 dark:text-orange-300">
+                            {checkIn.exercise_calories_burned || 0}
+                          </div>
                         </div>
                       </div>
                     </div>

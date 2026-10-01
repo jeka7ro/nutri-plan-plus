@@ -182,7 +182,7 @@ export const getPhaseForDate = (startDate, targetDate = new Date()) => {
 };
 
 /**
- * Check if a recipe is suitable for a specific phase
+ * Check if a recipe is suitable for a specific phase with strict Fast Metabolism Diet guardrails
  * @param {object} recipe - Recipe object
  * @param {number} phase - Phase number to check against
  * @returns {boolean} True if recipe is suitable for the phase
@@ -190,15 +190,97 @@ export const getPhaseForDate = (startDate, targetDate = new Date()) => {
 export const isRecipeValidForPhase = (recipe, phase) => {
   if (!recipe || !phase) return false;
   
-  // Support both new format (phases array) and old format (phase integer)
-  if (recipe.phases && Array.isArray(recipe.phases)) {
-    return recipe.phases.includes(phase);
+  // 1. Check phase compatibility
+  let matchesPhase = false;
+  if (recipe.phases && Array.isArray(recipe.phases) && recipe.phases.length > 0) {
+    matchesPhase = recipe.phases.includes(phase);
+  } else if (recipe.phase) {
+    matchesPhase = recipe.phase === phase;
+  } else {
+    // If no phase specified, allow evaluation via ingredient and macro guards
+    matchesPhase = true;
   }
-  
-  if (recipe.phase) {
-    return recipe.phase === phase;
+
+  if (!matchesPhase) return false;
+
+  // Prepare searchable text for allergen/forbidden words
+  const fullText = [
+    recipe.name,
+    recipe.name_ro,
+    recipe.name_en,
+    recipe.description_ro,
+    recipe.description_en,
+    Array.isArray(recipe.ingredients_ro) ? recipe.ingredients_ro.join(' ') : recipe.ingredients_ro,
+    Array.isArray(recipe.ingredients_en) ? recipe.ingredients_en.join(' ') : recipe.ingredients_en,
+    Array.isArray(recipe.ingredients) ? recipe.ingredients.join(' ') : recipe.ingredients,
+  ].filter(Boolean).join(' ').toLowerCase();
+
+  const fats = typeof recipe.fats === 'number' ? recipe.fats : parseFloat(recipe.fats || 0);
+  const carbs = typeof recipe.carbs === 'number' ? recipe.carbs : parseFloat(recipe.carbs || 0);
+
+  // STRICT PHASE 1 GUARDRAILS (Days 1-2: Carbs & Fruits, Lean Protein, No Fats, No Pork, No Dairy)
+  if (phase === 1) {
+    // Hard ceiling on fats: max 8g
+    if (fats > 8) return false;
+
+    // Forbidden in Phase 1
+    const p1Forbidden = [
+      'unt', 'ulei', 'oil', 'butter', 'avocado', 'nuci', 'nuca', 'migdale', 'almond', 'caju', 'cashew',
+      'fistic', 'seminte', 'semințe', 'seeds', 'chia', 'susan', 'tahini', 'arahide', 'peanut',
+      'iaurt', 'yogurt', 'lapte', 'milk', 'smantana', 'smântână', 'cream', 'branza', 'brânză', 'cheese',
+      'cascaval', 'cașcaval', 'parmezan', 'parmesan', 'mozzarella', 'ricotta', 'telemea',
+      'porc', 'pork', 'bacon', 'costite', 'costițe', 'slanina', 'slănină', 'carnati', 'cârnați',
+      'somon', 'salmon', 'macrou', 'sardine', 'hering',
+      'banana', 'banane'
+    ];
+
+    for (const term of p1Forbidden) {
+      const regex = new RegExp(`(\\b|[^a-zăîâșț])${term}(\\b|[^a-zăîâșț])`, 'i');
+      if (regex.test(fullText)) {
+        return false;
+      }
+    }
   }
-  
-  // If no phase specified, assume it's valid for all phases
+
+  // STRICT PHASE 2 GUARDRAILS (Days 3-4: Lean Protein & Veggies, No Carbs/Grains/Fruits/Fats)
+  if (phase === 2) {
+    if (carbs > 16) return false;
+    if (fats > 8) return false;
+
+    const p2Forbidden = [
+      'paine', 'pâine', 'bread', 'orez', 'rice', 'paste', 'pasta', 'ovaz', 'ovăz', 'oats', 'quinoa',
+      'cartof', 'cartofi', 'potato', 'potatoes', 'linte', 'fasole', 'naut', 'năut', 'hrisca', 'hrișcă',
+      'mar', 'măr', 'mere', 'apple', 'apples', 'para', 'pară', 'pere', 'portocale', 'orange', 'oranges',
+      'capsuni', 'căpșuni', 'afine', 'zmeura', 'zmeură', 'ananas', 'mango', 'banana', 'banane', 'struguri',
+      'iaurt', 'yogurt', 'lapte', 'milk', 'branza', 'brânză', 'cheese', 'unt', 'butter', 'ulei', 'oil',
+      'avocado', 'nuci', 'seminte', 'semințe'
+    ];
+
+    for (const term of p2Forbidden) {
+      const regex = new RegExp(`(\\b|[^a-zăîâșț])${term}(\\b|[^a-zăîâșț])`, 'i');
+      if (regex.test(fullText)) {
+        return false;
+      }
+    }
+  }
+
+  // STRICT PHASE 3 GUARDRAILS (Days 5-7: Healthy Fats + Protein, Low-Glycemic Carbs/Fruits)
+  if (phase === 3) {
+    const p3Forbidden = [
+      'banana', 'banane', 'ananas', 'pineapple', 'mango', 'pepene', 'watermelon', 'melon', 'struguri', 'grapes',
+      'curmale', 'dates', 'smochine', 'figs', 'porumb', 'corn', 'porc', 'pork', 'bacon', 'slanina',
+      'iaurt de vaca', 'lapte de vaca', 'branza', 'brânză', 'cascaval', 'cașcaval', 'parmezan',
+      'arahide', 'peanut'
+    ];
+
+    for (const term of p3Forbidden) {
+      const regex = new RegExp(`(\\b|[^a-zăîâșț])${term}(\\b|[^a-zăîâșț])`, 'i');
+      if (regex.test(fullText)) {
+        return false;
+      }
+    }
+  }
+
   return true;
 };
+

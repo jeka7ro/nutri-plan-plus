@@ -37,10 +37,10 @@ export default function AIFoodAssistant() {
     return (
       <Button
         onClick={() => window.location.href = '/upgrade'}
-        className="fixed bottom-6 right-6 z-50 h-14 px-6 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-2xl rounded-full"
+        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 z-50 h-12 md:h-14 px-4 md:px-6 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-bold shadow-2xl rounded-full text-xs md:text-sm"
       >
         <Sparkles className="w-5 h-5 mr-2" />
-        {language === 'ro' ? '🤖 AI Assistant - Premium' : '🤖 AI Assistant - Premium'}
+        {language === 'ro' ? 'AI Assistant - Premium' : 'AI Assistant - Premium'}
       </Button>
     );
   }
@@ -67,17 +67,17 @@ export default function AIFoodAssistant() {
       // Interzise: grăsimi, ulei, nuci, avocado, lactate
       if (/ulei|oil|unt|butter|nuci|nuts|avocado|smântână|cream|brânză|cheese|bacon/.test(mealLower)) {
         score -= 4;
-        feedback.push(language === 'ro' ? '❌ Faza 1: FĂRĂ grăsimi!' : '❌ Phase 1: NO fats!');
+        feedback.push(language === 'ro' ? 'Faza 1: Fără grăsimi adăugate.' : 'Phase 1: NO added fats!');
       }
       // Banane interzise
       if (/banan|banana/.test(mealLower)) {
         score -= 3;
-        feedback.push(language === 'ro' ? '❌ Bananele sunt interzise!' : '❌ Bananas forbidden!');
+        feedback.push(language === 'ro' ? 'Atenție: Bananele nu sunt permise în Faza 1.' : 'Warning: Bananas are not allowed in Phase 1.');
       }
       // Trebuie carbohidrați
       if (!/orez|rice|quinoa|ovăz|oat|pâine|bread|paste|pasta/.test(mealLower)) {
         score -= 2;
-        feedback.push(language === 'ro' ? '⚠️ Adaugă carbohidrați (orez, quinoa, ovăz)' : '⚠️ Add carbs (rice, quinoa, oats)');
+        feedback.push(language === 'ro' ? 'Recomandare: Adaugă carbohidrați complecși (orez, quinoa, ovăz).' : 'Tip: Add complex carbs (rice, quinoa, oats).');
       }
     }
     
@@ -85,16 +85,16 @@ export default function AIFoodAssistant() {
     if (phase === 2) {
       if (/orez|rice|pâine|bread|paste|pasta|cartofi|potato|quinoa|ovăz|oat/.test(mealLower)) {
         score -= 4;
-        feedback.push(language === 'ro' ? '❌ Faza 2: FĂRĂ carbohidrați!' : '❌ Phase 2: NO carbs!');
+        feedback.push(language === 'ro' ? 'Faza 2: Fără carbohidrați.' : 'Phase 2: NO carbs!');
       }
       if (/ulei|oil|unt|butter|nuci|nuts|avocado/.test(mealLower)) {
         score -= 3;
-        feedback.push(language === 'ro' ? '❌ Fază 2: FĂRĂ grăsimi!' : '❌ Phase 2: NO fats!');
+        feedback.push(language === 'ro' ? 'Faza 2: Fără grăsimi adăugate.' : 'Phase 2: NO fats!');
       }
       // Trebuie proteine
       if (!/pui|chicken|pește|fish|curcan|turkey|carne|meat|ou|egg/.test(mealLower)) {
         score -= 2;
-        feedback.push(language === 'ro' ? '⚠️ Adaugă proteine (pui, pește, ou)' : '⚠️ Add protein (chicken, fish, eggs)');
+        feedback.push(language === 'ro' ? 'Recomandare: Adaugă proteine slabe (pui, pește, albuș).' : 'Tip: Add lean protein (chicken, fish, egg whites).');
       }
     }
     
@@ -107,47 +107,47 @@ export default function AIFoodAssistant() {
       // Interzise: zahăr, ciocolată, alimente procesate
       if (/zahăr|sugar|ciocolată|chocolate|dulciuri|candy|prăjituri|cake/.test(mealLower)) {
         score -= 4;
-        feedback.push(language === 'ro' ? '❌ Faza 3: FĂRĂ zahăr și ciocolată!' : '❌ Phase 3: NO sugar and chocolate!');
+        feedback.push(language === 'ro' ? 'Faza 3: Fără zahăr adăugat sau dulciuri.' : 'Phase 3: NO added sugar or sweets!');
       }
       
       // Carbohidrați rafinați interzisi
       if (/pâine albă|white bread|orez alb|white rice|paste albe|white pasta/.test(mealLower)) {
         score -= 3;
-        feedback.push(language === 'ro' ? '❌ Faza 3: FĂRĂ carbohidrați rafinați!' : '❌ Phase 3: NO refined carbs!');
+        feedback.push(language === 'ro' ? 'Faza 3: Fără carbohidrați rafinați.' : 'Phase 3: NO refined carbs!');
       }
       
       if (!hasProtein) {
         score -= 2;
-        feedback.push(language === 'ro' ? '⚠️ Adaugă proteine' : '⚠️ Add protein');
+        feedback.push(language === 'ro' ? 'Recomandare: Include o sursă de proteine.' : 'Tip: Include a protein source.');
       }
       if (!hasFats) {
         score -= 1;
-        feedback.push(language === 'ro' ? 'ℹ️ Adaugă grăsimi sănătoase (avocado, nuci, ulei măsline)' : 'ℹ️ Add healthy fats (avocado, nuts, olive oil)');
+        feedback.push(language === 'ro' ? 'Recomandare: Adaugă grăsimi sănătoase (avocado, nuci, ulei de măsline).' : 'Tip: Add healthy fats (avocado, nuts, olive oil).');
       }
     }
     
     // Bonus pentru legume
     if (/salată|salad|broccoli|spanac|spinach|legume|vegetable/.test(mealLower)) {
-      feedback.push(language === 'ro' ? '✅ Perfect! Legume incluse' : '✅ Great! Veggies included');
+      feedback.push(language === 'ro' ? 'Excelent: Legume proaspete incluse.' : 'Great: Fresh vegetables included.');
     }
     
     score = Math.max(0, Math.min(10, score));
     
     return {
       score,
-      feedback: feedback.length > 0 ? feedback : [language === 'ro' ? '✅ Excellent! Mâncare perfectă pentru faza ta!' : '✅ Excellent! Perfect meal for your phase!'],
-      badge: score >= 8 ? '🟢' : score >= 6 ? '🟡' : '🔴'
+      feedback: feedback.length > 0 ? feedback : [language === 'ro' ? 'Excelent: Combinație optimă pentru faza metabolică!' : 'Excellent: Optimal combination for your phase!'],
+      badge: score >= 8 ? 'optimal' : score >= 6 ? 'moderate' : 'warning'
     };
   };
 
   // ========== MEAL TIMELINE - Grafic vizual pentru mese ==========
   const getMealTimeline = () => {
     const meals = [
-      { time: '08:00', name: language === 'ro' ? 'Mic Dejun' : 'Breakfast', key: 'breakfast_completed', icon: '☕' },
-      { time: '10:00', name: language === 'ro' ? 'Gustare 1' : 'Snack 1', key: 'snack1_completed', icon: '🍎' },
-      { time: '13:00', name: language === 'ro' ? 'Prânz' : 'Lunch', key: 'lunch_completed', icon: '🍽️' },
-      { time: '16:00', name: language === 'ro' ? 'Gustare 2' : 'Snack 2', key: 'snack2_completed', icon: '🥗' },
-      { time: '19:00', name: language === 'ro' ? 'Cină' : 'Dinner', key: 'dinner_completed', icon: '🌙' },
+      { time: '08:00', name: language === 'ro' ? 'Mic Dejun' : 'Breakfast', key: 'breakfast_completed', icon: 'breakfast' },
+      { time: '10:00', name: language === 'ro' ? 'Gustare 1' : 'Snack 1', key: 'snack1_completed', icon: 'snack1' },
+      { time: '13:00', name: language === 'ro' ? 'Prânz' : 'Lunch', key: 'lunch_completed', icon: 'lunch' },
+      { time: '16:00', name: language === 'ro' ? 'Gustare 2' : 'Snack 2', key: 'snack2_completed', icon: 'snack2' },
+      { time: '19:00', name: language === 'ro' ? 'Cină' : 'Dinner', key: 'dinner_completed', icon: 'dinner' },
     ];
 
     const currentHour = new Date().getHours();
@@ -181,8 +181,8 @@ export default function AIFoodAssistant() {
       reminders.push({
         type: 'urgent',
         message: language === 'ro' 
-          ? `⏰ Este ora pentru ${currentMeal.name}! Nu uita să mănânci!`
-          : `⏰ Time for ${currentMeal.name}! Don't forget to eat!`
+          ? `Este momentul pentru ${currentMeal.name}! Nu uita să mănânci!`
+          : `Time for ${currentMeal.name}! Don't forget to eat!`
       });
     }
     
@@ -192,8 +192,8 @@ export default function AIFoodAssistant() {
       reminders.push({
         type: 'water',
         message: language === 'ro'
-          ? `💧 Ai băut doar ${waterGlasses}/8 pahare de apă azi. Bea mai multă apă!`
-          : `💧 You've had only ${waterGlasses}/8 glasses of water today. Drink more!`
+          ? `Hidratare: Ai consumat doar ${waterGlasses}/8 pahare de apă azi. Bea mai multă apă!`
+          : `Hydration: You have had only ${waterGlasses}/8 glasses of water today. Drink more!`
       });
     }
     
@@ -202,8 +202,8 @@ export default function AIFoodAssistant() {
       reminders.push({
         type: 'info',
         message: language === 'ro'
-          ? `📅 Următoarea masă: ${nextMeal.name} la ${nextMeal.time}`
-          : `📅 Next meal: ${nextMeal.name} at ${nextMeal.time}`
+          ? `Următoarea masă programată: ${nextMeal.name} la ${nextMeal.time}`
+          : `Next scheduled meal: ${nextMeal.name} at ${nextMeal.time}`
       });
     }
     
@@ -212,8 +212,8 @@ export default function AIFoodAssistant() {
       reminders.push({
         type: 'exercise',
         message: language === 'ro'
-          ? `🏃 Nu ai făcut exerciții fizice azi! 30 min de cardio te ajută să arzi grăsime!'`
-          : `🏃 No exercise today! 30 min of cardio helps burn fat!`
+          ? `Activitate fizică: Nu ai înregistrat mișcare fizice azi! 30 min de cardio te ajută să arzi grăsime!'`
+          : `Physical activity: No workout recorded! 30 min of cardio helps burn fat!`
       });
     }
     
@@ -460,14 +460,15 @@ export default function AIFoodAssistant() {
       // Food database - forbidden items by phase
       const forbiddenFoods = {
         1: {
-          // Phase 1: No fats, dairy, refined sugar, bananas
+          // Phase 1: No fats, dairy, refined sugar, bananas, pork, salmon, nuts/seeds
           keywords: ['cappuccino', 'capucino', 'cafea cu lapte', 'latte', 'bomboane', 'bomboana', 'ciocolata', 'ciocolată', 
                      'inghetata', 'înghețată', 'dulciuri', 'prăjituri', 'tort', 'biscuiți', 'biscuiti',
-                     'nuci', 'migdale', 'alune', 'avocado', 'ulei', 'unt', 'smântână', 'smantana', 'brânză', 'branza',
+                     'nuci', 'migdale', 'alune', 'caju', 'cashew', 'fistic', 'semințe', 'seminte', 'chia', 'avocado', 'ulei', 'unt', 'smântână', 'smantana', 'brânză', 'branza',
                      'lapte', 'iaurt', 'cheese', 'milk', 'butter', 'cream', 'nuts', 'oil', 'chocolate', 'candy', 'ice cream',
+                     'porc', 'pork', 'bacon', 'costițe', 'costite', 'slănină', 'slanina', 'cârnați', 'carnati', 'somon', 'salmon',
                      'banane', 'banana', 'bananas', 'struguri', 'grapes', 'porumb', 'corn', 'cartof', 'cartof alb', 'potato', 'potatoes'],
-          reason_ro: 'conține grăsimi, lactate, zahăr rafinat sau este interzis (banane, struguri, porumb, cartofi albi) - NU este permis în Faza 1. Concentrează-te pe carbohidrați sănătoși și alte fructe permise.',
-          reason_en: 'contains fats, dairy, refined sugar or is forbidden (bananas, grapes, corn, white potatoes) - NOT allowed in Phase 1. Focus on healthy carbs and other allowed fruits.'
+          reason_ro: 'conține grăsimi, lactate, porc, somon, nuci sau alimente interzise - STRICT NEPERMIS în Faza 1! Faza 1 permite doar carbohidrați complecși (ovăz, orez brun, quinoa), fructe permise și proteină slabă (pui, curcan, pește alb).',
+          reason_en: 'contains fats, dairy, pork, salmon, nuts or forbidden items - STRICTLY FORBIDDEN in Phase 1! Phase 1 only allows healthy complex carbs (oats, brown rice, quinoa), permitted fruits, and lean proteins (chicken, turkey, white fish).'
         },
         2: {
           // Phase 2: No carbs, fruits, fats
@@ -528,8 +529,8 @@ export default function AIFoodAssistant() {
         
         const grocery = generateGroceryList(days);
         const answer = language === 'ro'
-          ? `🛒 **Listă Cumpărături pentru ${days} ${days === 1 ? 'zi' : 'zile'}**\n\n📍 Ziua ${currentDay}, ${days === 1 ? 'Fază' : 'Faze'}: ${grocery.phases.join(', ')}\n✅ **${grocery.totalItems} alimente** organizate pe categorii:\n${grocery.items.join('\n')}\n\n💡 Cantități ajustate pentru ${days} ${days === 1 ? 'zi' : 'zile'} (${days * 5} mese)!`
-          : `🛒 **Grocery List for ${days} ${days === 1 ? 'day' : 'days'}**\n\n📍 Day ${currentDay}, ${days === 1 ? 'Phase' : 'Phases'}: ${grocery.phases.join(', ')}\n✅ **${grocery.totalItems} items** organized by category:\n${grocery.items.join('\n')}\n\n💡 Quantities adjusted for ${days} ${days === 1 ? 'day' : 'days'} (${days * 5} meals)!`;
+          ? `**Listă de Cumpărături pentru ${days} ${days === 1 ? 'zi' : 'zile'}**\n\nZiua ${currentDay}, ${days === 1 ? 'Fază' : 'Faze'}: ${grocery.phases.join(', ')}\n**${grocery.totalItems} alimente** organizate pe categorii:\n${grocery.items.join('\n')}\n\nSfat: Cantități ajustate pentru ${days} ${days === 1 ? 'zi' : 'zile'} (${days * 5} mese)!`
+          : `**Grocery List for ${days} ${days === 1 ? 'day' : 'days'}**\n\nDay ${currentDay}, ${days === 1 ? 'Phase' : 'Phases'}: ${grocery.phases.join(', ')}\n**${grocery.totalItems} items** organized by category:\n${grocery.items.join('\n')}\n\nTip: Quantities adjusted for ${days} ${days === 1 ? 'day' : 'days'} (${days * 5} meals)!`;
         
         setChatHistory(prev => [...prev, { question: userQuestion, response: answer, timestamp: new Date() }]);
         setResponse(answer);
@@ -548,8 +549,8 @@ export default function AIFoodAssistant() {
         
         if (foundForbidden) {
           const answer = language === 'ro'
-            ? `❌ NU\n\n"${foundForbidden}" ${forbidden.reason_ro}\n\n📍 Ești în Ziua ${currentDay}, Faza ${currentPhase}`
-            : `❌ NO\n\n"${foundForbidden}" ${forbidden.reason_en}\n\n📍 You're on Day ${currentDay}, Phase ${currentPhase}`;
+            ? `Aliment Nerecomandat\n\n"${foundForbidden}" ${forbidden.reason_ro}\n\nEști în Ziua ${currentDay}, Faza ${currentPhase}`
+            : `Not Recommended\n\n"${foundForbidden}" ${forbidden.reason_en}\n\nYou're on Day ${currentDay}, Phase ${currentPhase}`;
           setChatHistory(prev => [...prev, { question: userQuestion, response: answer, timestamp: new Date() }]);
           setResponse(answer);
           setQuestion(""); // CLEAR INPUT!
@@ -563,8 +564,8 @@ export default function AIFoodAssistant() {
         
         if (foundAllowed) {
           const answer = language === 'ro'
-            ? `✅ DA\n\n"${foundAllowed}" ${allowed.reason_ro}\n\n📍 Ești în Ziua ${currentDay}, Faza ${currentPhase}`
-            : `✅ YES\n\n"${foundAllowed}" ${allowed.reason_en}\n\n📍 You're on Day ${currentDay}, Phase ${currentPhase}`;
+            ? `Aliment Permis\n\n"${foundAllowed}" ${allowed.reason_ro}\n\nEști în Ziua ${currentDay}, Faza ${currentPhase}`
+            : `Allowed Food\n\n"${foundAllowed}" ${allowed.reason_en}\n\nYou're on Day ${currentDay}, Phase ${currentPhase}`;
           setChatHistory(prev => [...prev, { question: userQuestion, response: answer, timestamp: new Date() }]);
           setResponse(answer);
           setQuestion(""); // CLEAR INPUT!
@@ -575,8 +576,8 @@ export default function AIFoodAssistant() {
       
       // Default: show context info
       const contextMessage = language === 'ro' 
-        ? `📍 Ziua ${currentDay}, Faza ${currentPhase}\n\n🕐 Următoarea masă: ${nextMeal}\n✅ Mese completate: ${completedMeals.join(', ') || 'niciuna încă'}\n\n📋 Faza ${currentPhase}:\n✓ Permise: ${phaseInfo[currentPhase].allowed}\n✗ Evită: ${phaseInfo[currentPhase].avoid}\n\n💡 Întreabă-mă: "Pot să mănânc X astăzi?" SAU "Ce să cumpăr pentru mâine?"`
-        : `📍 Day ${currentDay}, Phase ${currentPhase}\n\n🕐 Next meal: ${nextMeal}\n✅ Completed: ${completedMeals.join(', ') || 'none yet'}\n\n📋 Phase ${currentPhase}:\n✓ Allowed: ${phaseInfo[currentPhase].allowed}\n✗ Avoid: ${phaseInfo[currentPhase].avoid}\n\n💡 Ask me: "Can I eat X today?" OR "What should I buy for tomorrow?"`;
+        ? `Ziua ${currentDay}, Faza ${currentPhase}\n\nUrmătoarea masă: ${nextMeal}\nMese completate: ${completedMeals.join(', ') || 'niciuna încă'}\n\nGhid Faza ${currentPhase}:\n• Permise: ${phaseInfo[currentPhase].allowed}\n• De evitat: ${phaseInfo[currentPhase].avoid}\n\nSfat: Întreabă-mă: "Pot să mănânc X astăzi?" SAU "Ce să cumpăr pentru mâine?"`
+        : `Day ${currentDay}, Phase ${currentPhase}\n\nNext meal: ${nextMeal}\nCompleted: ${completedMeals.join(', ') || 'none yet'}\n\nPhase ${currentPhase} Guide:\n• Allowed: ${phaseInfo[currentPhase].allowed}\n• Avoid: ${phaseInfo[currentPhase].avoid}\n\nTip: Ask me: "Can I eat X today?" OR "What should I buy for tomorrow?"`;
       
       setChatHistory(prev => [...prev, { question: userQuestion, response: contextMessage, timestamp: new Date() }]);
       setResponse(contextMessage);
@@ -598,7 +599,7 @@ export default function AIFoodAssistant() {
       {/* Floating Action Button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 transition-all duration-300 z-50 group"
+        className="fixed bottom-20 md:bottom-6 right-4 md:right-6 w-14 h-14 md:w-16 md:h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all duration-300 z-50 group"
       >
         <Sparkles className="w-7 h-7 text-white group-hover:rotate-12 transition-transform" />
         <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full animate-pulse"></div>
@@ -655,7 +656,7 @@ export default function AIFoodAssistant() {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-semibold text-[rgb(var(--ios-text-primary))]">
-                  {language === 'ro' ? '🛒 Listă Cumpărături Rapidă:' : '🛒 Quick Grocery List:'}
+                  {language === 'ro' ? 'Listă Cumpărături Rapidă:' : 'Quick Grocery List:'}
                 </span>
               </div>
               <div className="grid grid-cols-4 gap-2">
@@ -747,7 +748,7 @@ export default function AIFoodAssistant() {
             {chatHistory.length > 0 && (
               <div className="max-h-96 overflow-y-auto space-y-3 py-4">
                 <div className="text-xs font-semibold text-[rgb(var(--ios-text-secondary))] mb-2 px-2">
-                  {language === 'ro' ? '💬 Istoric:' : '💬 History:'}
+                  {language === 'ro' ? 'Istoric mesaje:' : 'Message history:'}
                 </div>
                 {chatHistory.map((chat, idx) => (
                   <div key={idx} className="space-y-2 px-2">
